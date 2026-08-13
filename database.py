@@ -98,6 +98,88 @@ class Proxy(SQLModel, table=True):  # type: ignore[call-arg]
     last_used_at: datetime | None = None
 
 
+# ===== ONYX: Price Benchmarking Tables =====
+
+class User(SQLModel, table=True):  # type: ignore[call-arg]
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
+    name: str
+    email: str = Field(sa_column=Column("email", String, unique=True))
+    hashed_password: str
+    department: str | None = None
+    organization: str | None = None
+    role: str = Field(default="user")  # "admin" or "user"
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class PriceSearch(SQLModel, table=True):  # type: ignore[call-arg]
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
+    user_id: str                        # FK to User
+    query: str                          # "Cisco Catalyst 9300"
+    query_type: str = "make_model"      # "make_model" or "specifications"
+    category: str | None = None         # "Networking", "Computing", etc.
+    quantity: int = Field(default=1)
+    status: str = Field(default="pending")  # pending, searching, completed, failed
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    completed_at: datetime | None = None
+    sources_checked: int = Field(default=0)
+    results_found: int = Field(default=0)
+
+
+class PriceResult(SQLModel, table=True):  # type: ignore[call-arg]
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
+    search_id: str                      # FK to PriceSearch
+    source_name: str                    # "Amazon India", "GeM Portal", etc.
+    source_url: str
+    product_name: str | None = None
+    brand: str | None = None
+    model_number: str | None = None
+    price: float | None = None
+    currency: str = Field(default="INR")
+    price_includes_gst: bool | None = None
+    vendor_name: str | None = None
+    availability: str | None = None     # "In Stock", "Out of Stock", "Contact for Price"
+    specifications: dict[str, Any] = Field(default={}, sa_column=Column(JSON))
+    confidence: str = Field(default="LOW")  # HIGH, MEDIUM, LOW
+    screenshot_path: str | None = None
+    raw_content: str | None = None      # Stored markdown for reference
+    extracted_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class PriceHistory(SQLModel, table=True):  # type: ignore[call-arg]
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
+    product_query: str
+    source_name: str
+    source_url: str
+    price: float
+    currency: str = Field(default="INR")
+    vendor_name: str | None = None
+    confidence: str = Field(default="LOW")
+    screenshot_path: str | None = None
+    extracted_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class PriceAlert(SQLModel, table=True):  # type: ignore[call-arg]
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
+    user_id: str                        # FK to User
+    product_query: str
+    target_price: float
+    condition: str = "below"            # "below" or "above"
+    is_active: bool = Field(default=True)
+    last_triggered: datetime | None = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class Report(SQLModel, table=True):  # type: ignore[call-arg]
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
+    user_id: str                        # FK to User
+    search_id: str                      # FK to PriceSearch
+    title: str
+    file_path: str | None = None        # Path to generated PDF
+    department_name: str | None = None
+    signatory_name: str | None = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
 class ProxyManager:
     @staticmethod
     async def get_proxy() -> str | None:

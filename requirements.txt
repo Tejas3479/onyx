@@ -20,3 +20,9 @@ weaviate-client>=4.0.0
 supabase>=2.0.0
 asyncpg>=0.29.0
 alembic==1.13.1
+
+# === Onyx: Price Benchmarking ===
+python-jose[cryptography]>=3.3.0    # JWT token creation/validation
+passlib[bcrypt]>=1.7.4              # Password hashing
+weasyprint>=61.0                    # HTML → PDF report generation
+python-dotenv>=1.0.0                # .env file loading

@@ -203,3 +203,72 @@ class ScheduleCreate(BaseModel):
 
 class ProxyCreate(BaseModel):
     url: str
+
+
+# ===== ONYX: Price Benchmarking Schemas =====
+
+
+class UserCreate(BaseModel):
+    name: str = Field(..., min_length=2, max_length=100)
+    email: str = Field(..., max_length=200)
+    password: str = Field(..., min_length=8, max_length=100)
+    department: str | None = Field(None, max_length=200)
+    organization: str | None = Field(None, max_length=200)
+
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+
+class UserResponse(BaseModel):
+    id: str
+    name: str
+    email: str
+    department: str | None
+    organization: str | None
+    role: str
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+
+class SearchQuery(BaseModel):
+    product_name: str = Field(..., min_length=2, max_length=500)
+    query_type: Literal["make_model", "specifications"] = "make_model"
+    category: str | None = Field(None, max_length=100)
+    quantity: int = Field(1, ge=1, le=10000)
+
+
+class SearchResultItem(BaseModel):
+    source_name: str
+    source_url: str
+    product_name: str | None
+    brand: str | None
+    model_number: str | None
+    price: float | None
+    currency: str
+    vendor_name: str | None
+    availability: str | None
+    confidence: str
+    screenshot_url: str | None
+
+
+class SearchResponse(BaseModel):
+    search_id: str
+    query: str
+    status: str
+    results: list[SearchResultItem]
+    statistics: dict  # min, max, avg, median
+    sources_checked: int
+    results_found: int
+
+
+class ReportRequest(BaseModel):
+    search_id: str
+    department_name: str | None = None
+    signatory_name: str | None = None
+    include_screenshots: bool = True
+
