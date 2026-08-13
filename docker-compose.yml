@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  crawlix:
+    build: .
+    image: crawlix:latest
+    container_name: crawlix_server
+    ports:
+      - "8000:8000"
+    environment:
+      - API_KEYS=mykey1,mykey2
+      - MAX_PLAYWRIGHT_INSTANCES=3
+      - SESSION_TTL_MINUTES=30
+      - MAX_SESSIONS=100
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=postgresql+asyncpg://crawlix:crawlix@postgres:5432/crawlix
+    volumes:
+      - data_volume:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: crawlix_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: crawlix_postgres
+    environment:
+      POSTGRES_USER: crawlix
+      POSTGRES_PASSWORD: crawlix
+      POSTGRES_DB: crawlix
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U crawlix"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  worker:
+    build: .
+    image: crawlix:latest
+    container_name: crawlix_worker
+    command: arq worker.WorkerSettings
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=postgresql+asyncpg://crawlix:crawlix@postgres:5432/crawlix
+    volumes:
+      - data_volume:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+  postgres_data:
+  data_volume:
