@@ -26,7 +26,7 @@ from database import (
 )
 from fetcher import is_ssrf_safe, playwright_mgr, run_fetch
 
-logger = logging.getLogger("crawlix.worker")
+logger = logging.getLogger("onyx.worker")
 
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 

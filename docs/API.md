@@ -1,4 +1,4 @@
-# Crawlix API Reference
+# Onyx API Reference
 
 **Base URL:** `http://localhost:8000`  
 **Authentication:** All endpoints (except `/api/health`) require the header `x-api-key: <your-key>`  
@@ -424,7 +424,7 @@ Register a webhook endpoint or vector DB index (Pinecone, Weaviate, Supabase) fo
   "type": "pinecone",
   "config": {
     "api_key": "pcsk-...",
-    "index_name": "crawlix-index"
+    "index_name": "onyx-index"
   }
 }
 ```
@@ -435,7 +435,7 @@ Register a webhook endpoint or vector DB index (Pinecone, Weaviate, Supabase) fo
   "id": "dest-7b3e10c0",
   "name": "Production Pinecone",
   "type": "pinecone",
-  "config": { "api_key": "pcsk-...", "index_name": "crawlix-index" }
+  "config": { "api_key": "pcsk-...", "index_name": "onyx-index" }
 }
 ```
 

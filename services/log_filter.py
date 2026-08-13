@@ -2,7 +2,7 @@ import logging
 import re
 
 # Module-level logger — logging configuration is initialized in app.py lifespan
-logger = logging.getLogger("crawlix.fetcher")
+logger = logging.getLogger("onyx.fetcher")
 
 
 class SensitiveDataFilter(logging.Filter):

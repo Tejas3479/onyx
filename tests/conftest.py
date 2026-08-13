@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-test_db = "data/test_crawlix.db"
+test_db = "data/test_onyx.db"
 if os.path.exists(test_db):
     try:
         os.remove(test_db)

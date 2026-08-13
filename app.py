@@ -25,7 +25,7 @@ from routers import admin_router, crawl_router, fetch_router, health_router
 from services.session_manager import redis_client
 
 # Set up logging configuration with SensitiveDataFilter
-logger = logging.getLogger("crawlix.app")
+logger = logging.getLogger("onyx.app")
 logger.addFilter(SensitiveDataFilter())
 
 log_handler = logging.StreamHandler()
@@ -122,7 +122,7 @@ async def lifespan(app: FastAPI):
     _cleanup_task = asyncio.create_task(session_manager.cleanup_loop())
     _rate_limit_task = asyncio.create_task(rate_limiter.cleanup_loop())
     logger.info(
-        "Crawlix application started, engine initialized, and rate limiter active."
+        "Onyx application started, engine initialized, and rate limiter active."
     )
     yield
     # SHUTDOWN
@@ -132,11 +132,11 @@ async def lifespan(app: FastAPI):
         _rate_limit_task.cancel()
     await session_manager.close_all()
     await playwright_mgr.close()
-    logger.info("Crawlix application shutdown complete.")
+    logger.info("Onyx application shutdown complete.")
 
 
 # APP INIT
-app_kwargs = {"title": "Crawlix", "version": "1.0.0", "lifespan": lifespan}
+app_kwargs = {"title": "Onyx", "version": "1.0.0", "lifespan": lifespan}
 if os.getenv("ENV", "development") == "production":
     app_kwargs["docs_url"] = None
     app_kwargs["redoc_url"] = None

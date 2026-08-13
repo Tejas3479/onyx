@@ -44,5 +44,5 @@ jobs:
       run: pytest -v tests/
       
     - name: Build Docker Image
-      run: docker build -t crawlix:latest .
+      run: docker build -t onyx:latest .
 

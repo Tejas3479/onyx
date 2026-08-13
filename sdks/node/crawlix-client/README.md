@@ -1,19 +1,19 @@
-# Crawlix Node.js Client
+# Onyx Node.js Client
 
-Official Node.js client for the Crawlix Web Scraping Engine.
+Official Node.js client for the Onyx Web Scraping Engine.
 
 ## Installation
 
 ```bash
-npm install crawlix-client
+npm install onyx-client
 ```
 
 ## Usage
 
 ```typescript
-import { CrawlixClient } from 'crawlix-client';
+import { OnyxClient } from 'onyx-client';
 
-const client = new CrawlixClient({
+const client = new OnyxClient({
   apiKey: 'YOUR_API_KEY',
   baseUrl: 'http://localhost:8000',
 });

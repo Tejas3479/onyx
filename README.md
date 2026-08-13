@@ -1,6 +1,6 @@
 <div align="center">
 
-<h1>⬡ Crawlix</h1>
+<h1>◆ Onyx</h1>
 <p><strong>Self-hosted web scraping & browser automation API with a beautiful dashboard</strong></p>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-7c6cf0.svg)](LICENSE)
@@ -14,7 +14,7 @@
 
 ---
 
-Crawlix is a **self-hosted scraping API** that gives you a single `/fetch` endpoint capable of:
+Onyx is a **self-hosted scraping API** that gives you a single `/fetch` endpoint capable of:
 
 - **Rendering JavaScript** via headless Chromium (Playwright)
 - **Impersonating real browsers** via `curl-cffi` (no bot detection)
@@ -58,7 +58,7 @@ It ships with a full **web dashboard** so you can use it without writing any cod
 
 ---
 
-## 🆚 Why Crawlix over managed SaaS (e.g., Firecrawl)?
+## 🆚 Why Onyx over managed SaaS (e.g., Firecrawl)?
 
 1. **Absolute Data Privacy (Self-Hosted)**: Keep sensitive proprietary data entirely inside your VPC (SOC2/HIPAA/GDPR compliant).
 2. **Infinite Scale Economics**: Zero per-request markup. Pay only for your raw compute and wholesale proxy bandwidth.
@@ -71,8 +71,8 @@ It ships with a full **web dashboard** so you can use it without writing any cod
 ### Docker (recommended)
 
 ```bash
-git clone https://github.com/Tejas3479/crawlix.git
-cd crawlix
+git clone https://github.com/Tejas3479/onyx.git
+cd onyx
 
 # Set your API key and start
 API_KEYS=your-secret-key docker-compose up -d
@@ -83,8 +83,8 @@ Open **http://localhost:8000** in your browser.
 ### Local (Python)
 
 ```bash
-git clone https://github.com/Tejas3479/crawlix.git
-cd crawlix
+git clone https://github.com/Tejas3479/onyx.git
+cd onyx
 
 python -m venv .venv
 .venv\Scripts\activate        # Windows

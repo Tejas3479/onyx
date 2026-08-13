@@ -3,11 +3,11 @@ from typing import Any
 import httpx
 
 
-class CrawlixError(Exception):
+class OnyxError(Exception):
     pass
 
-class CrawlixClient:
-    """Synchronous client for the Crawlix API."""
+class OnyxClient:
+    """Synchronous client for the Onyx API."""
     def __init__(self, api_key: str, base_url: str = "http://localhost:8000"):
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
@@ -51,11 +51,11 @@ class CrawlixClient:
                 detail = response.json().get("detail", response.text)
             except Exception:
                 detail = response.text
-            raise CrawlixError(f"HTTP {response.status_code}: {detail}")
+            raise OnyxError(f"HTTP {response.status_code}: {detail}")
 
 
-class AsyncCrawlixClient:
-    """Asynchronous client for the Crawlix API."""
+class AsyncOnyxClient:
+    """Asynchronous client for the Onyx API."""
     def __init__(self, api_key: str, base_url: str = "http://localhost:8000"):
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
@@ -97,4 +97,4 @@ class AsyncCrawlixClient:
                 detail = response.json().get("detail", response.text)
             except Exception:
                 detail = response.text
-            raise CrawlixError(f"HTTP {response.status_code}: {detail}")
+            raise OnyxError(f"HTTP {response.status_code}: {detail}")

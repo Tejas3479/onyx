@@ -7,7 +7,7 @@ from auth import verify_api_key
 from fetcher import playwright_mgr, run_fetch, session_manager
 from models import FetchRequest, FetchResponse
 
-logger = logging.getLogger("crawlix.fetch")
+logger = logging.getLogger("onyx.fetch")
 
 router = APIRouter(tags=["fetch"])
 

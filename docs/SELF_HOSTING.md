@@ -1,6 +1,6 @@
 # Self-Hosting Guide
 
-This guide covers running Crawlix on your own infrastructure — locally, with Docker, or on a VPS.
+This guide covers running Onyx on your own infrastructure — locally, with Docker, or on a VPS.
 
 ---
 
@@ -14,7 +14,7 @@ flowchart LR
     end
 
     subgraph Host["Server Environment (Docker Host / VPS)"]
-        CONTAINER["Crawlix App Container (:8000)"]
+        CONTAINER["Onyx App Container (:8000)"]
         
         subgraph Inside["Internal Components"]
             FASTAPI["FastAPI / Uvicorn"]
@@ -34,7 +34,7 @@ flowchart LR
 
 ## Option 1: Docker (Recommended)
 
-Docker is the easiest way to run Crawlix. It bundles Python, Playwright, Chromium, and all dependencies.
+Docker is the easiest way to run Onyx. It bundles Python, Playwright, Chromium, and all dependencies.
 
 ### Prerequisites
 - [Docker](https://docs.docker.com/get-docker/)
@@ -44,8 +44,8 @@ Docker is the easiest way to run Crawlix. It bundles Python, Playwright, Chromiu
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/Tejas3479/crawlix.git
-cd crawlix
+git clone https://github.com/Tejas3479/onyx.git
+cd onyx
 
 # 2. Start the stack
 API_KEYS=your-secret-key docker-compose up -d
@@ -61,8 +61,8 @@ Edit `docker-compose.yml` to set your config permanently:
 
 ```yaml
 services:
-  crawlix:
-    image: crawlix:latest
+  onyx:
+    image: onyx:latest
     build: .
     ports:
       - "8000:8000"
@@ -83,10 +83,10 @@ docker-compose up -d --build
 
 ```bash
 # View logs
-docker logs crawlix_server -f
+docker logs onyx_server -f
 
 # Restart
-docker restart crawlix_server
+docker restart onyx_server
 
 # Stop
 docker-compose down
@@ -107,8 +107,8 @@ docker-compose up -d --build
 
 ```bash
 # 1. Clone
-git clone https://github.com/Tejas3479/crawlix.git
-cd crawlix
+git clone https://github.com/Tejas3479/onyx.git
+cd onyx
 
 # 2. Create virtual environment
 python -m venv .venv
@@ -155,8 +155,8 @@ sudo apt update
 sudo apt install -y python3.11 python3.11-venv python3-pip git redis-server
 
 # Clone and install
-git clone https://github.com/Tejas3479/crawlix.git
-cd crawlix
+git clone https://github.com/Tejas3479/onyx.git
+cd onyx
 python3.11 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -164,9 +164,9 @@ playwright install chromium
 playwright install-deps chromium
 
 # Run API with systemd (persistent)
-sudo tee /etc/systemd/system/crawlix-api.service << EOF
+sudo tee /etc/systemd/system/onyx-api.service << EOF
 [Unit]
-Description=Crawlix Scraping API
+Description=Onyx Scraping API
 After=network.target
 
 [Service]
@@ -183,9 +183,9 @@ WantedBy=multi-user.target
 EOF
 
 # Run Background Worker with systemd
-sudo tee /etc/systemd/system/crawlix-worker.service << EOF
+sudo tee /etc/systemd/system/onyx-worker.service << EOF
 [Unit]
-Description=Crawlix Background Worker
+Description=Onyx Background Worker
 After=network.target redis-server.service
 
 [Service]
@@ -201,8 +201,8 @@ WantedBy=multi-user.target
 EOF
 
 sudo systemctl daemon-reload
-sudo systemctl enable crawlix-api crawlix-worker
-sudo systemctl start crawlix-api crawlix-worker
+sudo systemctl enable onyx-api onyx-worker
+sudo systemctl start onyx-api onyx-worker
 ```
 
 ### Nginx reverse proxy (optional)
@@ -253,7 +253,7 @@ server {
 - The default `allow_credentials=False` is safe with wildcard origins
 
 ### SSRF Protection
-- Crawlix validates all target URLs with async DNS resolution before fetching
+- Onyx validates all target URLs with async DNS resolution before fetching
 - Private IPs (`10.x`, `192.168.x`, `127.x`, `169.254.x`) are blocked by default
 - Only disable `SSRF_CHECK` in isolated development environments
 

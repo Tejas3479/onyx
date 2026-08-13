@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 import httpx
 from playwright.async_api import Page
 
-logger = logging.getLogger("crawlix.captcha")
+logger = logging.getLogger("onyx.captcha")
 
 class BaseCaptchaSolver(ABC):
     def __init__(self, api_key: str):

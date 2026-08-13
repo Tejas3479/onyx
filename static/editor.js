@@ -321,7 +321,7 @@ export function parseActions() {
   return actions;
 }
 
-const ENV_STORAGE_KEY = "crawlix_env_keys";
+const ENV_STORAGE_KEY = "onyx_env_keys";
 
 export function envLoadKeys() {
   try { return JSON.parse(localStorage.getItem(ENV_STORAGE_KEY) || "[]"); }
@@ -341,7 +341,7 @@ export function envApplyKey(value) {
   state.apiKey = value;
   const input = document.getElementById("api-key-input");
   if (input) input.value = value;
-  localStorage.setItem("crawlix_key", value);
+  localStorage.setItem("onyx_key", value);
   checkHealth();
 }
 
@@ -477,7 +477,7 @@ export function setupEnvPanel() {
   if (rawInput) {
     rawInput.addEventListener("input", e => {
       state.apiKey = e.target.value.trim();
-      localStorage.setItem("crawlix_key", state.apiKey);
+      localStorage.setItem("onyx_key", state.apiKey);
       envRender();
       checkHealth();
     });

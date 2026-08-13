@@ -1,7 +1,14 @@
 # Changelog
 
-All notable changes to Crawlix are documented here.  
+All notable changes to Onyx are documented here.  
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+
+---
+
+## [2.0.0] — 2026-08-13
+
+### Changed
+- Forked from Crawlix. Rebranded as Onyx.
 
 ---
 
@@ -58,7 +65,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **LOW** — Proxy regex `r'[,\n\r]+'` → `r'[,\r\n]+'` to correctly handle Windows CRLF in textareas.
 
 ### Renamed
-- Project renamed from **FetchAPI** to **Crawlix** across all files (app.py, fetcher.py, index.html, app.js, docker-compose.yml, localStorage keys, CSS classes, logger namespaces).
+- Project renamed from **FetchAPI** to **Onyx** across all files (app.py, fetcher.py, index.html, app.js, docker-compose.yml, localStorage keys, CSS classes, logger namespaces).
 
 ---
 

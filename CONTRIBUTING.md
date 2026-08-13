@@ -1,4 +1,4 @@
-# Contributing to Crawlix
+# Contributing to Onyx
 
 Thank you for your interest in contributing! Here's how to get started.
 
@@ -7,8 +7,8 @@ Thank you for your interest in contributing! Here's how to get started.
 ## Development Setup
 
 ```bash
-git clone https://github.com/Tejas3479/crawlix.git
-cd crawlix
+git clone https://github.com/Tejas3479/onyx.git
+cd onyx
 
 python -m venv .venv
 .venv\Scripts\activate        # Windows
@@ -31,7 +31,7 @@ arq worker.WorkerSettings
 ## Project Structure
 
 ```
-crawlix/
+onyx/
 ├── app.py              # FastAPI lifespan and server setup
 ├── database.py         # SQLAlchemy models (Postgres/SQLite)
 ├── models.py           # Pydantic validation schemas
@@ -78,4 +78,4 @@ Please include:
 - OS and Python version
 - Steps to reproduce
 - Expected vs actual behaviour
-- Relevant logs (from `docker logs crawlix_server` or terminal output)
+- Relevant logs (from `docker logs onyx_server` or terminal output)

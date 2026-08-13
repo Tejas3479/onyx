@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-about: Create a report to help us improve Crawlix
+about: Create a report to help us improve Onyx
 title: '[BUG] '
 labels: bug
 assignees: ''
@@ -29,7 +29,7 @@ Include error log output or API response body:
 **Environment (please complete the following information):**
  - OS: [e.g. Ubuntu 22.04, Windows 11]
  - Execution Mode: [Docker / Local Python]
- - Crawlix Version: [e.g. 1.1.0]
+ - Onyx Version: [e.g. 1.1.0]
  - Browser Engine: [curl-cffi / Playwright]
 
 **Additional Context**

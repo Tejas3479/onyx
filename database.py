@@ -9,7 +9,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlmodel import JSON, Column, Field, SQLModel, String
 
 # Retrieve DATABASE_URL from env, default to local SQLite
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///data/crawlix.db")
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///data/onyx.db")
 
 # PostgreSQL gets production-grade connection pool settings;
 # SQLite uses StaticPool internally and does not support these options.

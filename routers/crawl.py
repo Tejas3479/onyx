@@ -18,7 +18,7 @@ from database import BatchJob, async_session_maker
 from fetcher import crawl_manager
 from models import CrawlRequest
 
-logger = logging.getLogger("crawlix.crawl")
+logger = logging.getLogger("onyx.crawl")
 
 router = APIRouter(tags=["crawl"])
 

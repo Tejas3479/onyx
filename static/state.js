@@ -1,5 +1,5 @@
 export const state = {
-  apiKey: localStorage.getItem("crawlix_key") || "",
+  apiKey: localStorage.getItem("onyx_key") || "",
   currentSessionId: null,
   activeTab: "preview",
   lastResponse: null,
@@ -16,13 +16,13 @@ export const MAX_HISTORY = 20;
 // State Persistence logic for Request Builder
 export function saveBuilderState() {
   if (state.lastRequest) {
-    localStorage.setItem("crawlix_builder_state", JSON.stringify(state.lastRequest));
+    localStorage.setItem("onyx_builder_state", JSON.stringify(state.lastRequest));
   }
 }
 
 export function loadBuilderState() {
   try {
-    const data = localStorage.getItem("crawlix_builder_state");
+    const data = localStorage.getItem("onyx_builder_state");
     if (data) {
       return JSON.parse(data);
     }

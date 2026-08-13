@@ -69,7 +69,7 @@ export async function performFetchAPI(reqBody) {
 
 export function saveToHistory(req, response) {
   try {
-    let history = JSON.parse(localStorage.getItem("crawlix_history") || "[]");
+    let history = JSON.parse(localStorage.getItem("onyx_history") || "[]");
     history.unshift({
       id: Date.now(),
       timestamp: new Date().toISOString(),
@@ -83,7 +83,7 @@ export function saveToHistory(req, response) {
       response
     });
     if (history.length > MAX_HISTORY) history = history.slice(0, MAX_HISTORY);
-    localStorage.setItem("crawlix_history", JSON.stringify(history));
+    localStorage.setItem("onyx_history", JSON.stringify(history));
   } catch (e) { }
 }
 
@@ -95,13 +95,13 @@ export function downloadSessionsCsv(sessions) {
   }
   let csvContent = "Session ID,Engine,Requests,Cookies,Created At,Last Active\n";
   sessions.forEach(s => {
-    csvContent += \`"\${s.session_id}","\${s.engine}",\${s.request_count},\${s.cookie_count},"\${s.created_at}","\${s.last_active}"\n\`;
+    csvContent += `"${s.session_id}","${s.engine}",${s.request_count},${s.cookie_count},"${s.created_at}","${s.last_active}"\n`;
   });
   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = \`crawlix-sessions-\${Date.now()}.csv\`;
+  a.download = `onyx-sessions-${Date.now()}.csv`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -119,7 +119,7 @@ export function downloadSessionsJson(sessions) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = \`crawlix-sessions-\${Date.now()}.json\`;
+  a.download = `onyx-sessions-${Date.now()}.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

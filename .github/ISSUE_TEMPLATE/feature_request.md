@@ -1,6 +1,6 @@
 ---
 name: Feature Request
-about: Suggest an idea or feature for Crawlix
+about: Suggest an idea or feature for Onyx
 title: '[FEAT] '
 labels: enhancement
 assignees: ''
@@ -16,7 +16,7 @@ A clear and concise description of what you want to happen.
 A clear and concise description of any alternative solutions or features you'd considered.
 
 **Use Case / Benefit**
-Explain how this feature will benefit Crawlix users or improve developer workflow.
+Explain how this feature will benefit Onyx users or improve developer workflow.
 
 **Additional Context**
 Add any other context or screenshots about the feature request here.

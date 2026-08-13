@@ -1,6 +1,6 @@
 # Security Policy
 
-Crawlix takes the security of our project and users seriously.
+Onyx takes the security of our project and users seriously.
 
 ## Supported Versions
 
@@ -16,9 +16,9 @@ We release security updates for the following versions:
 
 **Please do not report security vulnerabilities through public GitHub issues.**
 
-If you discover a potential security vulnerability in Crawlix (such as an SSRF bypass, authentication flaw, or injection vector), please report it responsibly:
+If you discover a potential security vulnerability in Onyx (such as an SSRF bypass, authentication flaw, or injection vector), please report it responsibly:
 
-1. **Email us directly:** Send details to `security@crawlix.dev` or submit a private vulnerability report via GitHub.
+1. **Email us directly:** Send details to `security@onyx.dev` or submit a private vulnerability report via GitHub.
 2. **Include details:**
    - Steps to reproduce the issue
    - Proof-of-concept payload or snippet
@@ -33,9 +33,9 @@ If you discover a potential security vulnerability in Crawlix (such as an SSRF b
 
 ## Security Best Practices for Self-Hosting
 
-When running Crawlix in production, ensure you follow our security guidelines:
+When running Onyx in production, ensure you follow our security guidelines:
 
-- **API Keys:** Never expose Crawlix to the public internet without specifying strong API keys via `API_KEYS`.
+- **API Keys:** Never expose Onyx to the public internet without specifying strong API keys via `API_KEYS`.
 - **SSRF Protection:** Keep `DISABLE_SSRF_CHECK=false` in production to prevent unauthorized access to local/private network ranges.
 - **CORS Configuration:** Restrict `CORS_ORIGINS` to trusted domains rather than relying on wildcard origins when credentials are involved.
-- **Network Isolation:** Run Crawlix inside an isolated container network with limited egress permissions where appropriate.
+- **Network Isolation:** Run Onyx inside an isolated container network with limited egress permissions where appropriate.

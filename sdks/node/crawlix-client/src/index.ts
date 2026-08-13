@@ -1,1 +1,1 @@
-export { CrawlixClient, CrawlixError, ClientOptions } from './client';
+export { OnyxClient, OnyxError, ClientOptions } from './client';

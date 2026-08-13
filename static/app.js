@@ -6,13 +6,13 @@ import { renderCrawls, startCrawlJob, setupCrawlPolling, setupCrawlDownload, set
 import { initAdmin, renderAdmin } from './admin.js';
 
 window.addEventListener("unhandledrejection", (event) => {
-  console.error("[Crawlix Error Boundary] Unhandled Promise Rejection:", event.reason);
+  console.error("[Onyx Error Boundary] Unhandled Promise Rejection:", event.reason);
   const msg = event.reason?.message || (typeof event.reason === "string" ? event.reason : "An unexpected error occurred");
   showToast("Background error: " + msg, "error", 4000);
 });
 
 window.onerror = function (message, source, lineno, colno, error) {
-  console.error("[Crawlix Error Boundary] Global JS Error:", message, source, lineno, colno, error);
+  console.error("[Onyx Error Boundary] Global JS Error:", message, source, lineno, colno, error);
   showToast("UI Error: " + message, "error", 4000);
   return false;
 };
@@ -42,7 +42,7 @@ export function renderTab(tabName) {
       let injectedHtml = data.content;
       const selectorHelperScript = `
         <style>
-          .crawlix-highlight {
+          .onyx-highlight {
             outline: 2px dashed #7c6cf0 !important;
             outline-offset: -2px !important;
             cursor: pointer !important;
@@ -52,14 +52,14 @@ export function renderTab(tabName) {
           window.addEventListener('DOMContentLoaded', () => {
             let lastEl = null;
             document.body.addEventListener('mousemove', (e) => {
-              if (lastEl) lastEl.classList.remove('crawlix-highlight');
+              if (lastEl) lastEl.classList.remove('onyx-highlight');
               if (e.target !== document.body && e.target !== document.documentElement) {
-                e.target.classList.add('crawlix-highlight');
+                e.target.classList.add('onyx-highlight');
                 lastEl = e.target;
               }
             });
             document.body.addEventListener('mouseout', (e) => {
-              if (lastEl) lastEl.classList.remove('crawlix-highlight');
+              if (lastEl) lastEl.classList.remove('onyx-highlight');
             });
             document.body.addEventListener('click', (e) => {
               e.preventDefault();
@@ -72,7 +72,7 @@ export function renderTab(tabName) {
                   let selector = el.nodeName.toLowerCase();
                   if (el.className) {
                     const classes = Array.from(el.classList)
-                      .filter(c => c !== 'crawlix-highlight')
+                      .filter(c => c !== 'onyx-highlight')
                       .join('.');
                     if (classes) selector += '.' + classes;
                   }
@@ -87,7 +87,7 @@ export function renderTab(tabName) {
                 return path.join(' > ');
               }
               const selector = getSelector(e.target);
-              window.parent.postMessage({ type: 'crawlix-selector-select', selector }, '*');
+              window.parent.postMessage({ type: 'onyx-selector-select', selector }, '*');
             });
           });
         </script>
@@ -208,13 +208,13 @@ export function renderHistory() {
   const list = document.getElementById("history-list");
   if (!list) return;
   let history;
-  try { history = JSON.parse(localStorage.getItem("crawlix_history") || "[]"); } 
+  try { history = JSON.parse(localStorage.getItem("onyx_history") || "[]"); } 
   catch (e) { history = []; }
   
   if (history.length === 0) {
     list.innerHTML = `
       <div class="empty-state" style="padding: 24px; text-align: center;">
-        <div style="margin-bottom: 8px; font-weight: 500; color: var(--text-primary);">Welcome to Crawlix</div>
+        <div style="margin-bottom: 8px; font-weight: 500; color: var(--text-primary);">Welcome to Onyx</div>
         <div style="margin-bottom: 16px; font-size: 13px; color: var(--text-secondary);">Set API key &rarr; Fetch example.com</div>
         <button id="first-run-fetch-btn" class="send-btn" style="padding: 8px 16px; font-size: 13px;">Set API key &rarr; Fetch example.com</button>
       </div>`;
@@ -387,7 +387,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (historyClearBtn) {
     historyClearBtn.addEventListener("click", () => {
       if (!confirm("Clear all request history?")) return;
-      localStorage.removeItem("crawlix_history");
+      localStorage.removeItem("onyx_history");
       renderHistory();
       showToast("History cleared", "info", 1500);
     });
@@ -407,7 +407,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   window.addEventListener("message", (e) => {
-    if (e.data && e.data.type === "crawlix-selector-select") {
+    if (e.data && e.data.type === "onyx-selector-select") {
       const selector = e.data.selector;
       const fieldName = prompt("Auto-generate schema field from this element?\\n\\nEnter a field name (e.g., 'title', 'price', 'author'):");
       

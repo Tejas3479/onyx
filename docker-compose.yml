@@ -1,10 +1,10 @@
 version: '3.8'
 
 services:
-  crawlix:
+  onyx:
     build: .
-    image: crawlix:latest
-    container_name: crawlix_server
+    image: onyx:latest
+    container_name: onyx_server
     ports:
       - "8000:8000"
     environment:
@@ -13,7 +13,7 @@ services:
       - SESSION_TTL_MINUTES=30
       - MAX_SESSIONS=100
       - REDIS_URL=redis://redis:6379/0
-      - DATABASE_URL=postgresql+asyncpg://crawlix:crawlix@postgres:5432/crawlix
+      - DATABASE_URL=postgresql+asyncpg://onyx:onyx@postgres:5432/onyx
     volumes:
       - data_volume:/app/data
     depends_on:
@@ -25,7 +25,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: crawlix_redis
+    container_name: onyx_redis
     ports:
       - "6379:6379"
     volumes:
@@ -34,17 +34,17 @@ services:
 
   postgres:
     image: postgres:16-alpine
-    container_name: crawlix_postgres
+    container_name: onyx_postgres
     environment:
-      POSTGRES_USER: crawlix
-      POSTGRES_PASSWORD: crawlix
-      POSTGRES_DB: crawlix
+      POSTGRES_USER: onyx
+      POSTGRES_PASSWORD: onyx
+      POSTGRES_DB: onyx
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U crawlix"]
+      test: ["CMD-SHELL", "pg_isready -U onyx"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -52,12 +52,12 @@ services:
 
   worker:
     build: .
-    image: crawlix:latest
-    container_name: crawlix_worker
+    image: onyx:latest
+    container_name: onyx_worker
     command: arq worker.WorkerSettings
     environment:
       - REDIS_URL=redis://redis:6379/0
-      - DATABASE_URL=postgresql+asyncpg://crawlix:crawlix@postgres:5432/crawlix
+      - DATABASE_URL=postgresql+asyncpg://onyx:onyx@postgres:5432/onyx
     volumes:
       - data_volume:/app/data
     depends_on:

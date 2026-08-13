@@ -1,9 +1,9 @@
 import axios, { AxiosInstance } from 'axios';
 
-export class CrawlixError extends Error {
+export class OnyxError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'CrawlixError';
+    this.name = 'OnyxError';
   }
 }
 
@@ -12,7 +12,7 @@ export interface ClientOptions {
   baseUrl?: string;
 }
 
-export class CrawlixClient {
+export class OnyxClient {
   private client: AxiosInstance;
 
   constructor(options: ClientOptions) {
@@ -76,8 +76,8 @@ export class CrawlixClient {
   private handleError(error: any): never {
     if (error.response) {
       const detail = error.response.data?.detail || error.response.data;
-      throw new CrawlixError(`HTTP ${error.response.status}: ${JSON.stringify(detail)}`);
+      throw new OnyxError(`HTTP ${error.response.status}: ${JSON.stringify(detail)}`);
     }
-    throw new CrawlixError(error.message);
+    throw new OnyxError(error.message);
   }
 }

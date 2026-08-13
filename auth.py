@@ -7,7 +7,7 @@ from sqlalchemy import select
 
 from database import ApiKey, async_session_maker
 
-logger = logging.getLogger("crawlix.auth")
+logger = logging.getLogger("onyx.auth")
 
 # API KEY AUTH
 VALID_KEYS: set[str] = {
