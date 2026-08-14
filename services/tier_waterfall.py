@@ -46,9 +46,14 @@ async def _check_tier_2(
     query: str, specs: dict | None, department: str | None
 ) -> dict | None:
     """Tier 2: Check department's own last purchase price."""
-    # TODO: Phase 2 — implement via department_lpp.check_department_lpp()
+    from services.department_lpp import check_department_lpp
+
     logger.debug("Tier 2: Checking department LPP for query=%s, dept=%s", query, department)
-    return None
+    try:
+        return await check_department_lpp(query, specs, department)
+    except Exception as e:
+        logger.warning("Tier 2 check failed: %s", e)
+        return None
 
 
 async def _run_tier_3(query: str, specs: dict | None) -> list[dict]:

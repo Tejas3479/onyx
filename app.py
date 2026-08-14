@@ -21,7 +21,7 @@ from fetcher import (
     playwright_mgr,
     session_manager,
 )
-from routers import admin_router, benchmark_router, crawl_router, fetch_router, health_router
+from routers import admin_router, benchmark_router, crawl_router, department_lpp_router, fetch_router, health_router
 from services.session_manager import redis_client
 
 # Set up logging configuration with SensitiveDataFilter
@@ -269,6 +269,7 @@ async def resource_limits_middleware(request: Request, call_next):
 # Include Routers
 app.include_router(health_router)
 app.include_router(benchmark_router)
+app.include_router(department_lpp_router)
 app.include_router(fetch_router)
 app.include_router(crawl_router)
 app.include_router(admin_router)
