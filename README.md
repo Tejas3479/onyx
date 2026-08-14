@@ -1,278 +1,232 @@
 <div align="center">
 
 <h1>◆ Onyx</h1>
-<p><strong>Self-hosted web scraping & browser automation API with a beautiful dashboard</strong></p>
+<p><strong>AI-Powered Price Reasonability & Market Survey Platform for Public Procurement</strong></p>
+<p><em>Fully compliant with General Financial Rules (GFR) 2017 Rule 149(vii) & Manual for Procurement of Goods</em></p>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-7c6cf0.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-60a5fa.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.111+-34d399.svg)](https://fastapi.tiangolo.com/)
+[![GFR Rule 149(vii)](https://img.shields.io/badge/Compliance-GFR%20Rule%20149(vii)-059669.svg)](https://doe.gov.in)
 [![Docker](https://img.shields.io/badge/Docker-ready-60a5fa.svg)](docker-compose.yml)
-[![Python SDK](https://img.shields.io/badge/SDK-Python-blue.svg)](sdks/python/)
-[![Node SDK](https://img.shields.io/badge/SDK-Node.js-green.svg)](sdks/node/)
+[![Test Suite](https://img.shields.io/badge/Tests-Passing%20(15%2F15)-brightgreen.svg)](tests/)
 
 </div>
 
 ---
 
-Onyx is a **self-hosted scraping API** that gives you a single `/fetch` endpoint capable of:
+## 🏛️ What is Onyx?
 
-- **Rendering JavaScript** via headless Chromium (Playwright)
-- **Impersonating real browsers** via `curl-cffi` (no bot detection)
-- **Extracting structured data** using LLMs (OpenAI, Anthropic, Gemini)
-- **Crawling entire websites** with configurable depth and domain limits
-- **Managing browser sessions** with persistent cookies
+**Onyx** is an automated price benchmarking and reasonability platform built for government departments, public sector units (PSUs), and procurement officers. It establishes legally defensible, audit-ready price reasonability by strictly executing the **GFR 2017 Rule 149(vii)** order of precedence:
 
-It ships with a full **web dashboard** so you can use it without writing any code.
+1. **Tier 0 — Notified Rates & Rate Contracts**: Official DGS&D and Ministry-notified rates.
+2. **Tier 1 — GeM Business Analytics & LPP**: GeM Last Purchase Price (LPP) and verified marketplace catalog listings.
+3. **Tier 2 — Department's Own LPP**: Internal historical purchase data uploaded via CSV/Excel with fuzzy matching (`rapidfuzz`).
+4. **Tier 3 — Multi-Source Online Market Survey**: Parallel real-time web surveys across GeM, Amazon India, IndiaMART, Flipkart, CPPP, and Google Shopping with automated outlier filtering and statistical confidence scoring.
+5. **Tier 4 — Non-Standard Item Estimator**: Spec-similarity extrapolation, landed import cost modeling (AliExpress/Customs), and automated Local Purchase Committee (LPC) referral workflows for custom equipment (waveguides, antennae, SDRs, bespoke fabrications).
 
----
-
-## ✨ Features
-
-| Feature | Details |
-|---------|---------|
-| 🌐 **JS Rendering** | Headless Chromium via Playwright — handles SPAs, infinite scroll, dynamic content |
-| 🕵️ **Browser Impersonation** | `curl-cffi` impersonates Chrome/Firefox/Edge TLS fingerprints |
-| 🤖 **LLM Extraction** | Extract structured JSON via OpenAI, Anthropic, or Gemini |
-| 🕷️ **Site Crawling** | Recursive crawl with max pages, max depth, domain limiting |
-| 🔐 **Session Management** | Persistent browser sessions with cookie sharing |
-| 🛡️ **SSRF Protection** | Async DNS validation blocks internal/private address access |
-| 🎯 **CSS Selector Targeting** | Extract specific DOM subtrees before processing |
-| 📷 **Screenshots** | Capture full-page screenshots as base64 PNG/JPEG |
-| ⚡ **Proxy Support** | Rotate proxies per request (comma/newline separated) |
-| 🧩 **Browser Actions** | Click, type, scroll, wait, hover — before scraping |
-| 🔑 **API Key Auth** | Multi-key authentication via environment variable |
-| 🧠 **AI Vector Pipelines** | Auto-push scraped embeddings to Pinecone, Weaviate, Supabase |
-| 🧩 **Anti-Bot / Captcha** | Native 2Captcha & CapSolver support for complex bot protections |
-| ⏰ **Scheduled Crawls** | Cron-based scheduling via ARQ worker |
-| 📊 **Timing Waterfall** | Real server-side timing: Security / Connect / TTFB / Processing |
-
-### Dashboard Features
-- 🕐 **Request History** — last 20 requests in localStorage, click-to-replay
-- 🗝️ **Environment Variables Panel** — save named API keys (Production, Test, Staging)
-- ⌨️ **Keyboard Shortcuts** — `Ctrl+Enter` sends, `Ctrl+K` focuses URL
-- 🌓 **Preview Theme Toggle** — light/dark iframe background
-- 👁️ **Visibility-aware Polling** — pauses health checks when tab is hidden
-- 🔒 **XSS-safe JSON Tree** — HTML-escaped key/value rendering
+Onyx combines this procurement intelligence with a high-performance **underlying scraping, browser automation (Playwright), and anti-bot evasion engine (`curl-cffi`)**.
 
 ---
 
----
-
-## 🆚 Why Onyx over managed SaaS (e.g., Firecrawl)?
-
-1. **Absolute Data Privacy (Self-Hosted)**: Keep sensitive proprietary data entirely inside your VPC (SOC2/HIPAA/GDPR compliant).
-2. **Infinite Scale Economics**: Zero per-request markup. Pay only for your raw compute and wholesale proxy bandwidth.
-3. **Bring Your Own LLM**: Connect directly to OpenAI/Anthropic/Gemini using your own API keys at wholesale token prices.
-4. **Complete Engine Control**: Modify the core Playwright logic, inject specific browser cookies, and integrate custom 2Captcha/CapSolver logic natively.
-5. **BYO Proxies**: Connect your own dedicated residential/datacenter proxies to avoid sharing IP pools.
-
-## 🚀 Quick Start
-
-### Docker (recommended)
-
-```bash
-git clone https://github.com/Tejas3479/onyx.git
-cd onyx
-
-# Set your API key and start
-API_KEYS=your-secret-key docker-compose up -d
-```
-
-Open **http://localhost:8000** in your browser.
-
-### Local (Python)
-
-```bash
-git clone https://github.com/Tejas3479/onyx.git
-cd onyx
-
-python -m venv .venv
-.venv\Scripts\activate        # Windows
-# source .venv/bin/activate   # Linux/Mac
-
-pip install -r requirements.txt
-playwright install chromium
-
-python -m alembic upgrade head
-
-API_KEYS=your-secret-key uvicorn app:app --reload
-```
-
-*(Note: To use background crawling and batch features locally, you must also have Redis running and start the worker in a separate terminal via `arq worker.WorkerSettings`.)*
-
----
-
-## 🔧 Configuration
-
-All configuration is via environment variables:
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `API_KEYS` | *(required)* | Comma-separated list of valid API keys |
-| `MAX_PLAYWRIGHT_INSTANCES` | `3` | Max concurrent headless browser contexts |
-| `SESSION_TTL_MINUTES` | `30` | Browser session idle timeout |
-| `MAX_SESSIONS` | `100` | Maximum concurrent sessions |
-| `CORS_ORIGINS` | `*` | Allowed CORS origins (comma-separated) |
-| `DISABLE_SSRF_CHECK` | `false` | Set `true` to allow private IPs (dev only) |
-
----
-
-## 📡 API Reference
-
-See [docs/API.md](docs/API.md) for full request/response schemas.
-
-**Base URL:** `http://localhost:8000`
-
-| Method | Endpoint | Category | Description |
-|--------|----------|----------|-------------|
-| `POST` | `/fetch` | Core | Fetch a URL (fast HTTP or Playwright JS rendering) |
-| `POST` | `/api/crawl` | Crawl | Start an asynchronous recursive site crawl |
-| `GET` | `/api/crawl` | Crawl | List all recent crawl jobs |
-| `GET` | `/api/crawl/{id}` | Crawl | Poll crawl job status & retrieved pages |
-| `DELETE` | `/api/crawl/{id}` | Crawl | Delete a crawl job and its results |
-| `POST` | `/api/crawl/batch` | Batch | Start a batch crawl job via file upload |
-| `GET` | `/api/crawl/batch/{id}` | Batch | Poll batch crawl status & progress |
-| `GET` | `/api/crawl/batch/{id}/download` | Batch | Download batch results in CSV/JSON format |
-| `GET` | `/api/sessions` | Sessions | List active browser sessions |
-| `DELETE` | `/api/sessions/{id}` | Sessions | Destroy a browser session and release cookies |
-| `POST` | `/api/destinations` | Admin | Create a webhook or Pinecone destination |
-| `GET` | `/api/destinations` | Admin | List all registered destinations |
-| `DELETE` | `/api/destinations/{id}` | Admin | Delete a destination |
-| `POST` | `/api/schedule` | Admin | Create a recurring cron crawl schedule |
-| `GET` | `/api/schedule` | Admin | List all active scheduled crawls |
-| `DELETE` | `/api/schedule/{id}` | Admin | Delete a scheduled crawl |
-| `POST` | `/api/proxies` | Admin | Add a proxy server URL (`http://user:pass@host:port`) |
-| `GET` | `/api/proxies` | Admin | List all registered proxy servers |
-| `DELETE` | `/api/proxies/{id}` | Admin | Delete a proxy server by ID |
-| `GET` | `/api/health` | System | Service health check (no auth required) |
-
-### Quick example
-
-```bash
-curl -X POST http://localhost:8000/fetch \
-  -H "x-api-key: your-secret-key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "url": "https://example.com",
-    "output_format": "markdown",
-    "render_js": false
-  }'
-```
-
----
-
-## 🏗️ Architecture
+## ⚡ The 5-Tier Waterfall Architecture
 
 ```mermaid
 flowchart TD
-    subgraph Client["Client Layer"]
-        UI["Web Dashboard (Vanilla JS)"]
-        API_CLIENT["API Clients (cURL, Python, Node.js)"]
-    end
-
-    subgraph Server["FastAPI Application (app.py)"]
-        FASTAPI("FastAPI (Main App)")
-        ROUTES("Endpoints (/fetch, /api/*)")
-        AUTH("API Key Auth")
-    end
+    START([User Enters Procurement Query<br/>Product Name / Specs / Dept / Category]) --> T0{Tier 0: Notified Rate?}
     
-    subgraph Storage["State & Persistence"]
-        DB[("PostgreSQL / SQLite<br/><i>Jobs, API Keys, Proxies</i>")]
-        REDIS[("Redis<br/><i>ARQ Queue & PubSub</i>")]
-    end
-
-    subgraph Background["ARQ Worker (worker.py)"]
-        CRON["Cron Scheduler"]
-        BATCH["Batch/Crawl Processor"]
-    end
-
-    subgraph Engine["Fetch Engine (services/)"]
-        SSRF["SSRF Guard (Async DNS)"]
-        ROUTER{"Execution Path"}
-        PW["Playwright (Chromium)<br/><i>JS Rendering & Actions</i>"]
-        CURL["curl-cffi<br/><i>TLS Impersonation</i>"]
-        CAPTCHA["Captcha Solver<br/><i>2Captcha / CapSolver</i>"]
-        PROCESS["Content Processing<br/><i>Markdown & CSS Filtering</i>"]
-        LLM["AI Extraction<br/><i>OpenAI / Anthropic / Gemini</i>"]
-        VECTOR["Vector DB Pipeline<br/><i>Pinecone / Weaviate / Supabase</i>"]
-    end
-
-    UI -->|REST API| ROUTES
-    API_CLIENT -->|x-api-key| AUTH
-    AUTH -->|Validate via ENV or DB| DB
-    AUTH --> ROUTES
-    ROUTES -->|State Sync| DB
-    ROUTES -->|Queue Job| REDIS
-    REDIS -->|Process Task| BATCH
-    CRON -->|Trigger Scheduled| REDIS
-    ROUTES --> SSRF
-    BATCH --> SSRF
-    SSRF --> ROUTER
-    ROUTER -->|render_js: true| PW
-    ROUTER -->|render_js: false| CURL
-    PW -->|Bypass Anti-Bot| CAPTCHA
-    CAPTCHA --> PW
-    PW --> PROCESS
-    CURL --> PROCESS
-    PROCESS -->|Optional LLM| LLM
-    LLM --> VECTOR
-    LLM --> ROUTES
-    PROCESS --> ROUTES
-    VECTOR --> BATCH
+    T0 -- "✓ Match in DGS&D / Ministry Rates" --> R0[Resolve at Tier 0: Notified Rate]
+    T0 -- "✗ No Rate Contract" --> T1{Tier 1: GeM Analytics / LPP?}
+    
+    T1 -- "✓ Found GeM LPP / Catalog Price" --> R1[Resolve at Tier 1: GeM LPP]
+    T1 -- "✗ Not on GeM / No LPP" --> T2{Tier 2: Dept Own LPP?}
+    
+    T2 -- "✓ Found in Uploaded Dept Records" --> R2[Resolve at Tier 2: Dept LPP]
+    T2 -- "✗ No Dept History" --> T3{Tier 3: Market Survey?}
+    
+    T3 -- "✓ Multiple Online Quotes Found" --> R3[Resolve at Tier 3: Market Survey<br/>Amazon, GeM, IndiaMART, Flipkart, Google]
+    T3 -- "✗ No Direct Listings" --> T4[Tier 4: Non-Standard Estimator<br/>Spec-Similarity / Landed Import / LPC Referral]
+    
+    R0 --> REPORT[Generate GFR Reasonability Certificate & PDF/HTML Report]
+    R1 --> REPORT
+    R2 --> REPORT
+    R3 --> REPORT
+    T4 --> REPORT
 ```
 
-### Request Lifecycle
+---
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Client
-    participant API as FastAPI (app.py)
-    participant Worker as ARQ Worker
-    participant DB as PostgreSQL & Redis
-    participant Guard as SSRF Guard
-    participant Engine as Fetch Engine
-    participant AI as AI & Vector DBs
+## ✨ Key Features
 
-    Client->>API: POST /api/crawl (Batch Job)
-    API->>DB: Save Job State
-    API->>DB: Queue Task in Redis
-    API-->>Client: 202 Accepted (Job ID)
-    
-    Worker->>DB: Dequeue Task
-    Worker->>Guard: Async DNS Check
-    
-    alt Restricted IP
-        Guard-->>Worker: Blocked (Internal IP)
-        Worker->>DB: Mark Job Failed
-    else Valid Public IP
-        Guard->>Engine: Execute Fetch (Playwright / curl-cffi)
-        
-        alt Anti-Bot Detected
-            Engine->>Engine: Trigger Captcha Solver
-        end
-        
-        opt AI Extraction & Vector Push
-            Engine->>AI: Send content + prompt
-            AI-->>Engine: Structured JSON (Embeddings)
-            Engine->>AI: Push to Pinecone/Weaviate/Supabase
-        end
-        
-        Worker->>DB: Update Job Results
-        opt Webhook Configured
-            Worker->>Client: POST Webhook Payload
-        end
-    end
+| Capability | Description |
+|---|---|
+| ⚖️ **GFR 149(vii) Waterfall Engine** | Deterministic waterfall traversal prioritizing statutory rate contracts & GeM before market surveys. |
+| 📊 **Department LPP Ingestion** | Upload internal department procurement archives (CSV/Excel) with fuzzy semantic matching and date weighting. |
+| 🌐 **Parallel Market Survey Orchestrator** | Concurrently queries 6+ e-marketplaces (GeM, Amazon, IndiaMART, Flipkart, CPPP, Google Shopping) using `asyncio.gather`. |
+| 📐 **Non-Standard Equipment Estimator** | Solves complex bespoke procurement (waveguides, microwave components, SDRs) via spec-similarity ratios and landed cost basis. |
+| 📑 **Audit-Ready GFR Reports** | One-click export of formal Price Reasonability Certificates with complete tier traces, price statistics, and signature blocks. |
+| 🖥️ **GSA CALC-Inspired UI** | Fast, data-dense web interface (`/benchmark.html`) designed for procurement workflows without visual clutter. |
+| 🕵️ **Stealth Browser Engine** | Built-in Playwright headless browser pool + `curl-cffi` TLS fingerprint impersonation for robust data extraction. |
+| 🛡️ **SSRF & Security Isolation** | Async DNS validation blocks internal subnet access; JWT auth + API key header validation for protected endpoints. |
+
+---
+
+## 🚀 Quick Start
+
+### 1. Run with Docker (Recommended)
+
+```bash
+git clone https://github.com/Tejas3479/onyx.git
+cd onyx
+
+# Launch Onyx services (Web app + Worker + Redis)
+API_KEYS=onyx-secret-key docker-compose up -d
 ```
+
+Open **http://localhost:8000/benchmark.html** in your browser.
+
+---
+
+### 2. Local Python Setup
+
+```bash
+git clone https://github.com/Tejas3479/onyx.git
+cd onyx
+
+# Create and activate virtual environment
+python -m venv .venv
+# On Windows:
+.venv\Scripts\activate
+# On Linux/macOS:
+# source .venv/bin/activate
+
+# Install dependencies and Playwright browser binaries
+pip install -r requirements.txt
+playwright install chromium
+
+# Launch the server (seeds reference data automatically on startup)
+uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+```
+
+- **Price Benchmark UI:** `http://localhost:8000/benchmark.html`
+- **Department LPP Upload:** `http://localhost:8000/upload_history.html`
+- **Advanced Scraping Console:** `http://localhost:8000/`
+- **Interactive API Docs (Swagger):** `http://localhost:8000/docs`
+
+---
+
+## 📡 API Reference Overview
+
+See [docs/API.md](docs/API.md) for full request/response schemas and examples.
+
+### Core Procurement & Benchmark Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/v1/benchmark` | Execute 5-tier GFR waterfall price reasonability check |
+| `POST` | `/api/v1/estimate/non-standard` | Dedicated Tier 4 estimator for custom/uncommon items |
+| `POST` | `/api/v1/department-lpp/upload` | Upload Department LPP records (CSV / XLSX) |
+| `GET` | `/api/v1/department-lpp/records` | Query uploaded department purchase history |
+| `DELETE` | `/api/v1/department-lpp/records` | Clear department purchase records |
+| `POST` | `/api/v1/reports/generate-from-query` | Generate official GFR HTML/PDF Reasonability Report |
+| `POST` | `/auth/register` | Register procurement officer account |
+| `POST` | `/auth/login` | Login and receive JWT access token |
+
+### Scraping & Browser Automation Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/fetch` | Direct fetch with TLS impersonation or Playwright JS rendering |
+| `POST` | `/api/crawl` | Initiate asynchronous recursive crawler |
+| `GET` | `/api/sessions` | Inspect active persistent browser sessions |
+| `GET` | `/api/health` | System health check (No auth required) |
+
+---
+
+## 🧪 Example API Query
+
+### Run Price Benchmark
+
+```bash
+curl -X POST http://localhost:8000/api/v1/benchmark \
+  -H "Content-Type: application/json" \
+  -d '{
+    "product_name": "HP ProBook 450",
+    "query_mode": "product",
+    "department": "Ministry of Electronics & IT",
+    "category": "IT Equipment",
+    "quantity": 5
+  }'
+```
+
+### Example Response (Tier 1 Match)
+
+```json
+{
+  "search_id": "7f8b9a1c-3e2d-4f1a-b5c6-d7e8f9a0b1c2",
+  "query": "HP ProBook 450",
+  "query_mode": "product",
+  "status": "completed",
+  "resolved_tier": 1,
+  "tier_label": "GeM Business Analytics",
+  "primary_result": {
+    "tier": 1,
+    "tier_label": "GeM Business Analytics",
+    "source_name": "GeM Last Purchase Price",
+    "price": 71500.0,
+    "currency": "INR",
+    "confidence": "HIGH",
+    "reliability": "HIGH",
+    "evidence_url": "https://mkp.gem.gov.in/laptops/hp-probook-450-g10/p-5123456",
+    "rationale": "GeM Last Purchase Price for 'HP ProBook 450 G10 Notebook PC'. Match score: 100%."
+  },
+  "tier_trace": {
+    "tier_0": "No matching active notified rate found",
+    "tier_1": "Found: GeM Last Purchase Price (₹71,500.00)"
+  },
+  "statistics": {
+    "min": 71500.0,
+    "max": 74200.0,
+    "avg": 72850.0,
+    "median": 72850.0,
+    "count": 2
+  },
+  "sources_checked": 2,
+  "results_found": 2
+}
+```
+
+---
+
+## 🏛️ GFR 2017 Rule 149(vii) Compliance Matrix
+
+| GFR Mandate | Onyx Implementation | Verification Mechanism |
+|---|---|---|
+| **1. Notified Rates / DGS&D** | `Tier 0` checks active ministry notified rate schedules. | Authority, contract number, and validity dates checked against DB. |
+| **2. GeM Business Analytics / LPP** | `Tier 1` queries GeM LPP caches and verified catalog endpoints. | GeM Product ID, seller identification, and transaction history. |
+| **3. Department LPP** | `Tier 2` inspects uploaded historical department orders. | Semantic text + spec similarity scoring (`rapidfuzz`). |
+| **4. Market Survey** | `Tier 3` executes multi-marketplace parallel survey. | Interquartile outlier exclusion + reliability scoring. |
+| **5. Non-Standard Items** | `Tier 4` performs spec-ratio extrapolation & landed import costing. | Rationale output with mandatory Local Purchase Committee referral. |
+
+---
+
+## 🛠️ Tech Stack
+
+- **Backend Framework:** FastAPI, Uvicorn, SQLModel / SQLAlchemy, Pydantic v2
+- **Data & Matching:** SQLite / PostgreSQL, `rapidfuzz`, `pandas`, `openpyxl`
+- **Scraping Engine:** Playwright (Chromium), `curl-cffi` (HTTP/2 & TLS impersonation)
+- **Reporting:** Jinja2, HTML5 Print Stylesheets / WeasyPrint
+- **Frontend:** Vanilla JS (ES6+), GSA CALC Design System, Semantic CSS
 
 ---
 
 ## 🤝 Contributing
 
-1. Fork the repo
+1. Fork the repository
 2. Create a feature branch: `git checkout -b feat/your-feature`
-3. Commit your changes: `git commit -m 'feat: add your feature'`
-4. Push and open a Pull Request
+3. Verify test suite: `pytest` and `ruff check .`
+4. Commit your changes: `git commit -m 'feat: add feature'`
+5. Push to branch and open a Pull Request
 
 ---
 

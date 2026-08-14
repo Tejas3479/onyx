@@ -5,10 +5,35 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [2.0.0] — 2026-08-13
+## [2.0.0] — 2026-08-14
+
+### Major Release — GFR Rule 149(vii) Price Reasonability Engine
+Transformed Onyx into an automated price reasonability and market survey platform for government procurement, implementing the 5-tier waterfall hierarchy prescribed under General Financial Rules (GFR) 2017 Rule 149(vii).
+
+### Added
+- **5-Tier GFR Waterfall Engine (`services/tier_waterfall.py`)**:
+  - **Tier 0 (Notified Rates):** Automated lookup of DGS&D rate contracts and Ministry-notified rates (`services/gem_rate_lookup.py`).
+  - **Tier 1 (GeM Business Analytics & LPP):** Querying GeM Last Purchase Price (LPP) and verified marketplace catalog listings.
+  - **Tier 2 (Department LPP Ingestion):** Historical department purchase record uploads (`.csv`, `.xlsx`) with fuzzy matching via `rapidfuzz` (`services/department_lpp.py`).
+  - **Tier 3 (Multi-Source Online Market Survey):** Parallel concurrent querying of 6+ marketplaces (GeM, Amazon India, IndiaMART, Flipkart, CPPP, Google Shopping) with automatic outlier detection and reliability scoring (`services/search_orchestrator.py`).
+  - **Tier 4 (Non-Standard Item Estimator):** Estimation for custom items (waveguides, antennas, SDRs) via spec-similarity ratios, landed import cost modeling (AliExpress/Customs), and automatic Local Purchase Committee referral recommendations (`services/non_standard_estimator.py`).
+- **GFR Reasonability Certificate & Report Generator (`services/report_generator.py`)**:
+  - Audit-ready Jinja2 HTML/PDF report template (`templates/report_template.html`) including tier traces, pricing statistics (Min/Max/Avg/Median), and officer signature blocks.
+- **Dedicated Procurement Endpoints**:
+  - `POST /api/v1/benchmark` — Main price reasonability waterfall endpoint.
+  - `POST /api/v1/estimate/non-standard` — Standalone Tier 4 estimator endpoint.
+  - `POST /api/v1/department-lpp/upload` & `GET /api/v1/department-lpp/records` — Department LPP management.
+  - `POST /api/v1/reports/generate-from-query` — Direct report generation.
+- **Authentication & User Management (`routers/auth_routes.py`)**:
+  - User registration and JWT-based authentication for procurement officers.
+- **GSA CALC-Inspired UI (`static/benchmark.html`)**:
+  - Clean, responsive, government-grade user interface with real-time tier badge indicators, interactive waterfall traces, pricing statistics, and direct report downloads.
+- **Automated Data Seeder (`services/data_seeder.py`)**:
+  - Startup loader for DGS&D notified rates (`data/notified_rates.json`), GeM LPP reference cache (`data/gem_lpp_seed.json`), and demo survey cache (`data/demo_cache.json`).
 
 ### Changed
-- Forked from Crawlix. Rebranded as Onyx.
+- Rebranded and refactored core architecture from scraper-only to dual procurement intelligence + scraping platform.
+- Upgraded test suite with full tier waterfall coverage.
 
 ---
 
@@ -29,8 +54,6 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Dockerfile now runs `apt-get` update prior to `playwright install-deps` to fix broken package cache.
 
 ---
-
-
 
 ## [1.1.0] — 2026-07-22
 
@@ -58,29 +81,3 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **HIGH** — `cleanup_loop` did not handle `asyncio.CancelledError` on shutdown. Wrapped in `try/except asyncio.CancelledError`.
 - **HIGH** — `MAX_SESSIONS` eviction used `>` instead of `>=`, allowing one extra session beyond the limit.
 - **HIGH** — Crawl section shared `#extraction-prompt-textarea` with the request builder. Now uses dedicated `#crawl-extraction-prompt`.
-- **MEDIUM** — Dead code: `parseHeaders()` and `parseCookies()` (128 lines) removed. Superseded by `parseKvContainer()`.
-- **MEDIUM** — Duplicate `import os as _os` in `app.py`. Removed.
-- **MEDIUM** — Wrong LLM placeholder model `gemini-3.1` (non-existent). Fixed to `gemini-3.6-flash`.
-- **MEDIUM** — `outline: none` on all elements broke keyboard focus visibility. Replaced with `*:focus-visible` accessible outline.
-- **LOW** — Proxy regex `r'[,\n\r]+'` → `r'[,\r\n]+'` to correctly handle Windows CRLF in textareas.
-
-### Renamed
-- Project renamed from **FetchAPI** to **Onyx** across all files (app.py, fetcher.py, index.html, app.js, docker-compose.yml, localStorage keys, CSS classes, logger namespaces).
-
----
-
-## [1.0.0] — Initial Release
-
-- FastAPI backend with `/fetch`, `/crawl`, `/api/sessions`, `/health` endpoints
-- `curl-cffi` for fast, TLS-fingerprint-aware HTTP requests
-- Playwright for headless JS rendering (Chromium)
-- LLM extraction via OpenAI, Anthropic, Gemini
-- Session management with TTL-based cleanup
-- Browser actions: click, type, scroll, wait, hover
-- Screenshot capture (PNG/JPEG, base64)
-- CSS selector targeting
-- Proxy rotation support
-- SSRF protection via DNS validation
-- Web dashboard (vanilla HTML/CSS/JS)
-- Docker + docker-compose support
-- API key authentication

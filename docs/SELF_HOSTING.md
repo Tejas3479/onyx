@@ -1,6 +1,6 @@
 # Self-Hosting Guide
 
-This guide covers running Onyx on your own infrastructure — locally, with Docker, or on a VPS.
+This guide covers running Onyx on your own infrastructure — locally, with Docker, or on a cloud VPS.
 
 ---
 
@@ -9,7 +9,7 @@ This guide covers running Onyx on your own infrastructure — locally, with Dock
 ```mermaid
 flowchart LR
     subgraph Public["Public Network"]
-        CLIENT["Web Browser / API Client"]
+        CLIENT["Web Browser / Procurement Officer / API Client"]
         NGINX["Nginx Reverse Proxy (HTTPS 443)"]
     end
 
@@ -18,6 +18,8 @@ flowchart LR
         
         subgraph Inside["Internal Components"]
             FASTAPI["FastAPI / Uvicorn"]
+            WATERFALL["5-Tier Waterfall Engine"]
+            SEEDER["Database & Auto-Seeder"]
             PW["Headless Chromium Pool"]
             SESSIONS["Session Manager"]
         end
@@ -26,6 +28,8 @@ flowchart LR
     CLIENT -->|HTTPS| NGINX
     NGINX -->|Proxy Pass :8000| CONTAINER
     CONTAINER --> FASTAPI
+    FASTAPI --> WATERFALL
+    FASTAPI --> SEEDER
     FASTAPI --> PW
     FASTAPI --> SESSIONS
 ```
@@ -34,7 +38,7 @@ flowchart LR
 
 ## Option 1: Docker (Recommended)
 
-Docker is the easiest way to run Onyx. It bundles Python, Playwright, Chromium, and all dependencies.
+Docker is the easiest way to run Onyx. It bundles Python 3.11+, Playwright, Chromium, and all required procurement & scraping dependencies.
 
 ### Prerequisites
 - [Docker](https://docs.docker.com/get-docker/)
@@ -51,49 +55,15 @@ cd onyx
 API_KEYS=your-secret-key docker-compose up -d
 
 # 3. Verify it's running
-curl http://localhost:8000/health
+curl http://localhost:8000/api/health
 # → {"status":"ok"}
 ```
 
-### Using docker-compose.yml directly
-
-Edit `docker-compose.yml` to set your config permanently:
-
-```yaml
-services:
-  onyx:
-    image: onyx:latest
-    build: .
-    ports:
-      - "8000:8000"
-    environment:
-      - API_KEYS=key1,key2,key3
-      - MAX_PLAYWRIGHT_INSTANCES=5
-      - SESSION_TTL_MINUTES=60
-      - MAX_SESSIONS=200
-    restart: unless-stopped
-```
-
-Then:
-```bash
-docker-compose up -d --build
-```
-
-### Useful Docker commands
-
-```bash
-# View logs
-docker logs onyx_server -f
-
-# Restart
-docker restart onyx_server
-
-# Stop
-docker-compose down
-
-# Rebuild after code changes
-docker-compose up -d --build
-```
+Access the web interfaces:
+- **Price Benchmark Console:** `http://localhost:8000/benchmark.html`
+- **Department LPP Upload:** `http://localhost:8000/upload_history.html`
+- **Scraper / Crawler Dashboard:** `http://localhost:8000/`
+- **API Swagger Docs:** `http://localhost:8000/docs`
 
 ---
 
@@ -117,37 +87,34 @@ python -m venv .venv
 .venv\Scripts\activate
 
 # Linux / Mac
-source .venv/bin/activate
+# source .venv/bin/activate
 
 # 3. Install dependencies
 pip install -r requirements.txt
 
 # 4. Install Playwright browser
 playwright install chromium
-playwright install-deps chromium   # Linux only
+# Linux only:
+# playwright install-deps chromium
 
 # 5. Set environment variables and run the API
-$env:API_KEYS = "your-secret-key"           # Windows PowerShell
-# export API_KEYS="your-secret-key"         # Linux/Mac
-
-uvicorn app:app --host 0.0.0.0 --port 8000 --reload
-
-# 6. In a separate terminal, ensure Redis is running and start the background worker:
+# Windows PowerShell:
 $env:API_KEYS = "your-secret-key"
-arq worker.WorkerSettings
-```
+# Linux/Mac:
+# export API_KEYS="your-secret-key"
 
-Open http://localhost:8000 — the dashboard loads automatically.
+# 6. Launch the server (reference data seeds automatically on first run)
+uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+```
 
 ---
 
-## Option 3: VPS / Cloud VM
+## Option 3: VPS / Cloud VM (Ubuntu 22.04 / 24.04)
 
 ### Recommended specs
-- 1 CPU, 2 GB RAM minimum (Playwright/Chromium is memory-hungry)
-- 2 CPU, 4 GB RAM for production workloads
+- 2 CPU, 4 GB RAM minimum for production workloads (Playwright & parallel multi-source querying)
 
-### Setup (Ubuntu 22.04)
+### Setup
 
 ```bash
 # Install Python 3.11 and Redis
@@ -166,7 +133,7 @@ playwright install-deps chromium
 # Run API with systemd (persistent)
 sudo tee /etc/systemd/system/onyx-api.service << EOF
 [Unit]
-Description=Onyx Scraping API
+Description=Onyx Procurement & Scraping API
 After=network.target
 
 [Service]
@@ -182,7 +149,7 @@ Restart=on-failure
 WantedBy=multi-user.target
 EOF
 
-# Run Background Worker with systemd
+# Run Background Worker with systemd (optional, for batch crawls)
 sudo tee /etc/systemd/system/onyx-worker.service << EOF
 [Unit]
 Description=Onyx Background Worker
@@ -205,37 +172,19 @@ sudo systemctl enable onyx-api onyx-worker
 sudo systemctl start onyx-api onyx-worker
 ```
 
-### Nginx reverse proxy (optional)
-
-```nginx
-server {
-    listen 80;
-    server_name your-domain.com;
-
-    location / {
-        proxy_pass http://127.0.0.1:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_read_timeout 120s;
-    }
-}
-```
-
 ---
 
 ## Environment Variables Reference
 
 | Variable | Default | Description |
-|----------|---------|-------------|
+|---|---|---|
 | `API_KEYS` | *(required)* | Comma-separated API keys, e.g. `key1,key2` |
+| `JWT_SECRET_KEY` | `onyx-dev-secret...` | Secret key used for signing authentication JWT tokens |
+| `JWT_EXPIRE_MINUTES` | `480` (8 hours) | Token validity duration |
 | `RATE_LIMIT_PER_MINUTE` | `60` | Max requests per minute per IP / API key (set to `0` to disable) |
-| `MAX_REQUEST_BODY_SIZE` | `10485760` (10MB) | Hard cap on HTTP request payload size in bytes |
-| `MAX_CRAWL_PAGES` | `100` | Hard cap on max pages per crawl job |
-| `MAX_CRAWL_DEPTH` | `10` | Hard cap on max crawl link depth |
 | `MAX_PLAYWRIGHT_INSTANCES` | `3` | Max concurrent headless browser instances |
-| `PLAYWRIGHT_SLOT_TIMEOUT` | `30` | Timeout in seconds waiting for an available browser slot |
-| `SESSION_TTL_MINUTES` | `30` | How long an idle session lives before cleanup |
-| `MAX_SESSIONS` | `100` | Total max concurrent sessions |
+| `SESSION_TTL_MINUTES` | `30` | How long an idle browser session lives before cleanup |
+| `MAX_SESSIONS` | `100` | Total max concurrent persistent sessions |
 | `CORS_ORIGINS` | `*` | Comma-separated allowed origins, e.g. `https://myapp.com` |
 | `DISABLE_SSRF_CHECK` | `false` | Allow requests to private IPs (⚠️ dev only) |
 
@@ -243,47 +192,13 @@ server {
 
 ## Security Considerations
 
-### API Keys
-- Use long, random keys: `python -c "import secrets; print(secrets.token_hex(32))"`
-- Rotate keys by updating `API_KEYS` and restarting
-- Never commit keys to version control — use `.env` files or secrets managers
-
-### CORS
-- In production, set `CORS_ORIGINS=https://yourdomain.com` instead of `*`
-- The default `allow_credentials=False` is safe with wildcard origins
+### API Keys & JWT Secrets
+- In production, configure a cryptographic random string for `JWT_SECRET_KEY`:
+  ```bash
+  python -c "import secrets; print(secrets.token_hex(32))"
+  ```
+- Store secrets using environment files or cloud secret managers (AWS Secrets Manager, HashiCorp Vault).
 
 ### SSRF Protection
-- Onyx validates all target URLs with async DNS resolution before fetching
-- Private IPs (`10.x`, `192.168.x`, `127.x`, `169.254.x`) are blocked by default
-- Only disable `SSRF_CHECK` in isolated development environments
-
-### Firewall
-```bash
-# Allow only port 8000 from specific IPs
-ufw allow from YOUR_IP to any port 8000
-ufw deny 8000
-```
-
----
-
-## Scaling
-
-### Increase concurrency
-
-```yaml
-environment:
-  - MAX_PLAYWRIGHT_INSTANCES=10   # More parallel JS renders
-  - MAX_SESSIONS=500              # More persistent sessions
-```
-
-Each Playwright instance uses ~150–300 MB RAM. Plan accordingly.
-
-### Multiple workers
-
-For CPU-bound LLM extraction workloads:
-
-```bash
-uvicorn app:app --host 0.0.0.0 --port 8000 --workers 2
-```
-
-> ⚠️ Playwright sessions are in-process — multi-worker mode means sessions are not shared between workers. Use `render_js: false` + curl-cffi for stateless multi-worker setups.
+- Onyx inspects target URLs with asynchronous DNS resolution before executing any fetch.
+- Private IP spaces (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `127.0.0.0/8`, `169.254.0.0/16`) are blocked by default.
