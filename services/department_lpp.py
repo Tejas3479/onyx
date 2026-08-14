@@ -191,10 +191,10 @@ async def parse_upload(
             continue
 
         # Optional fields
-        vendor = str(row.get("vendor_name", "")).strip()
-        vendor = vendor if vendor and vendor != "nan" else None
-        source_doc = str(row.get("source_document", "")).strip()
-        source_doc = source_doc if source_doc and source_doc != "nan" else None
+        vendor_val = str(row.get("vendor_name", "")).strip()
+        vendor = vendor_val if vendor_val and vendor_val != "nan" else None
+        source_doc_val = str(row.get("source_document", "")).strip()
+        source_doc = source_doc_val if source_doc_val and source_doc_val != "nan" else None
 
         # Build specs dict from any extra columns
         specs: dict[str, Any] = {}
@@ -277,7 +277,7 @@ async def check_department_lpp(
         stmt = select(DepartmentPurchaseRecord)
         if department:
             stmt = stmt.where(DepartmentPurchaseRecord.department == department)
-        stmt = stmt.order_by(DepartmentPurchaseRecord.purchase_date.desc())  # type: ignore[union-attr]
+        stmt = stmt.order_by(DepartmentPurchaseRecord.purchase_date.desc())  # type: ignore[attr-defined]
 
         result = await session.execute(stmt)
         records = result.scalars().all()
@@ -366,7 +366,7 @@ async def list_department_records(
         stmt = select(DepartmentPurchaseRecord)
         if department:
             stmt = stmt.where(DepartmentPurchaseRecord.department == department)
-        stmt = stmt.order_by(DepartmentPurchaseRecord.purchase_date.desc())  # type: ignore[union-attr]
+        stmt = stmt.order_by(DepartmentPurchaseRecord.purchase_date.desc())  # type: ignore[attr-defined]
         stmt = stmt.offset(offset).limit(limit)
 
         result = await session.execute(stmt)

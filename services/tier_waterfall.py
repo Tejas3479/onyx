@@ -188,7 +188,7 @@ async def get_price_benchmark(
 
     return {
         "resolved_tier": resolved_tier,
-        "tier_label": TIER_LABELS.get(resolved_tier, "Unknown"),
+        "tier_label": TIER_LABELS.get(resolved_tier, "Unknown") if resolved_tier is not None else "Unknown",
         "primary_result": primary_result,
         "all_results": all_results,
         "tier_trace": tier_trace,
