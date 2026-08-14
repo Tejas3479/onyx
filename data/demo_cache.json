@@ -1,0 +1,153 @@
+{
+    "cisco catalyst 9300": [
+        {
+            "product_name": "Cisco Catalyst 9300-48P-A Switch",
+            "price": 285000.00,
+            "currency": "INR",
+            "source_name": "GeM Portal",
+            "source_url": "https://mkp.gem.gov.in/search?q=cisco+catalyst+9300",
+            "vendor_name": "Cisco Systems India",
+            "availability": "In Stock",
+            "confidence": "HIGH",
+            "reliability": "HIGH",
+            "extraction_completeness": 0.85,
+            "is_demo_data": true
+        },
+        {
+            "product_name": "Cisco C9300-48P-A Catalyst 9300 48-port",
+            "price": 278500.00,
+            "currency": "INR",
+            "source_name": "Amazon India",
+            "source_url": "https://www.amazon.in/s?k=cisco+catalyst+9300",
+            "vendor_name": "TechnoSys Solutions",
+            "availability": "In Stock",
+            "confidence": "HIGH",
+            "reliability": "HIGH",
+            "extraction_completeness": 0.85,
+            "is_demo_data": true
+        },
+        {
+            "product_name": "Cisco Catalyst 9300 Series Switch",
+            "price": 292000.00,
+            "currency": "INR",
+            "source_name": "IndiaMART",
+            "source_url": "https://dir.indiamart.com/search.mp?ss=cisco+catalyst+9300",
+            "vendor_name": "Network Solutions Ltd",
+            "availability": "In Stock",
+            "confidence": "MEDIUM",
+            "reliability": "HIGH",
+            "extraction_completeness": 0.7,
+            "is_demo_data": true
+        }
+    ],
+    "hp probook 450": [
+        {
+            "product_name": "HP ProBook 450 G10 Laptop",
+            "price": 72500.00,
+            "currency": "INR",
+            "source_name": "Amazon India",
+            "source_url": "https://www.amazon.in/s?k=hp+probook+450",
+            "vendor_name": "HP India Store",
+            "availability": "In Stock",
+            "confidence": "HIGH",
+            "reliability": "HIGH",
+            "extraction_completeness": 0.85,
+            "is_demo_data": true
+        },
+        {
+            "product_name": "HP ProBook 450 G10 i5 13th Gen",
+            "price": 69999.00,
+            "currency": "INR",
+            "source_name": "Flipkart",
+            "source_url": "https://www.flipkart.com/search?q=hp+probook+450",
+            "vendor_name": "RetailNet",
+            "availability": "In Stock",
+            "confidence": "HIGH",
+            "reliability": "HIGH",
+            "extraction_completeness": 0.85,
+            "is_demo_data": true
+        },
+        {
+            "product_name": "HP ProBook 450 G10 Business Laptop",
+            "price": 74200.00,
+            "currency": "INR",
+            "source_name": "GeM Portal",
+            "source_url": "https://mkp.gem.gov.in/search?q=hp+probook+450",
+            "vendor_name": "HP India Sales",
+            "availability": "In Stock",
+            "confidence": "HIGH",
+            "reliability": "HIGH",
+            "extraction_completeness": 0.85,
+            "is_demo_data": true
+        }
+    ],
+    "a4 paper 75gsm": [
+        {
+            "product_name": "JK Copier A4 75gsm Paper (500 Sheets)",
+            "price": 245.00,
+            "currency": "INR",
+            "source_name": "Amazon India",
+            "source_url": "https://www.amazon.in/s?k=a4+paper+75gsm",
+            "vendor_name": "JK Paper Ltd",
+            "availability": "In Stock",
+            "confidence": "HIGH",
+            "reliability": "HIGH",
+            "extraction_completeness": 0.85,
+            "is_demo_data": true
+        },
+        {
+            "product_name": "A4 Size Copier Paper 75 GSM",
+            "price": 230.00,
+            "currency": "INR",
+            "source_name": "GeM Portal",
+            "source_url": "https://mkp.gem.gov.in/search?q=a4+paper+75gsm",
+            "vendor_name": "BILT Paper",
+            "availability": "In Stock",
+            "confidence": "HIGH",
+            "reliability": "HIGH",
+            "extraction_completeness": 0.85,
+            "is_demo_data": true
+        }
+    ],
+    "dell latitude 5540": [
+        {
+            "product_name": "Dell Latitude 5540 i7 Business Laptop",
+            "price": 98500.00,
+            "currency": "INR",
+            "source_name": "Amazon India",
+            "source_url": "https://www.amazon.in/s?k=dell+latitude+5540",
+            "vendor_name": "Dell Official Store",
+            "availability": "In Stock",
+            "confidence": "HIGH",
+            "reliability": "HIGH",
+            "extraction_completeness": 0.85,
+            "is_demo_data": true
+        },
+        {
+            "product_name": "Dell Latitude 5540 Laptop",
+            "price": 102000.00,
+            "currency": "INR",
+            "source_name": "GeM Portal",
+            "source_url": "https://mkp.gem.gov.in/search?q=dell+latitude+5540",
+            "vendor_name": "Dell Technologies India",
+            "availability": "In Stock",
+            "confidence": "HIGH",
+            "reliability": "HIGH",
+            "extraction_completeness": 0.85,
+            "is_demo_data": true
+        },
+        {
+            "product_name": "Dell Latitude 5540",
+            "price": 95800.00,
+            "currency": "INR",
+            "source_name": "Flipkart",
+            "source_url": "https://www.flipkart.com/search?q=dell+latitude+5540",
+            "vendor_name": "ComputerAge",
+            "availability": "In Stock",
+            "confidence": "HIGH",
+            "reliability": "HIGH",
+            "extraction_completeness": 0.85,
+            "is_demo_data": true
+        }
+    ]
+}

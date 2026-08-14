@@ -1,0 +1,152 @@
+[
+    {
+        "item_category": "Stationery",
+        "item_description": "A4 Paper 75gsm (per ream)",
+        "rate": 225.00,
+        "unit": "per ream",
+        "authority": "DGS&D",
+        "contract_number": "DGS&D/RC-2024/STN-001",
+        "valid_from": "2024-04-01",
+        "valid_until": "2027-03-31"
+    },
+    {
+        "item_category": "Stationery",
+        "item_description": "Toner Cartridge HP 26A (CF226A)",
+        "rate": 4200.00,
+        "unit": "per unit",
+        "authority": "DGS&D",
+        "contract_number": "DGS&D/RC-2024/STN-015",
+        "valid_from": "2024-04-01",
+        "valid_until": "2027-03-31"
+    },
+    {
+        "item_category": "IT Equipment",
+        "item_description": "Desktop Computer i5 13th Gen 8GB/512GB SSD",
+        "rate": 42500.00,
+        "unit": "per unit",
+        "authority": "DGS&D",
+        "contract_number": "DGS&D/RC-2024/IT-003",
+        "valid_from": "2024-04-01",
+        "valid_until": "2027-03-31"
+    },
+    {
+        "item_category": "IT Equipment",
+        "item_description": "Laptop i5 13th Gen 16GB/512GB SSD",
+        "rate": 65000.00,
+        "unit": "per unit",
+        "authority": "DGS&D",
+        "contract_number": "DGS&D/RC-2024/IT-007",
+        "valid_from": "2024-04-01",
+        "valid_until": "2027-03-31"
+    },
+    {
+        "item_category": "Networking",
+        "item_description": "24-Port Managed Ethernet Switch",
+        "rate": 18500.00,
+        "unit": "per unit",
+        "authority": "DGS&D",
+        "contract_number": "DGS&D/RC-2024/NET-002",
+        "valid_from": "2024-04-01",
+        "valid_until": "2027-03-31"
+    },
+    {
+        "item_category": "Networking",
+        "item_description": "48-Port Managed Ethernet Switch",
+        "rate": 35000.00,
+        "unit": "per unit",
+        "authority": "DGS&D",
+        "contract_number": "DGS&D/RC-2024/NET-003",
+        "valid_from": "2024-04-01",
+        "valid_until": "2027-03-31"
+    },
+    {
+        "item_category": "Electrical",
+        "item_description": "Split AC 1.5 Ton 5 Star Inverter",
+        "rate": 38500.00,
+        "unit": "per unit",
+        "authority": "DGS&D",
+        "contract_number": "DGS&D/RC-2024/ELC-011",
+        "valid_from": "2024-04-01",
+        "valid_until": "2027-03-31"
+    },
+    {
+        "item_category": "Electrical",
+        "item_description": "LED Tube Light 20W",
+        "rate": 185.00,
+        "unit": "per unit",
+        "authority": "Ministry of Power",
+        "contract_number": "MoP/EESL/2024/LED-001",
+        "valid_from": "2024-01-01",
+        "valid_until": "2027-12-31"
+    },
+    {
+        "item_category": "Furniture",
+        "item_description": "Executive Office Chair (Mesh Back)",
+        "rate": 8500.00,
+        "unit": "per unit",
+        "authority": "DGS&D",
+        "contract_number": "DGS&D/RC-2024/FRN-006",
+        "valid_from": "2024-04-01",
+        "valid_until": "2027-03-31"
+    },
+    {
+        "item_category": "Furniture",
+        "item_description": "Modular Workstation (4x4 ft)",
+        "rate": 15200.00,
+        "unit": "per unit",
+        "authority": "DGS&D",
+        "contract_number": "DGS&D/RC-2024/FRN-012",
+        "valid_from": "2024-04-01",
+        "valid_until": "2027-03-31"
+    },
+    {
+        "item_category": "AMC Services",
+        "item_description": "Annual Maintenance Contract - Desktop Computer",
+        "rate": 2400.00,
+        "unit": "per unit per year",
+        "authority": "Ministry of Electronics & IT",
+        "contract_number": "MeitY/AMC/2024/IT-001",
+        "valid_from": "2024-04-01",
+        "valid_until": "2027-03-31"
+    },
+    {
+        "item_category": "AMC Services",
+        "item_description": "Annual Maintenance Contract - Printer (Laser)",
+        "rate": 3600.00,
+        "unit": "per unit per year",
+        "authority": "Ministry of Electronics & IT",
+        "contract_number": "MeitY/AMC/2024/IT-005",
+        "valid_from": "2024-04-01",
+        "valid_until": "2027-03-31"
+    },
+    {
+        "item_category": "Services",
+        "item_description": "Manpower - Skilled Labor (per month)",
+        "rate": 22000.00,
+        "unit": "per person per month",
+        "authority": "Ministry of Labour",
+        "contract_number": "MoL/MW/2024-25",
+        "valid_from": "2024-04-01",
+        "valid_until": "2027-03-31"
+    },
+    {
+        "item_category": "Services",
+        "item_description": "Manpower - Unskilled Labor (per month)",
+        "rate": 14500.00,
+        "unit": "per person per month",
+        "authority": "Ministry of Labour",
+        "contract_number": "MoL/MW/2024-25",
+        "valid_from": "2024-04-01",
+        "valid_until": "2027-03-31"
+    },
+    {
+        "item_category": "IT Equipment",
+        "item_description": "UPS 1 KVA Online",
+        "rate": 12000.00,
+        "unit": "per unit",
+        "authority": "DGS&D",
+        "contract_number": "DGS&D/RC-2024/IT-022",
+        "valid_from": "2024-04-01",
+        "valid_until": "2027-03-31"
+    }
+]

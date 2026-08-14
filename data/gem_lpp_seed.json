@@ -1,0 +1,57 @@
+[
+    {
+        "query_matched": "cisco catalyst 9300",
+        "product_name": "Cisco Catalyst 9300-48P-A Network Switch",
+        "gem_product_id": "GEM/2024/S/4892331",
+        "catalog_price": 285000.00,
+        "lpp_price": 278000.00,
+        "source_label": "GeM Catalog Price",
+        "source_url": "https://mkp.gem.gov.in/switches/cisco-catalyst-9300/p-4892331",
+        "seller_name": "Cisco Systems India Pvt Ltd",
+        "specifications": {"ports": 48, "poe": true, "layer": 3, "throughput_gbps": 480}
+    },
+    {
+        "query_matched": "hp probook 450",
+        "product_name": "HP ProBook 450 G10 Notebook PC",
+        "gem_product_id": "GEM/2024/S/5123456",
+        "catalog_price": 74200.00,
+        "lpp_price": 71500.00,
+        "source_label": "GeM LPP (demo)",
+        "source_url": "https://mkp.gem.gov.in/laptops/hp-probook-450-g10/p-5123456",
+        "seller_name": "HP India Sales Pvt Ltd",
+        "specifications": {"processor": "i5-1340P", "ram_gb": 16, "storage_gb": 512, "display_inch": 15.6}
+    },
+    {
+        "query_matched": "dell latitude 5540",
+        "product_name": "Dell Latitude 5540 Business Laptop",
+        "gem_product_id": "GEM/2024/S/5234567",
+        "catalog_price": 102000.00,
+        "lpp_price": 98500.00,
+        "source_label": "GeM Catalog Price",
+        "source_url": "https://mkp.gem.gov.in/laptops/dell-latitude-5540/p-5234567",
+        "seller_name": "Dell Technologies India",
+        "specifications": {"processor": "i7-1365U", "ram_gb": 16, "storage_gb": 512}
+    },
+    {
+        "query_matched": "epson l3250 printer",
+        "product_name": "Epson EcoTank L3250 Wi-Fi Multifunction Printer",
+        "gem_product_id": "GEM/2024/S/3987654",
+        "catalog_price": 14999.00,
+        "lpp_price": 14200.00,
+        "source_label": "GeM LPP (demo)",
+        "source_url": "https://mkp.gem.gov.in/printers/epson-l3250/p-3987654",
+        "seller_name": "Epson India Pvt Ltd",
+        "specifications": {"type": "inkjet", "color": true, "wifi": true}
+    },
+    {
+        "query_matched": "canon imagerunner 2625",
+        "product_name": "Canon imageRUNNER 2625i Multifunction Copier",
+        "gem_product_id": "GEM/2024/S/4567890",
+        "catalog_price": 85000.00,
+        "lpp_price": null,
+        "source_label": "GeM Catalog Price",
+        "source_url": "https://mkp.gem.gov.in/copiers/canon-ir2625i/p-4567890",
+        "seller_name": "Canon India Pvt Ltd",
+        "specifications": {"speed_ppm": 25, "duplex": true, "network": true}
+    }
+]
