@@ -5,6 +5,7 @@ import os
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy import select
@@ -23,6 +24,8 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES", "480"))  # 8 h
 
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
 def _create_token(user_id: str, email: str) -> str:
@@ -104,11 +107,17 @@ async def login(req: UserLogin):
 
 
 @router.get("/me", response_model=UserResponse)
-async def get_me(token: str = Depends(lambda: "")):
+async def get_me(token: str = Depends(oauth2_scheme)):
     """Get current user profile. Requires Authorization header."""
-    # For now, this is a simplified version
-    # In production, extract token from Authorization header
-    raise HTTPException(
-        status_code=501,
-        detail="Use /auth/login to get a token. Full /me endpoint requires auth middleware.",
+    user = await get_current_user(token)
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+        
+    return UserResponse(
+        id=user.id,
+        name=user.name,
+        email=user.email,
+        department=user.department,
+        organization=user.organization,
+        role=user.role,
     )

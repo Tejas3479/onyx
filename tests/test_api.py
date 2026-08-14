@@ -345,7 +345,7 @@ async def test_auth_modes(async_client):
     from database import ApiKey, async_session_maker
 
     async with async_session_maker() as session:
-        session.add(ApiKey(key="db-test-key-001", label="test db key"))
+        session.add(ApiKey(key="db-test-key-001", name="test db key"))
         await session.commit()
 
     r_db_key = await async_client.get(

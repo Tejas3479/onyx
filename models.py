@@ -271,6 +271,13 @@ class ReportRequest(BaseModel):
     department_name: str | None = None
     signatory_name: str | None = None
     include_screenshots: bool = True
+    output_format: str = "html"
+
+class ReportFromQueryRequest(BaseModel):
+    product_name: str
+    department_name: str | None = None
+    signatory_name: str | None = None
+    output_format: str = "html"
 
 
 # ===== ONYX: Tier Waterfall Schemas =====

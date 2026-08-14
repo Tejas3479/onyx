@@ -3,8 +3,12 @@
 import logging
 import uuid
 
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
+
+from database import PriceResult, PriceSearch, async_session_maker
 
 from models import BenchmarkQuery, BenchmarkResponse, TierResult
 from services.tier_waterfall import get_price_benchmark
@@ -79,6 +83,46 @@ async def run_benchmark(query: BenchmarkQuery):
         )
 
     search_id = str(uuid.uuid4())
+
+    try:
+        async with async_session_maker() as session:
+            search_record = PriceSearch(
+                id=search_id,
+                user_id="anonymous",
+                query=query.product_name,
+                query_type=query.query_type,
+                category=query.category,
+                quantity=query.quantity,
+                status="completed",
+                completed_at=datetime.now(timezone.utc),
+                sources_checked=len(result["tier_trace"]),
+                results_found=len(result["all_results"]),
+                resolved_tier=result["resolved_tier"],
+                tier_label=result["tier_label"],
+                tier_skip_reasons=result["tier_trace"],
+                query_mode=query.query_mode,
+                service_type=query.service_type,
+                service_duration=query.service_duration,
+                service_scope=query.service_scope,
+                service_location=query.service_location,
+            )
+            session.add(search_record)
+            
+            for tr in all_tier_results:
+                pr = PriceResult(
+                    search_id=search_id,
+                    source_name=tr.source_name,
+                    source_url=tr.evidence_url or "",
+                    price=tr.price,
+                    currency=tr.currency,
+                    confidence=tr.confidence,
+                    raw_content=tr.rationale,
+                )
+                session.add(pr)
+                
+            await session.commit()
+    except Exception as e:
+        logger.warning(f"Failed to persist benchmark search: {e}")
 
     return BenchmarkResponse(
         search_id=search_id,
