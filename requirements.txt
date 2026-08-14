@@ -26,3 +26,8 @@ python-jose[cryptography]>=3.3.0    # JWT token creation/validation
 passlib[bcrypt]>=1.7.4              # Password hashing
 weasyprint>=61.0                    # HTML → PDF report generation
 python-dotenv>=1.0.0                # .env file loading
+
+rapidfuzz>=3.0.0               # Fuzzy matching for Tier 2/4
+openpyxl>=3.1.0                # Excel file reading for LPP upload
+pandas>=2.0.0                  # CSV/Excel processing for LPP upload
+jinja2>=3.1.0                  # Template rendering for reports

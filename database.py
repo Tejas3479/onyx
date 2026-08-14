@@ -1,6 +1,6 @@
 import os
 import uuid
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from typing import Any
 
 from sqlalchemy import select
@@ -97,6 +97,69 @@ class Proxy(SQLModel, table=True):  # type: ignore[call-arg]
     fail_count: int = Field(default=0)
     last_used_at: datetime | None = None
 
+# ===== ONYX: Tier Waterfall Tables =====
+
+class NotifiedRate(SQLModel, table=True):  # type: ignore[call-arg]
+    """Tier 0 — DGS&D rate contracts / ministry-notified fixed rates."""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
+    item_category: str        # "Stationery", "IT Equipment", "AMC Services"
+    item_description: str     # "A4 Paper 75gsm", "Desktop Computer i5"
+    rate: float
+    unit: str                 # "per ream", "per unit", "per month"
+    currency: str = Field(default="INR")
+    authority: str            # "DGS&D", "Ministry of Finance"
+    contract_number: str | None = None
+    valid_from: date
+    valid_until: date | None = None
+    is_active: bool = Field(default=True)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class GemLPPCache(SQLModel, table=True):  # type: ignore[call-arg]
+    """Tier 1 — Cached GeM catalog prices or BA reference prices."""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
+    query_matched: str         # the search query this was found for
+    product_name: str
+    gem_product_id: str | None = None
+    catalog_price: float | None = None
+    lpp_price: float | None = None    # Last Purchase Price if available
+    source_label: str          # "GeM Catalog Price" or "GeM LPP (demo)"
+    source_url: str | None = None
+    seller_name: str | None = None
+    specifications: dict[str, Any] = Field(default={}, sa_column=Column(JSON))
+    fetched_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    is_demo_data: bool = Field(default=True)  # explicit flag for seeded data
+
+
+class DepartmentPurchaseRecord(SQLModel, table=True):  # type: ignore[call-arg]
+    """Tier 2 — Department's own purchase history, uploaded via CSV."""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
+    department: str
+    item_description: str
+    normalized_item_key: str   # lowercased, stopwords removed, for matching
+    specs: dict[str, Any] = Field(default={}, sa_column=Column(JSON))
+    unit_price: float
+    quantity_purchased: int
+    purchase_date: date
+    vendor_name: str | None = None
+    source_document: str | None = None  # filename of uploaded PO/invoice
+    uploaded_by: str | None = None      # user_id
+    uploaded_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class NonStandardEstimate(SQLModel, table=True):  # type: ignore[call-arg]
+    """Tier 4 — Spec-similarity / should-cost model outputs."""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
+    search_id: str              # FK to PriceSearch
+    method_used: str            # "spec_similarity", "price_per_spec_unit", "insufficient_data"
+    comparable_items: list[dict[str, Any]] = Field(default=[], sa_column=Column(JSON))
+    estimated_price: float | None = None
+    price_range_low: float | None = None
+    price_range_high: float | None = None
+    confidence_rationale: str   # human-readable explanation
+    spec_match_score: float | None = None  # 0.0–1.0
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 
 # ===== ONYX: Price Benchmarking Tables =====
 
@@ -123,6 +186,16 @@ class PriceSearch(SQLModel, table=True):  # type: ignore[call-arg]
     completed_at: datetime | None = None
     sources_checked: int = Field(default=0)
     results_found: int = Field(default=0)
+    
+    # Tier waterfall tracking
+    resolved_tier: int | None = None        # 0–4, which tier produced the result
+    tier_label: str | None = None           # "Notified Rate" / "GeM BA" / etc.
+    tier_skip_reasons: dict[str, Any] = Field(default={}, sa_column=Column(JSON))
+    query_mode: str = Field(default="product")  # "product" or "service"
+    service_type: str | None = None         # AMC, manpower, consulting (if service mode)
+    service_duration: str | None = None
+    service_scope: str | None = None
+    service_location: str | None = None     # location for service queries
 
 
 class PriceResult(SQLModel, table=True):  # type: ignore[call-arg]

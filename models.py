@@ -272,3 +272,111 @@ class ReportRequest(BaseModel):
     signatory_name: str | None = None
     include_screenshots: bool = True
 
+
+# ===== ONYX: Tier Waterfall Schemas =====
+
+
+class RateResult(BaseModel):
+    """Intermediate result from a single tier's lookup function.
+    Used internally by tier services before conversion to TierResult."""
+    source_name: str
+    price: float | None = None
+    price_range_low: float | None = None
+    price_range_high: float | None = None
+    currency: str = "INR"
+    evidence_url: str | None = None
+    rationale: str
+    is_demo_data: bool = False
+    raw_data: dict | None = None  # source-specific metadata
+
+    def as_tier(self, tier_num: int, label: str) -> "TierResult":
+        """Convert to a TierResult for the given tier."""
+        return TierResult(
+            tier=tier_num,
+            tier_label=label,
+            source_name=self.source_name,
+            price=self.price,
+            price_range_low=self.price_range_low,
+            price_range_high=self.price_range_high,
+            currency=self.currency,
+            confidence="HIGH" if self.price else "LOW",
+            reliability="MEDIUM",
+            evidence_url=self.evidence_url,
+            rationale=self.rationale,
+            is_demo_data=self.is_demo_data,
+        )
+
+
+class TierResult(BaseModel):
+    """Result from a single tier in the waterfall."""
+    tier: int  # 0–4
+    tier_label: str
+    source_name: str
+    price: float | None = None
+    price_range_low: float | None = None
+    price_range_high: float | None = None
+    currency: str = "INR"
+    confidence: str  # HIGH / MEDIUM / LOW (extraction completeness)
+    reliability: str  # HIGH / MEDIUM / LOW (price reliability — outlier/cross-check)
+    evidence_url: str | None = None
+    rationale: str  # why this tier was used / what was found
+    is_demo_data: bool = False
+
+
+class BenchmarkQuery(BaseModel):
+    """Main entry point query for the tier waterfall benchmark."""
+    product_name: str = Field(..., min_length=2, max_length=500)
+    query_type: Literal["make_model", "specifications"] = "make_model"
+    query_mode: Literal["product", "service"] = "product"
+    category: str | None = Field(None, max_length=100)
+    quantity: int = Field(1, ge=1, le=10000)
+    department: str | None = Field(None, max_length=200)
+    # Service-specific fields
+    service_type: str | None = Field(None, max_length=100)
+    service_duration: str | None = Field(None, max_length=100)
+    service_scope: str | None = Field(None, max_length=2000)
+    service_location: str | None = Field(None, max_length=200)
+    specs: dict | None = None
+
+
+class BenchmarkResponse(BaseModel):
+    """Full benchmark result with tier waterfall trace."""
+    search_id: str
+    query: str
+    query_mode: str
+    status: str
+    resolved_tier: int
+    tier_label: str
+    primary_result: TierResult
+    all_results: list[TierResult] = []
+    tier_trace: dict = {}  # {"tier_0": "skipped: no rate contract", ...}
+    statistics: dict = {}  # min, max, avg, median
+    sources_checked: int = 0
+    results_found: int = 0
+
+
+class DepartmentUploadRequest(BaseModel):
+    """Request metadata for department purchase history upload."""
+    department: str = Field(..., min_length=2, max_length=200)
+
+
+class DepartmentLPPRecord(BaseModel):
+    """Single record from a department purchase history upload."""
+    item_description: str
+    unit_price: float
+    quantity_purchased: int
+    purchase_date: str  # ISO date string
+    vendor_name: str | None = None
+    specs: dict | None = None
+    source_document: str | None = None
+
+
+class NonStandardEstimateResponse(BaseModel):
+    """Response from the Tier 4 non-standard item estimator."""
+    method_used: str
+    estimated_price: float | None = None
+    price_range_low: float | None = None
+    price_range_high: float | None = None
+    comparable_items: list[dict] = []
+    confidence_rationale: str
+    spec_match_score: float | None = None
