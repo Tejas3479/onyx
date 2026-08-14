@@ -70,9 +70,14 @@ async def _run_tier_3(query: str, specs: dict | None) -> list[dict]:
 
 async def _run_tier_4(query: str, specs: dict | None) -> dict | None:
     """Tier 4: Non-standard item estimation."""
-    # TODO: Phase 4 — implement via non_standard_estimator.estimate_non_standard_item()
+    from services.non_standard_estimator import estimate_non_standard_item
+
     logger.debug("Tier 4: Running non-standard estimator for query=%s", query)
-    return None
+    try:
+        return await estimate_non_standard_item(query, specs)
+    except Exception as e:
+        logger.warning("Tier 4 estimation failed: %s", e)
+        return None
 
 
 async def get_price_benchmark(
