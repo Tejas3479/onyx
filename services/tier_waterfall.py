@@ -58,9 +58,14 @@ async def _check_tier_2(
 
 async def _run_tier_3(query: str, specs: dict | None) -> list[dict]:
     """Tier 3: Run market survey across multiple sources."""
-    # TODO: Phase 3 — implement via search_orchestrator.run_market_survey()
+    from services.search_orchestrator import run_market_survey
+
     logger.debug("Tier 3: Running market survey for query=%s", query)
-    return []
+    try:
+        return await run_market_survey(query, specs)
+    except Exception as e:
+        logger.warning("Tier 3 market survey failed: %s", e)
+        return []
 
 
 async def _run_tier_4(query: str, specs: dict | None) -> dict | None:

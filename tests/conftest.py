@@ -1,13 +1,13 @@
 import os
+import pathlib
 
 import pytest
 
 test_db = "data/test_onyx.db"
-if os.path.exists(test_db):
-    try:
-        os.remove(test_db)
-    except Exception:
-        pass
+# Always remove stale test DB to avoid schema mismatch after model changes
+_test_db_path = pathlib.Path(test_db)
+if _test_db_path.exists():
+    _test_db_path.unlink(missing_ok=True)
 os.environ["DATABASE_URL"] = f"sqlite+aiosqlite:///{test_db}"
 
 from fakeredis import FakeAsyncRedis
@@ -25,3 +25,4 @@ def mock_redis(monkeypatch):
     import routers.health
     monkeypatch.setattr(routers.health, "redis_client", fake_redis)
     yield fake_redis
+
