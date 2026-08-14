@@ -2,13 +2,12 @@
 
 import logging
 import uuid
-from datetime import datetime, timezone
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from models import BenchmarkQuery, BenchmarkResponse, TierResult
-from services.tier_waterfall import TIER_LABELS, get_price_benchmark
+from services.tier_waterfall import get_price_benchmark
 
 logger = logging.getLogger("onyx.benchmark")
 
@@ -40,8 +39,8 @@ async def run_benchmark(query: BenchmarkQuery):
             quantity=query.quantity,
         )
     except Exception as e:
-        logger.error("Benchmark failed: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Benchmark failed: {str(e)}")
+        logger.exception("Benchmark failed")
+        raise HTTPException(status_code=500, detail=f"Benchmark failed: {e!s}")
 
     # Convert raw dicts to TierResult models
     primary = result["primary_result"]

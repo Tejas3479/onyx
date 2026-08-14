@@ -16,7 +16,6 @@ from typing import Any
 import pandas as pd
 from rapidfuzz import fuzz
 from sqlalchemy import select
-from sqlmodel import Session
 
 from database import DepartmentPurchaseRecord, async_session_maker
 
@@ -118,7 +117,7 @@ async def parse_upload(
         else:
             return {"records": [], "errors": ["Unsupported file format. Use CSV or Excel (.xlsx)."], "preview": [], "total_rows": 0}
     except Exception as e:
-        return {"records": [], "errors": [f"Failed to read file: {str(e)}"], "preview": [], "total_rows": 0}
+        return {"records": [], "errors": [f"Failed to read file: {e!s}"], "preview": [], "total_rows": 0}
 
     if df.empty:
         return {"records": [], "errors": ["File is empty."], "preview": [], "total_rows": 0}
@@ -131,8 +130,10 @@ async def parse_upload(
     if missing:
         return {
             "records": [],
-            "errors": [f"Missing required columns: {', '.join(sorted(missing))}. "
-                       f"Found columns: {', '.join(df.columns.tolist())}"],
+            "errors": [(
+                f"Missing required columns: {', '.join(sorted(missing))}. "
+                f"Found columns: {', '.join(df.columns.tolist())}"
+            )],
             "preview": [],
             "total_rows": len(df),
         }
@@ -178,7 +179,7 @@ async def parse_upload(
                 date_str = str(pd_val).strip()
                 for fmt in ("%Y-%m-%d", "%d-%m-%Y", "%d/%m/%Y", "%m/%d/%Y", "%Y/%m/%d"):
                     try:
-                        purchase_dt = datetime.strptime(date_str, fmt).date()
+                        purchase_dt = datetime.strptime(date_str, fmt).replace(tzinfo=timezone.utc).date()
                         break
                     except ValueError:
                         continue
@@ -308,7 +309,7 @@ async def check_department_lpp(
         return None
 
     # Calculate age of the purchase
-    days_ago = (date.today() - best_match.purchase_date).days
+    days_ago = (datetime.now(timezone.utc).date() - best_match.purchase_date).days
     months_ago = days_ago // 30
 
     # Build rationale with staleness note

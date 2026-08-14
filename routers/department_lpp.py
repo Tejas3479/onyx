@@ -106,8 +106,7 @@ async def get_department_records(
       - limit: max records to return (default 50)
       - offset: pagination offset
     """
-    if limit > 200:
-        limit = 200
+    limit = min(limit, 200)
 
     result = await list_department_records(
         department=department,

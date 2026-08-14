@@ -21,7 +21,14 @@ from fetcher import (
     playwright_mgr,
     session_manager,
 )
-from routers import admin_router, benchmark_router, crawl_router, department_lpp_router, fetch_router, health_router
+from routers import (
+    admin_router,
+    benchmark_router,
+    crawl_router,
+    department_lpp_router,
+    fetch_router,
+    health_router,
+)
 from services.session_manager import redis_client
 
 # Set up logging configuration with SensitiveDataFilter
