@@ -7,7 +7,8 @@ from database import PriceResult, PriceSearch, async_session_maker
 
 @pytest.mark.asyncio
 async def test_generate_report_not_found(mock_redis):
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    from httpx import ASGITransport
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.post("/api/v1/reports/generate", json={"search_id": "nonexistent"})
     assert response.status_code == 404
     assert response.json() == {"detail": "Search ID not found"}
@@ -18,6 +19,7 @@ async def test_generate_report_success(mock_redis):
     async with async_session_maker() as session:
         search = PriceSearch(
             id="test-search-123",
+            user_id="test-user",
             query="Laptop",
             quantity=1,
             resolved_tier=3,
@@ -39,7 +41,8 @@ async def test_generate_report_success(mock_redis):
     
     # We won't actually mock weasyprint PDF generation here; if it fails, it will fall back to HTML.
     # The endpoint should return 200 OK.
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    from httpx import ASGITransport
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.post("/api/v1/reports/generate", json={"search_id": "test-search-123"})
         
     assert response.status_code == 200
@@ -59,12 +62,14 @@ async def test_generate_from_query(mock_redis):
         "tier_label": "Market Survey",
         "primary_result": {"price": 1000},
         "all_results": [],
-        "tier_skip_reasons": []
+        "tier_trace": {},
+        "statistics": {}
     }
     
     with patch("routers.reports.get_price_benchmark", return_value=mock_benchmark):
-        async with AsyncClient(app=app, base_url="http://test") as ac:
-            response = await ac.post("/api/v1/reports/generate-from-query", json={"query": "Laptop"})
+        from httpx import ASGITransport
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+            response = await ac.post("/api/v1/reports/generate-from-query", json={"product_name": "Laptop"})
             
         assert response.status_code == 200
         assert response.headers["content-type"] in ["application/pdf", "text/html; charset=utf-8"]

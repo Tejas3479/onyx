@@ -42,5 +42,5 @@ async def test_parse_upload_csv():
     record = result["records"][0]
     assert record.item_description == "Laptop"
     assert record.unit_price == 1000.0
-    assert record.quantity == 5.0
+    assert record.quantity_purchased == 5.0
     assert record.department == "IT"
