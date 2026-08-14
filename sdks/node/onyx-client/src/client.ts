@@ -73,6 +73,34 @@ export class OnyxClient {
     }
   }
 
+  // --- Price Benchmarking & Reports ---
+
+  async benchmark(query: string, quantity: number = 1, department?: string): Promise<any> {
+    try {
+      const payload: any = { query, quantity };
+      if (department) {
+        payload.department = department;
+      }
+      const response = await this.client.post('/api/v1/benchmark', payload);
+      return response.data;
+    } catch (error: any) {
+      this.handleError(error);
+    }
+  }
+
+  async generateReport(searchId: string): Promise<any> {
+    try {
+      const response = await this.client.post(
+        '/api/v1/reports/generate',
+        { search_id: searchId },
+        { responseType: 'arraybuffer' }
+      );
+      return response.data;
+    } catch (error: any) {
+      this.handleError(error);
+    }
+  }
+
   private handleError(error: any): never {
     if (error.response) {
       const detail = error.response.data?.detail || error.response.data;

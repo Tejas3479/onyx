@@ -1,7 +1,7 @@
 {
   "name": "onyx-client",
   "version": "1.0.0",
-  "description": "Official Node.js client for the Onyx Web Scraping Engine",
+  "description": "Official Node.js client for the Onyx Price Benchmarking & Scraper Engine",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {

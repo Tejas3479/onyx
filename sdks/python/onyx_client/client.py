@@ -45,6 +45,20 @@ class OnyxClient:
         self._check_response(response)
         return response.json()
 
+    # --- Price Benchmarking & Reports Endpoints ---
+    def benchmark(self, query: str, quantity: int = 1, department: str | None = None) -> dict[str, Any]:
+        payload = {"query": query, "quantity": quantity}
+        if department:
+            payload["department"] = department
+        response = self.client.post("/api/v1/benchmark", json=payload)
+        self._check_response(response)
+        return response.json()
+
+    def generate_report(self, search_id: str) -> bytes:
+        response = self.client.post("/api/v1/reports/generate", json={"search_id": search_id})
+        self._check_response(response)
+        return response.content
+
     def _check_response(self, response: httpx.Response):
         if not response.is_success:
             try:
@@ -90,6 +104,19 @@ class AsyncOnyxClient:
         response = await self.client.delete(f"/api/crawl/{crawl_id}")
         self._check_response(response)
         return response.json()
+
+    async def benchmark(self, query: str, quantity: int = 1, department: str | None = None) -> dict[str, Any]:
+        payload = {"query": query, "quantity": quantity}
+        if department:
+            payload["department"] = department
+        response = await self.client.post("/api/v1/benchmark", json=payload)
+        self._check_response(response)
+        return response.json()
+
+    async def generate_report(self, search_id: str) -> bytes:
+        response = await self.client.post("/api/v1/reports/generate", json={"search_id": search_id})
+        self._check_response(response)
+        return response.content
 
     def _check_response(self, response: httpx.Response):
         if not response.is_success:

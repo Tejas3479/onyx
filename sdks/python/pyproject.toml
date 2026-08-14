@@ -8,7 +8,7 @@ version = "1.0.0"
 authors = [
   { name="Onyx Team", email="team@onyx.dev" },
 ]
-description = "Official Python client for the Onyx Web Scraping Engine"
+description = "Official Python client for the Onyx Price Benchmarking & Scraper Engine"
 readme = "README.md"
 requires-python = ">=3.8"
 classifiers = [
