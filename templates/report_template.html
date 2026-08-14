@@ -1,2 +1,379 @@
-<!-- GFR-compliant market survey report template -->
-<!-- TODO: Implement in Phase 2 of feature development -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Price Benchmark Report — {{ query }}</title>
+    <style>
+        @page { size: A4; margin: 2cm; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 12pt;
+            line-height: 1.6;
+            color: #1a1a1a;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 12pt;
+            margin-bottom: 18pt;
+        }
+        .header h1 {
+            font-size: 16pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1pt;
+        }
+        .header .subtitle {
+            font-size: 11pt;
+            color: #555;
+            margin-top: 4pt;
+        }
+        .meta-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 16pt;
+            font-size: 11pt;
+        }
+        .meta-table td {
+            padding: 4pt 8pt;
+            vertical-align: top;
+        }
+        .meta-table .label {
+            font-weight: bold;
+            width: 180pt;
+            color: #333;
+        }
+        h2 {
+            font-size: 13pt;
+            font-weight: bold;
+            border-bottom: 1px solid #999;
+            padding-bottom: 4pt;
+            margin: 16pt 0 8pt 0;
+        }
+        h3 {
+            font-size: 12pt;
+            font-weight: bold;
+            margin: 12pt 0 6pt 0;
+        }
+        .tier-badge {
+            display: inline-block;
+            background: #e8f0fe;
+            color: #1a5276;
+            padding: 2pt 10pt;
+            border-radius: 3pt;
+            font-size: 10pt;
+            font-weight: bold;
+            border: 1px solid #aac7e8;
+        }
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 8pt 0 16pt 0;
+            font-size: 10pt;
+        }
+        .results-table th {
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            padding: 6pt 8pt;
+            text-align: left;
+            font-weight: bold;
+        }
+        .results-table td {
+            border: 1px solid #ccc;
+            padding: 6pt 8pt;
+        }
+        .results-table tr:nth-child(even) td {
+            background: #fafafa;
+        }
+        .stats-box {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4pt;
+            padding: 12pt;
+            margin: 8pt 0 16pt 0;
+        }
+        .stats-grid {
+            display: flex;
+            gap: 24pt;
+            flex-wrap: wrap;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 16pt;
+            font-weight: bold;
+            color: #1a5276;
+        }
+        .stat-label {
+            font-size: 9pt;
+            color: #666;
+            text-transform: uppercase;
+        }
+        .tier-trace {
+            font-size: 10pt;
+            margin: 8pt 0;
+        }
+        .tier-trace .tier-step {
+            padding: 4pt 0;
+            border-bottom: 1px dotted #ddd;
+        }
+        .tier-trace .tier-name {
+            font-weight: bold;
+            display: inline-block;
+            width: 140pt;
+        }
+        .methodology {
+            background: #fffbe6;
+            border: 1px solid #e6d98a;
+            border-radius: 4pt;
+            padding: 12pt;
+            margin: 12pt 0;
+            font-size: 10pt;
+        }
+        .certificate {
+            margin-top: 24pt;
+            padding-top: 16pt;
+            border-top: 1px solid #999;
+        }
+        .certificate p {
+            margin-bottom: 8pt;
+            font-size: 11pt;
+        }
+        .signature-block {
+            margin-top: 40pt;
+            display: flex;
+            justify-content: space-between;
+        }
+        .signature-item {
+            text-align: center;
+            width: 200pt;
+        }
+        .signature-line {
+            border-top: 1px solid #333;
+            margin-bottom: 4pt;
+            padding-top: 4pt;
+        }
+        .footer {
+            margin-top: 24pt;
+            padding-top: 8pt;
+            border-top: 1px solid #ddd;
+            font-size: 8pt;
+            color: #999;
+            text-align: center;
+        }
+        .confidence-high { color: #0d6e3e; font-weight: bold; }
+        .confidence-medium { color: #856404; font-weight: bold; }
+        .confidence-low { color: #842029; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Price Benchmark Report</h1>
+        <div class="subtitle">
+            Generated per GFR Rule 149(vii) — Price Reasonability Assessment
+        </div>
+    </div>
+
+    <!-- Report Metadata -->
+    <table class="meta-table">
+        <tr>
+            <td class="label">Report ID:</td>
+            <td>ONX-{{ report_id }}</td>
+            <td class="label">Date:</td>
+            <td>{{ generated_at }}</td>
+        </tr>
+        <tr>
+            <td class="label">Query:</td>
+            <td>{{ query }}</td>
+            <td class="label">Query Mode:</td>
+            <td>{{ query_mode | capitalize }}</td>
+        </tr>
+        <tr>
+            <td class="label">Department:</td>
+            <td>{{ department_name }}</td>
+            <td class="label">Search ID:</td>
+            <td>{{ search_id[:8] }}...</td>
+        </tr>
+        <tr>
+            <td class="label">Price Resolved At:</td>
+            <td colspan="3">
+                <span class="tier-badge">Tier {{ resolved_tier }}: {{ tier_label }}</span>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Methodology -->
+    <h2>1. Methodology</h2>
+    <div class="methodology">
+        <p><strong>Method Used:</strong> {{ tier_method }}</p>
+        <p style="margin-top:6pt">
+            This report was generated using the Onyx Price Benchmarking System,
+            which follows the GFR Rule 149(vii) prescribed order of preference
+            for establishing price reasonability. The system checks sources in
+            the following priority: (1) Government Notified Rates, (2) GeM
+            Business Analytics, (3) Department’s Last Purchase Price,
+            (4) Online Market Survey, (5) Non-Standard Item Estimation.
+        </p>
+    </div>
+
+    <!-- Tier Waterfall Trace -->
+    <h2>2. Tier Waterfall Trace</h2>
+    <div class="tier-trace">
+        {% for tier_key, tier_outcome in tier_trace.items() %}
+        <div class="tier-step">
+            <span class="tier-name">{{ tier_key | replace('_', ' ') | capitalize }}:</span>
+            <span>{{ tier_outcome }}</span>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Primary Result -->
+    <h2>3. Primary Result</h2>
+    <table class="meta-table">
+        <tr>
+            <td class="label">Source:</td>
+            <td>{{ primary_result.get('source_name', 'N/A') }}</td>
+        </tr>
+        {% if primary_result.get('price') %}
+        <tr>
+            <td class="label">Benchmark Price:</td>
+            <td style="font-size:14pt;font-weight:bold">
+                ₹{{ "{:,.2f}".format(primary_result.price) }}
+            </td>
+        </tr>
+        {% endif %}
+        {% if primary_result.get('price_range_low') and primary_result.get('price_range_high') %}
+        <tr>
+            <td class="label">Price Range:</td>
+            <td>₹{{ "{:,.2f}".format(primary_result.price_range_low) }} – ₹{{ "{:,.2f}".format(primary_result.price_range_high) }}</td>
+        </tr>
+        {% endif %}
+        <tr>
+            <td class="label">Confidence:</td>
+            <td class="confidence-{{ primary_result.get('confidence', 'low') | lower }}">
+                {{ primary_result.get('confidence', 'N/A') }}
+            </td>
+        </tr>
+        <tr>
+            <td class="label">Rationale:</td>
+            <td>{{ primary_result.get('rationale', 'N/A') }}</td>
+        </tr>
+    </table>
+
+    <!-- Statistics -->
+    {% if statistics %}
+    <h2>4. Price Statistics (Across All Sources)</h2>
+    <div class="stats-box">
+        <div class="stats-grid">
+            {% if statistics.get('min') is not none %}
+            <div class="stat-item">
+                <div class="stat-value">₹{{ "{:,.2f}".format(statistics.min) }}</div>
+                <div class="stat-label">Minimum</div>
+            </div>
+            {% endif %}
+            {% if statistics.get('max') is not none %}
+            <div class="stat-item">
+                <div class="stat-value">₹{{ "{:,.2f}".format(statistics.max) }}</div>
+                <div class="stat-label">Maximum</div>
+            </div>
+            {% endif %}
+            {% if statistics.get('avg') is not none %}
+            <div class="stat-item">
+                <div class="stat-value">₹{{ "{:,.2f}".format(statistics.avg) }}</div>
+                <div class="stat-label">Average</div>
+            </div>
+            {% endif %}
+            {% if statistics.get('median') is not none %}
+            <div class="stat-item">
+                <div class="stat-value">₹{{ "{:,.2f}".format(statistics.median) }}</div>
+                <div class="stat-label">Median</div>
+            </div>
+            {% endif %}
+            {% if statistics.get('count') is not none %}
+            <div class="stat-item">
+                <div class="stat-value">{{ statistics.count }}</div>
+                <div class="stat-label">Data Points</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- All Results -->
+    {% if all_results %}
+    <h2>5. Detailed Results</h2>
+    <table class="results-table">
+        <thead>
+            <tr>
+                <th>Tier</th>
+                <th>Source</th>
+                <th>Price (₹)</th>
+                <th>Confidence</th>
+                <th>Reliability</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in all_results %}
+            <tr>
+                <td>T{{ result.get('tier', '?') }}</td>
+                <td>{{ result.get('source_name', 'N/A') }}</td>
+                <td>
+                    {% if result.get('price') %}
+                        {{ "{:,.2f}".format(result.price) }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
+                <td class="confidence-{{ result.get('confidence', 'low') | lower }}">
+                    {{ result.get('confidence', 'N/A') }}
+                </td>
+                <td>{{ result.get('reliability', 'N/A') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    <!-- Certificate -->
+    <div class="certificate">
+        <h2>6. Certificate</h2>
+        <p>
+            This is to certify that the price benchmark for <strong>"{{ query }}"</strong>
+            has been carried out using the Onyx automated benchmarking system.
+            The system checked pricing data across {{ all_results | length }} source(s)
+            following the GFR Rule 149(vii) prescribed order of preference.
+        </p>
+        <p>
+            The benchmark price of
+            {% if primary_result.get('price') %}
+                <strong>₹{{ "{:,.2f}".format(primary_result.price) }}</strong>
+            {% else %}
+                <strong>[Not Available — refer to committee recommendation above]</strong>
+            {% endif %}
+            was obtained from <strong>{{ tier_label }}</strong> (Tier {{ resolved_tier }}).
+        </p>
+        <p style="font-size:10pt;color:#666;margin-top:8pt">
+            Note: This certificate documents the methodology and data sources used.
+            The final determination of price reasonability rests with the
+            competent authority as per GFR provisions.
+        </p>
+
+        <div class="signature-block">
+            <div class="signature-item">
+                <div class="signature-line">{{ signatory_name }}</div>
+                <div style="font-size:9pt;color:#666">Prepared by</div>
+            </div>
+            <div class="signature-item">
+                <div class="signature-line">Competent Authority</div>
+                <div style="font-size:9pt;color:#666">Approved by</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        Generated by Onyx Price Benchmarking System | Report ID: ONX-{{ report_id }} | {{ generated_at }}
+    </div>
+</body>
+</html>

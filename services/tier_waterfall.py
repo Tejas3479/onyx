@@ -28,18 +28,28 @@ TIER_LABELS = {
 }
 
 
-async def _check_tier_0(category: str | None) -> dict | None:
+async def _check_tier_0(query: str, category: str | None) -> dict | None:
     """Tier 0: Check DGS&D rate contracts / ministry-notified fixed rates."""
-    # TODO: Phase 6 — implement via gem_rate_lookup.check_notified_rate()
-    logger.debug("Tier 0: Checking notified rates for category=%s", category)
-    return None
+    from services.gem_rate_lookup import check_notified_rate
+
+    logger.debug("Tier 0: Checking notified rates for query=%s, category=%s", query, category)
+    try:
+        return await check_notified_rate(query, category)
+    except Exception as e:
+        logger.warning("Tier 0 check failed: %s", e)
+        return None
 
 
 async def _check_tier_1(query: str, specs: dict | None) -> dict | None:
     """Tier 1: Check GeM Business Analytics / GeM LPP + CPPP."""
-    # TODO: Phase 6 — implement via gem_rate_lookup.check_gem_business_analytics()
+    from services.gem_rate_lookup import check_gem_business_analytics
+
     logger.debug("Tier 1: Checking GeM BA/LPP for query=%s", query)
-    return None
+    try:
+        return await check_gem_business_analytics(query, specs)
+    except Exception as e:
+        logger.warning("Tier 1 check failed: %s", e)
+        return None
 
 
 async def _check_tier_2(
@@ -105,7 +115,7 @@ async def get_price_benchmark(
     resolved_tier: int | None = None
 
     # ── Tier 0: Notified Rates ──
-    result = await _check_tier_0(category)
+    result = await _check_tier_0(query, category)
     if result:
         if primary_result is None:
             primary_result = result

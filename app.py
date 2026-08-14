@@ -23,11 +23,13 @@ from fetcher import (
 )
 from routers import (
     admin_router,
+    auth_router,
     benchmark_router,
     crawl_router,
     department_lpp_router,
     fetch_router,
     health_router,
+    reports_router,
 )
 from services.session_manager import redis_client
 
@@ -113,6 +115,11 @@ async def lifespan(app: FastAPI):
     # STARTUP
     try:
         await init_db()
+        
+        # Seed reference data
+        from services.data_seeder import seed_database
+        await seed_database()
+        
         await playwright_mgr.initialize()
     except Exception as e:
         logger.warning(
@@ -280,6 +287,8 @@ app.include_router(department_lpp_router)
 app.include_router(fetch_router)
 app.include_router(crawl_router)
 app.include_router(admin_router)
+app.include_router(auth_router)
+app.include_router(reports_router)
 
 # Mount static files
 if os.path.isdir("static"):
