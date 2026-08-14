@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Price Benchmark | Onyx</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #f5f5f5;
+      --card-bg: #ffffff;
+      --text-dark: #1a2332;
+      --text-main: #374151;
+      --text-light: #6b7280;
+      --accent-color: #1a5276;
+      --accent-hover: #154360;
+      --border-color: #e5e7eb;
+      
+      --t0-bg: #d1fae5; --t0-text: #059669;
+      --t1-bg: #dbeafe; --t1-text: #2563eb;
+      --t2-bg: #ccfbf1; --t2-text: #0d9488;
+      --t3-bg: #fef3c7; --t3-text: #d97706;
+      --t4-bg: #fee2e2; --t4-text: #dc2626;
+      
+      --conf-high-bg: #d1fae5; --conf-high-text: #059669;
+      --conf-medium-bg: #fef3c7; --conf-medium-text: #d97706;
+      --conf-low-bg: #fee2e2; --conf-low-text: #dc2626;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      line-height: 1.5;
+    }
+    
+    /* Navbar */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 32px;
+      background-color: #fff;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .navbar .logo {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-dark);
+      text-decoration: none;
+    }
+    .nav-links a {
+      margin-left: 24px;
+      text-decoration: none;
+      color: var(--text-main);
+      font-weight: 500;
+    }
+    .nav-links a:hover { color: var(--accent-color); }
+    .nav-links a.active { color: var(--accent-color); border-bottom: 2px solid var(--accent-color); padding-bottom: 4px; }
+    
+    /* Hero Search */
+    .hero {
+      text-align: center;
+      padding: 64px 24px 32px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .hero h1 {
+      font-size: 40px;
+      color: var(--text-dark);
+      margin-bottom: 8px;
+    }
+    .hero p {
+      font-size: 18px;
+      color: var(--text-light);
+      margin-bottom: 32px;
+    }
+    .search-box {
+      background: var(--card-bg);
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+    }
+    .search-input-wrapper { margin-bottom: 16px; }
+    .search-input-wrapper input {
+      width: 100%;
+      padding: 16px 20px;
+      font-size: 18px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-input-wrapper input:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(26, 82, 118, 0.1); }
+    
+    .filters-row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .filter-group { flex: 1; min-width: 150px; text-align: left; }
+    .filter-group label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 4px; color: var(--text-main); }
+    .filter-group input, .filter-group select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+    }
+    .btn-run {
+      width: 100%;
+      padding: 16px;
+      font-size: 18px;
+      font-weight: 600;
+      color: #fff;
+      background-color: var(--accent-color);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .btn-run:hover { background-color: var(--accent-hover); }
+    .btn-run:disabled { opacity: 0.7; cursor: not-allowed; }
+    
+    /* Loading */
+    .loading-container {
+      display: none;
+      text-align: center;
+      padding: 48px 0;
+    }
+    .spinner {
+      border: 4px solid rgba(0,0,0,0.1);
+      border-left-color: var(--accent-color);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    
+    /* Results Area */
+    .results-area {
+      display: none;
+      max-width: 1100px;
+      margin: 0 auto 64px;
+      padding: 0 24px;
+      animation: fadeIn 0.5s ease-out;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .tier-badge {
+      display: inline-block;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 16px;
+      margin-bottom: 24px;
+    }
+    .tier-0 { background-color: var(--t0-bg); color: var(--t0-text); }
+    .tier-1 { background-color: var(--t1-bg); color: var(--t1-text); }
+    .tier-2 { background-color: var(--t2-bg); color: var(--t2-text); }
+    .tier-3 { background-color: var(--t3-bg); color: var(--t3-text); }
+    .tier-4 { background-color: var(--t4-bg); color: var(--t4-text); }
+    
+    .grid-container {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 768px) { .grid-container { grid-template-columns: 1fr; } }
+    
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      border: 1px solid var(--border-color);
+    }
+    .card h3 { font-size: 18px; margin-bottom: 16px; color: var(--text-dark); border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
+    
+    .primary-price { font-size: 48px; font-weight: 700; color: var(--text-dark); margin: 8px 0; }
+    .primary-source { font-size: 16px; color: var(--text-light); }
+    
+    .conf-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    .conf-HIGH { background-color: var(--conf-high-bg); color: var(--conf-high-text); }
+    .conf-MEDIUM { background-color: var(--conf-medium-bg); color: var(--conf-medium-text); }
+    .conf-LOW { background-color: var(--conf-low-bg); color: var(--conf-low-text); }
+    
+    .rationale {
+      background: #f9fafb;
+      padding: 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      margin-top: 16px;
+      border-left: 4px solid var(--accent-color);
+    }
+    
+    .stats-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .stat-item {
+      flex: 1;
+      background: var(--card-bg);
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      border: 1px solid var(--border-color);
+      text-align: center;
+      min-width: 120px;
+    }
+    .stat-value { font-size: 24px; font-weight: 600; color: var(--text-dark); }
+    .stat-label { font-size: 12px; color: var(--text-light); text-transform: uppercase; }
+    
+    .waterfall-list { list-style: none; }
+    .waterfall-item {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+    .icon-found { color: var(--t0-text); margin-right: 8px; font-weight: bold; }
+    .icon-not-found { color: var(--t4-text); margin-right: 8px; font-weight: bold; }
+    .icon-skipped { color: var(--text-light); margin-right: 8px; }
+    
+    .table-responsive { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 14px; }
+    th { background: #f9fafb; font-weight: 600; color: var(--text-dark); cursor: pointer; }
+    th:hover { background: #f3f4f6; }
+    tbody tr:hover { background: #f9fafb; }
+    
+    .actions-row {
+      display: flex;
+      gap: 16px;
+      margin-top: 24px;
+    }
+    .btn-secondary {
+      padding: 12px 24px;
+      background: white;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-weight: 500;
+      cursor: pointer;
+      color: var(--text-dark);
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover { background: #f9fafb; border-color: #d1d5db; }
+    
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 32px;
+      color: var(--text-light);
+      font-size: 14px;
+      border-top: 1px solid var(--border-color);
+      margin-top: 64px;
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="/" class="logo">◆ Onyx</a>
+    <div class="nav-links">
+      <a href="/benchmark.html" class="active">Benchmark</a>
+      <a href="/">Scraper</a>
+    </div>
+  </nav>
+
+  <main>
+    <section class="hero">
+      <h1>Price Benchmark</h1>
+      <p>GFR Rule 149(vii) compliant price reasonability assessment</p>
+      
+      <div class="search-box">
+        <form id="benchmark-form">
+          <div class="search-input-wrapper">
+            <input type="text" id="product-query" placeholder="Search for a product, e.g. HP ProBook 450, A4 Paper 75gsm" required>
+          </div>
+          <div class="filters-row">
+            <div class="filter-group">
+              <label for="department">Department (Optional)</label>
+              <input type="text" id="department" placeholder="e.g. Ministry of Finance">
+            </div>
+            <div class="filter-group">
+              <label for="category">Category</label>
+              <select id="category">
+                <option value="">All Categories</option>
+                <option value="IT Equipment">IT Equipment</option>
+                <option value="Stationery">Stationery</option>
+                <option value="Networking">Networking</option>
+                <option value="Electrical">Electrical</option>
+                <option value="Furniture">Furniture</option>
+                <option value="Services">Services</option>
+                <option value="AMC Services">AMC Services</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="quantity">Quantity</label>
+              <input type="number" id="quantity" value="1" min="1">
+            </div>
+          </div>
+          <button type="submit" class="btn-run" id="btn-run">Run Benchmark</button>
+        </form>
+      </div>
+    </section>
+
+    <div class="loading-container" id="loading-spinner">
+      <div class="spinner"></div>
+      <p>Searching across government and market sources...</p>
+    </div>
+
+    <section class="results-area" id="results-area">
+      <div id="tier-badge-container"></div>
+      
+      <div class="grid-container">
+        <div class="card" id="primary-result-card">
+          <h3>Primary Recommended Price</h3>
+          <div class="primary-source" id="res-source">Source</div>
+          <div class="primary-price" id="res-price">₹0.00</div>
+          <div id="res-conf-badge"></div>
+          <div class="rationale" id="res-rationale">Rationale text</div>
+        </div>
+        
+        <div class="card" id="tier-trace-card">
+          <h3>Resolution Trace</h3>
+          <ul class="waterfall-list" id="trace-list"></ul>
+        </div>
+      </div>
+      
+      <div class="stats-row" id="stats-container">
+        <!-- Stats populated via JS -->
+      </div>
+      
+      <div class="card">
+        <h3>All Gathered Data</h3>
+        <div class="table-responsive">
+          <table id="results-table">
+            <thead>
+              <tr>
+                <th data-sort="tier">Tier</th>
+                <th data-sort="source">Source</th>
+                <th data-sort="price">Price (₹)</th>
+                <th data-sort="confidence">Confidence</th>
+                <th data-sort="reliability">Reliability</th>
+              </tr>
+            </thead>
+            <tbody id="results-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div class="actions-row">
+        <button class="btn-secondary" id="btn-download-html">Download Report (HTML)</button>
+        <button class="btn-secondary" id="btn-download-pdf">Download Report (PDF)</button>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Powered by Onyx | GFR Rule 149(vii) Compliant</p>
+  </footer>
+
+  <script>
+    const formatCurrency = (amount) => {
+      if (amount === null || amount === undefined) return 'N/A';
+      return new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        maximumFractionDigits: 2
+      }).format(amount);
+    };
+
+    const getTierClass = (tier) => 'tier-' + tier;
+    
+    let currentQuery = '';
+    let currentDept = '';
+    let tableData = [];
+    let sortCol = 'tier';
+    let sortAsc = true;
+
+    document.getElementById('benchmark-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const query = document.getElementById('product-query').value.trim();
+      if (!query) return;
+      
+      const dept = document.getElementById('department').value.trim();
+      const cat = document.getElementById('category').value;
+      const qty = parseInt(document.getElementById('quantity').value) || 1;
+      
+      currentQuery = query;
+      currentDept = dept;
+      
+      document.getElementById('results-area').style.display = 'none';
+      document.getElementById('loading-spinner').style.display = 'block';
+      document.getElementById('btn-run').disabled = true;
+      
+      try {
+        const payload = {
+          product_name: query,
+          query_mode: "product",
+          department: dept || null,
+          category: cat || null,
+          specs: null,
+          quantity: qty
+        };
+        
+        const res = await fetch('/api/v1/benchmark', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        
+        if (!res.ok) throw new Error('Benchmark request failed');
+        
+        const data = await res.json();
+        renderResults(data);
+        
+      } catch (err) {
+        console.error(err);
+        alert('An error occurred while fetching benchmark data.');
+      } finally {
+        document.getElementById('loading-spinner').style.display = 'none';
+        document.getElementById('btn-run').disabled = false;
+        document.getElementById('results-area').style.display = 'block';
+      }
+    });
+    
+    function renderResults(data) {
+      // 1. Tier Resolution Badge
+      const tierBadge = document.getElementById('tier-badge-container');
+      tierBadge.innerHTML = '<span class="tier-badge ' + getTierClass(data.resolved_tier) + '">Resolved at Tier ' + data.resolved_tier + ': ' + (data.tier_label || '') + '</span>';
+      
+      // 2. Primary Result
+      if (data.primary_result) {
+        const pr = data.primary_result;
+        document.getElementById('res-source').textContent = pr.source_name || '';
+        document.getElementById('res-price').textContent = formatCurrency(pr.price);
+        document.getElementById('res-conf-badge').innerHTML = '<span class="conf-badge conf-' + (pr.confidence || '') + '">' + (pr.confidence || '') + ' Confidence</span>';
+        document.getElementById('res-rationale').textContent = pr.rationale || '';
+      } else {
+        document.getElementById('res-source').textContent = 'No Data';
+        document.getElementById('res-price').textContent = 'N/A';
+        document.getElementById('res-conf-badge').innerHTML = '';
+        document.getElementById('res-rationale').textContent = 'No sufficient data found across all tiers.';
+      }
+      
+      // 3. Statistics
+      const stats = data.statistics || {};
+      document.getElementById('stats-container').innerHTML = 
+        '<div class="stat-item"><div class="stat-value">' + formatCurrency(stats.min) + '</div><div class="stat-label">Min Price</div></div>' +
+        '<div class="stat-item"><div class="stat-value">' + formatCurrency(stats.max) + '</div><div class="stat-label">Max Price</div></div>' +
+        '<div class="stat-item"><div class="stat-value">' + formatCurrency(stats.avg) + '</div><div class="stat-label">Average</div></div>' +
+        '<div class="stat-item"><div class="stat-value">' + formatCurrency(stats.median) + '</div><div class="stat-label">Median</div></div>' +
+        '<div class="stat-item"><div class="stat-value">' + (stats.count || 0) + '</div><div class="stat-label">Data Points</div></div>';
+      
+      // 4. Waterfall Trace
+      const traceList = document.getElementById('trace-list');
+      traceList.innerHTML = '';
+      if (data.tier_trace) {
+        Object.entries(data.tier_trace).forEach(([key, val]) => {
+          let icon = '<span class="icon-skipped">⊘</span>';
+          const valLower = String(val).toLowerCase();
+          if (valLower.includes('found') || valLower.includes('success')) icon = '<span class="icon-found">✓</span>';
+          else if (valLower.includes('no data') || valLower.includes('failed') || valLower.includes('missing')) icon = '<span class="icon-not-found">✗</span>';
+          
+          const label = key.replace(/_/g, ' ').replace(/\\b\\w/g, l => l.toUpperCase());
+          traceList.innerHTML += '<li class="waterfall-item">' + icon + ' <span><strong>' + label + ':</strong> ' + val + '</span></li>';
+        });
+      }
+      
+      // 5. All Results Table
+      tableData = data.all_results || [];
+      renderTable();
+    }
+    
+    function renderTable() {
+      const tbody = document.getElementById('results-tbody');
+      tbody.innerHTML = '';
+      
+      // Sort logic
+      const sorted = [...tableData].sort((a, b) => {
+        let valA = a[sortCol];
+        let valB = b[sortCol];
+        if (sortCol === 'price' || sortCol === 'tier') {
+          valA = parseFloat(valA) || 0;
+          valB = parseFloat(valB) || 0;
+        } else {
+          valA = String(valA || '').toLowerCase();
+          valB = String(valB || '').toLowerCase();
+        }
+        
+        if (valA < valB) return sortAsc ? -1 : 1;
+        if (valA > valB) return sortAsc ? 1 : -1;
+        return 0;
+      });
+      
+      sorted.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = 
+          '<td>Tier ' + row.tier + '</td>' +
+          '<td>' + (row.source_name || '') + '</td>' +
+          '<td>' + formatCurrency(row.price) + '</td>' +
+          '<td><span style="color: var(--conf-' + (row.confidence || '').toLowerCase() + '-text, #374151); font-weight:600">' + (row.confidence || '-') + '</span></td>' +
+          '<td>' + (row.reliability || '-') + '</td>';
+        
+        tbody.appendChild(tr);
+      });
+    }
+    
+    // Sort headers
+    document.querySelectorAll('th[data-sort]').forEach(th => {
+      th.addEventListener('click', () => {
+        const col = th.getAttribute('data-sort');
+        if (sortCol === col) sortAsc = !sortAsc;
+        else { sortCol = col; sortAsc = true; }
+        renderTable();
+      });
+    });
+    
+    // Report downloads
+    document.getElementById('btn-download-html').addEventListener('click', () => {
+      const url = '/api/v1/reports/generate-from-query?product_name=' + encodeURIComponent(currentQuery) + '&department_name=' + encodeURIComponent(currentDept) + '&output_format=html';
+      window.open(url, '_blank');
+    });
+    
+    document.getElementById('btn-download-pdf').addEventListener('click', () => {
+      const url = '/api/v1/reports/generate-from-query?product_name=' + encodeURIComponent(currentQuery) + '&department_name=' + encodeURIComponent(currentDept) + '&output_format=pdf';
+      window.open(url, '_blank');
+    });
+  </script>
+</body>
+</html>
