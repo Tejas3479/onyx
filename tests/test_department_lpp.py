@@ -1,8 +1,9 @@
-import pytest
-import pandas as pd
-import io
 
-from services.department_lpp import normalize_item_key, _normalize_columns, parse_upload
+import pandas as pd
+import pytest
+
+from services.department_lpp import _normalize_columns, normalize_item_key, parse_upload
+
 
 def test_normalize_item_key():
     assert normalize_item_key("Cisco Catalyst 9300 Switch 48-Port") == "48-port 9300 catalyst cisco switch"

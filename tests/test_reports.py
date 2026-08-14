@@ -1,9 +1,9 @@
 import pytest
 from httpx import AsyncClient
-from sqlmodel import select
 
 from app import app
-from database import async_session_maker, PriceSearch, PriceResult
+from database import PriceResult, PriceSearch, async_session_maker
+
 
 @pytest.mark.asyncio
 async def test_generate_report_not_found(mock_redis):
