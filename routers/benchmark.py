@@ -2,14 +2,12 @@
 
 import logging
 import uuid
-
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from database import PriceResult, PriceSearch, async_session_maker
-
 from models import BenchmarkQuery, BenchmarkResponse, TierResult
 from services.tier_waterfall import get_price_benchmark
 
