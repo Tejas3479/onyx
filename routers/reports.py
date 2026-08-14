@@ -1,6 +1,7 @@
 """Onyx Report API — generate GFR-compliant benchmark reports."""
 
 import logging
+import typing
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse, HTMLResponse
@@ -28,8 +29,8 @@ async def generate_report(req: ReportRequest):
         results_db = (await session.execute(result_stmt)).scalars().all()
 
     # Reconstruct data structures for generate_report_html
-    primary = {}
-    all_results = []
+    primary: dict[str, typing.Any] = {}
+    all_results: list[dict[str, typing.Any]] = []
     
     # In database, PriceResult doesn't inherently track "primary" vs "all".
     # But usually the first one or the one with the source URL is treated as such,
