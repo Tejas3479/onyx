@@ -22,8 +22,9 @@ asyncpg>=0.29.0
 alembic>=1.13.1
 
 # >== Onyx: Price Benchmarking >==
-python-jose[cryptography]>=3.3.0    # JWT token creation/validation
-passlib[bcrypt]>=1.7.4              # Password hashing
+PyJWT>=2.8.0                         # JWT token creation/validation
+pwdlib[argon2]>=0.2.0                # Modern password hashing (Argon2id)
+argon2-cffi>=23.1.0                  # Argon2 password hashing algorithm
 weasyprint>=61.0                    # HTML → PDF report generation
 python-dotenv>=1.0.0                # .env file loading
 

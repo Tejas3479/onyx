@@ -6,8 +6,9 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError, jwt
-from passlib.context import CryptContext
+import jwt
+from pwdlib import PasswordHash
+from pwdlib.hashers.argon2 import Argon2Hasher
 from sqlalchemy import select
 
 from database import User, async_session_maker
@@ -23,7 +24,7 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES", "480"))  # 8 hours
 
 # Password hashing
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+password_hash = PasswordHash((Argon2Hasher(),))
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
@@ -46,7 +47,7 @@ async def get_current_user(token: str) -> User | None:
         user_id = payload.get("sub")
         if not user_id:
             return None
-    except JWTError:
+    except jwt.exceptions.PyJWTError:
         return None
 
     async with async_session_maker() as session:
@@ -69,7 +70,7 @@ async def register(req: UserCreate):
         user = User(
             name=req.name,
             email=req.email,
-            hashed_password=pwd_context.hash(req.password),
+            hashed_password=password_hash.hash(req.password),
             department=req.department,
             organization=req.organization,
         )
@@ -97,7 +98,7 @@ async def login(req: UserLogin):
         result = await session.execute(stmt)
         user = result.scalars().first()
 
-    if not user or not pwd_context.verify(req.password, user.hashed_password):
+    if not user or not password_hash.verify(req.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
     token = _create_token(user.id, user.email)
