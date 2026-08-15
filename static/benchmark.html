@@ -389,6 +389,15 @@
       }).format(amount);
     };
 
+    function escapeHtml(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
     const getTierClass = (tier) => 'tier-' + tier;
     
     let currentQuery = '';
@@ -448,14 +457,16 @@
     function renderResults(data) {
       // 1. Tier Resolution Badge
       const tierBadge = document.getElementById('tier-badge-container');
-      tierBadge.innerHTML = '<span class="tier-badge ' + getTierClass(data.resolved_tier) + '">Resolved at Tier ' + data.resolved_tier + ': ' + (data.tier_label || '') + '</span>';
+      const safeTierLabel = escapeHtml(data.tier_label || '');
+      tierBadge.innerHTML = '<span class="tier-badge ' + getTierClass(data.resolved_tier) + '">Resolved at Tier ' + escapeHtml(data.resolved_tier) + ': ' + safeTierLabel + '</span>';
       
       // 2. Primary Result
       if (data.primary_result) {
         const pr = data.primary_result;
         document.getElementById('res-source').textContent = pr.source_name || '';
         document.getElementById('res-price').textContent = formatCurrency(pr.price);
-        document.getElementById('res-conf-badge').innerHTML = '<span class="conf-badge conf-' + (pr.confidence || '') + '">' + (pr.confidence || '') + ' Confidence</span>';
+        const safeConf = escapeHtml(pr.confidence || '');
+        document.getElementById('res-conf-badge').innerHTML = '<span class="conf-badge conf-' + safeConf + '">' + safeConf + ' Confidence</span>';
         document.getElementById('res-rationale').textContent = pr.rationale || '';
       } else {
         document.getElementById('res-source').textContent = 'No Data';
@@ -483,8 +494,8 @@
           if (valLower.includes('found') || valLower.includes('success')) icon = '<span class="icon-found">✓</span>';
           else if (valLower.includes('no data') || valLower.includes('failed') || valLower.includes('missing')) icon = '<span class="icon-not-found">✗</span>';
           
-          const label = key.replace(/_/g, ' ').replace(/\\b\\w/g, l => l.toUpperCase());
-          traceList.innerHTML += '<li class="waterfall-item">' + icon + ' <span><strong>' + label + ':</strong> ' + val + '</span></li>';
+          const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+          traceList.innerHTML += '<li class="waterfall-item">' + icon + ' <span><strong>' + escapeHtml(label) + ':</strong> ' + escapeHtml(val) + '</span></li>';
         });
       }
       
@@ -516,12 +527,14 @@
       
       sorted.forEach(row => {
         const tr = document.createElement('tr');
+        const confText = row.confidence || '-';
+        const confClass = (row.confidence || '').toLowerCase();
         tr.innerHTML = 
-          '<td>Tier ' + row.tier + '</td>' +
-          '<td>' + (row.source_name || '') + '</td>' +
+          '<td>Tier ' + escapeHtml(row.tier) + '</td>' +
+          '<td>' + escapeHtml(row.source_name || '') + '</td>' +
           '<td>' + formatCurrency(row.price) + '</td>' +
-          '<td><span style="color: var(--conf-' + (row.confidence || '').toLowerCase() + '-text, #374151); font-weight:600">' + (row.confidence || '-') + '</span></td>' +
-          '<td>' + (row.reliability || '-') + '</td>';
+          '<td><span style="color: var(--conf-' + escapeHtml(confClass) + '-text, #374151); font-weight:600">' + escapeHtml(confText) + '</span></td>' +
+          '<td>' + escapeHtml(row.reliability || '-') + '</td>';
         
         tbody.appendChild(tr);
       });

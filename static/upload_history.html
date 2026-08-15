@@ -566,8 +566,8 @@
                 <tr>
                     <td>${esc(r.item_description)}</td>
                     <td>₹${Number(r.unit_price).toLocaleString('en-IN')}</td>
-                    <td>${r.quantity}</td>
-                    <td>${r.purchase_date}</td>
+                    <td>${esc(r.quantity)}</td>
+                    <td>${esc(r.purchase_date)}</td>
                     <td>${esc(r.vendor_name || '—')}</td>
                 </tr>
             `).join('');
@@ -597,8 +597,8 @@
                     <tr>
                         <td>${esc(r.item_description)}</td>
                         <td>₹${Number(r.unit_price).toLocaleString('en-IN')}</td>
-                        <td>${r.quantity}</td>
-                        <td>${r.purchase_date}</td>
+                        <td>${esc(r.quantity)}</td>
+                        <td>${esc(r.purchase_date)}</td>
                         <td>${esc(r.vendor_name || '—')}</td>
                         <td>${esc(r.department)}</td>
                     </tr>

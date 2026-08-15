@@ -162,19 +162,23 @@ export async function renderSessions() {
       return;
     }
     
-    grid.innerHTML = sessions.map(s => `
-      <div class="session-card" data-session-id="${s.session_id}">
-        <div class="card-session-id">${s.session_id}</div>
-        <span class="engine-badge engine-${s.engine}">${s.engine}</span>
+    grid.innerHTML = sessions.map(s => {
+      const safeSessionId = escapeHtml(s.session_id);
+      const safeEngine = escapeHtml(s.engine);
+      return `
+      <div class="session-card" data-session-id="${safeSessionId}">
+        <div class="card-session-id">${safeSessionId}</div>
+        <span class="engine-badge engine-${safeEngine}">${safeEngine}</span>
         <div class="card-meta">
           <div>Requests: ${s.request_count}</div>
           <div>Cookies: ${s.cookie_count}</div>
           <div>Created: ${timeAgo(s.created_at)}</div>
           <div>Last active: ${timeAgo(s.last_active)}</div>
         </div>
-        <button class="delete-session-btn" data-session-id="${s.session_id}" title="Delete session">✕</button>
+        <button class="delete-session-btn" data-session-id="${safeSessionId}" title="Delete session">✕</button>
       </div>
-    `).join("");
+    `;
+    }).join("");
     
     grid.querySelectorAll(".delete-session-btn").forEach(btn => {
       btn.addEventListener("click", async (e) => {

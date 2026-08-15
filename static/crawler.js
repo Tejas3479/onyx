@@ -31,13 +31,16 @@ function renderCrawlResultsTable(page = 1) {
 
   tableBody.innerHTML = slice.map((r, sliceIdx) => {
     const actualIndex = startIndex + sliceIdx;
+    const safeUrl = escapeHtml(r.url || '');
+    const safeTitle = escapeHtml(r.title || '—');
+    const safeStatus = escapeHtml(r.status_code || r.error || 'error');
     return `
       <tr style="border-bottom: 1px solid rgba(255,255,255,0.06); transition:background 0.15s ease;" class="crawl-result-row">
-        <td style="padding: 10px 16px; font-family: monospace; font-size: 11px; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${r.url}">${r.url}</td>
-        <td style="padding: 10px 16px; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${r.title || '—'}">${r.title || '—'}</td>
+        <td style="padding: 10px 16px; font-family: monospace; font-size: 11px; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${safeUrl}">${safeUrl}</td>
+        <td style="padding: 10px 16px; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${safeTitle}">${safeTitle}</td>
         <td style="padding: 10px 16px;">
           <span class="status-pill ${r.status_code >= 200 && r.status_code < 300 ? 'status-2xx' : 'status-4xx'}" style="font-size:10px; padding:2px 8px;">
-            ${r.status_code || r.error || 'error'}
+            ${safeStatus}
           </span>
         </td>
         <td style="padding: 10px 16px;">
@@ -117,16 +120,20 @@ export async function renderCrawls() {
 
     grid.innerHTML = crawls.map(c => {
       const pagesCrawled = c.stats?.pages_crawled ?? 0;
-      const pct = Math.round((pagesCrawled / c.max_pages) * 100);
+      const pct = Math.round((pagesCrawled / (c.max_pages || 1)) * 100);
       let statusClass = "engine-curl";
       if (c.status === "running") statusClass = "engine-playwright";
       else if (c.status === "failed") statusClass = "status-offline";
       
+      const safeId = escapeHtml(c.crawl_id || '');
+      const safeUrl = escapeHtml(c.url || '');
+      const safeStatus = escapeHtml(c.status || '');
+
       return `
-        <div class="session-card crawl-card" data-crawl-id="${c.crawl_id}" style="cursor:pointer; border-color:${c.status === 'running' ? 'var(--accent-color)' : 'rgba(255,255,255,0.08)'}; position: relative; padding:16px;">
-          <div class="card-session-id" style="font-size:10px; color:var(--text-secondary)">ID: ${c.crawl_id.slice(0, 8)}…</div>
-          <div class="crawl-card-url" style="font-size:13px; font-weight:500; margin-bottom:8px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding-right: 20px;" title="${c.url}">${c.url}</div>
-          <span class="engine-badge ${statusClass}" style="margin-bottom:8px;">${c.status}</span>
+        <div class="session-card crawl-card" data-crawl-id="${safeId}" style="cursor:pointer; border-color:${c.status === 'running' ? 'var(--accent-color)' : 'rgba(255,255,255,0.08)'}; position: relative; padding:16px;">
+          <div class="card-session-id" style="font-size:10px; color:var(--text-secondary)">ID: ${safeId.slice(0, 8)}…</div>
+          <div class="crawl-card-url" style="font-size:13px; font-weight:500; margin-bottom:8px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding-right: 20px;" title="${safeUrl}">${safeUrl}</div>
+          <span class="engine-badge ${statusClass}" style="margin-bottom:8px;">${safeStatus}</span>
           
           <div class="crawl-progress-container" style="background:rgba(255,255,255,0.06); height:6px; border-radius:3px; overflow:hidden; margin-top:8px; margin-bottom:4px;">
             <div class="crawl-progress-bar" style="width:${pct}%; height:100%; background:var(--accent-color); transition:width 0.3s ease;"></div>
@@ -135,7 +142,7 @@ export async function renderCrawls() {
             <span>Pages: ${pagesCrawled} / ${c.max_pages}</span>
             <span>${timeAgo(c.created_at)}</span>
           </div>
-          <button class="delete-crawl-btn" data-crawl-id="${c.crawl_id}" style="position:absolute; top:12px; right:12px; background:transparent; border:none; color:var(--text-tertiary); cursor:pointer; font-size:14px;">✕</button>
+          <button class="delete-crawl-btn" data-crawl-id="${safeId}" style="position:absolute; top:12px; right:12px; background:transparent; border:none; color:var(--text-tertiary); cursor:pointer; font-size:14px;">✕</button>
         </div>
       `;
     }).join("");
