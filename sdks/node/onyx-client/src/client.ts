@@ -75,9 +75,18 @@ export class OnyxClient {
 
   // --- Price Benchmarking & Reports ---
 
-  async benchmark(query: string, quantity: number = 1, department?: string): Promise<any> {
+  async benchmark(
+    productName: string,
+    quantity: number = 1,
+    department?: string,
+    options: Record<string, any> = {}
+  ): Promise<any> {
     try {
-      const payload: any = { query, quantity };
+      const payload: any = {
+        product_name: productName,
+        quantity,
+        ...options,
+      };
       if (department) {
         payload.department = department;
       }

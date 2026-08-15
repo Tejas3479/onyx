@@ -46,10 +46,27 @@ class OnyxClient:
         return response.json()
 
     # --- Price Benchmarking & Reports Endpoints ---
-    def benchmark(self, query: str, quantity: int = 1, department: str | None = None) -> dict[str, Any]:
-        payload = {"query": query, "quantity": quantity}
+    def benchmark(
+        self,
+        product_name: str | None = None,
+        quantity: int = 1,
+        department: str | None = None,
+        category: str | None = None,
+        specs: dict | None = None,
+        query: str | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
+        name = product_name or query
+        if not name:
+            raise ValueError("product_name is required for benchmarking")
+        payload: dict[str, Any] = {"product_name": name, "quantity": quantity}
         if department:
             payload["department"] = department
+        if category:
+            payload["category"] = category
+        if specs:
+            payload["specs"] = specs
+        payload.update(kwargs)
         response = self.client.post("/api/v1/benchmark", json=payload)
         self._check_response(response)
         return response.json()
@@ -105,10 +122,27 @@ class AsyncOnyxClient:
         self._check_response(response)
         return response.json()
 
-    async def benchmark(self, query: str, quantity: int = 1, department: str | None = None) -> dict[str, Any]:
-        payload = {"query": query, "quantity": quantity}
+    async def benchmark(
+        self,
+        product_name: str | None = None,
+        quantity: int = 1,
+        department: str | None = None,
+        category: str | None = None,
+        specs: dict | None = None,
+        query: str | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
+        name = product_name or query
+        if not name:
+            raise ValueError("product_name is required for benchmarking")
+        payload: dict[str, Any] = {"product_name": name, "quantity": quantity}
         if department:
             payload["department"] = department
+        if category:
+            payload["category"] = category
+        if specs:
+            payload["specs"] = specs
+        payload.update(kwargs)
         response = await self.client.post("/api/v1/benchmark", json=payload)
         self._check_response(response)
         return response.json()
