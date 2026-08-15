@@ -1,6 +1,6 @@
 import os
 import sys
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 os.environ["AUTH_DISABLED"] = "true"
 
@@ -10,6 +10,7 @@ from fastapi.testclient import TestClient
 
 from app import app
 from database import init_db
+from services.crawl_manager import crawl_manager
 
 client = TestClient(app)
 
@@ -110,53 +111,55 @@ async def test_batch_crawl_creation(async_client):
     csv_data = "url\nhttps://example.com\nhttps://example.org\n"
     files = {"file": ("test.csv", csv_data.encode("utf-8"), "text/csv")}
     
-    r = await async_client.post("/api/crawl/batch", headers=headers, files=files)
-    assert r.status_code == 200
-    data = r.json()
-    assert "batch_id" in data
-    assert data["total_urls"] == 2
-    assert data["status"] == "processing"
+    with patch("worker.run_batch_crawl_task", new_callable=AsyncMock):
+        r = await async_client.post("/api/crawl/batch", headers=headers, files=files)
+        assert r.status_code == 200
+        data = r.json()
+        assert "batch_id" in data
+        assert data["total_urls"] == 2
+        assert data["status"] == "processing"
 
 
 @pytest.mark.asyncio
 async def test_crawl_lifecycle(async_client):
     headers = {"x-api-key": "test-key"}
-    # 1. Start crawl
-    payload = {"url": "https://example.com", "max_pages": 5, "max_depth": 2}
-    r_create = await async_client.post("/api/crawl", headers=headers, json=payload)
-    assert r_create.status_code == 200
-    data_create = r_create.json()
-    assert "crawl_id" in data_create
-    assert data_create["status"] == "running"
-    crawl_id = data_create["crawl_id"]
+    with patch.object(crawl_manager, "_run_crawl", new_callable=AsyncMock):
+        # 1. Start crawl
+        payload = {"url": "https://example.com", "max_pages": 5, "max_depth": 2}
+        r_create = await async_client.post("/api/crawl", headers=headers, json=payload)
+        assert r_create.status_code == 200
+        data_create = r_create.json()
+        assert "crawl_id" in data_create
+        assert data_create["status"] == "running"
+        crawl_id = data_create["crawl_id"]
 
-    # 2. Get crawl details
-    r_get = await async_client.get(f"/api/crawl/{crawl_id}", headers=headers)
-    assert r_get.status_code == 200
-    data_get = r_get.json()
-    assert data_get["id"] == crawl_id
-    assert data_get["url"] == "https://example.com/"
+        # 2. Get crawl details
+        r_get = await async_client.get(f"/api/crawl/{crawl_id}", headers=headers)
+        assert r_get.status_code == 200
+        data_get = r_get.json()
+        assert data_get["id"] == crawl_id
+        assert data_get["url"] == "https://example.com/"
 
-    # 3. List crawls
-    r_list = await async_client.get("/api/crawl", headers=headers)
-    assert r_list.status_code == 200
-    crawls = r_list.json()
-    assert any(
-        c.get("crawl_id") == crawl_id or c.get("id") == crawl_id for c in crawls
-    )
+        # 3. List crawls
+        r_list = await async_client.get("/api/crawl", headers=headers)
+        assert r_list.status_code == 200
+        crawls = r_list.json()
+        assert any(
+            c.get("crawl_id") == crawl_id or c.get("id") == crawl_id for c in crawls
+        )
 
-    # 4. Delete crawl
-    r_delete = await async_client.delete(f"/api/crawl/{crawl_id}", headers=headers)
-    assert r_delete.status_code == 200
-    assert r_delete.json() == {"deleted": True, "crawl_id": crawl_id}
+        # 4. Delete crawl
+        r_delete = await async_client.delete(f"/api/crawl/{crawl_id}", headers=headers)
+        assert r_delete.status_code == 200
+        assert r_delete.json() == {"deleted": True, "crawl_id": crawl_id}
 
-    # 5. Get deleted crawl -> 404
-    r_get_deleted = await async_client.get(f"/api/crawl/{crawl_id}", headers=headers)
-    assert r_get_deleted.status_code == 404
+        # 5. Get deleted crawl -> 404
+        r_get_deleted = await async_client.get(f"/api/crawl/{crawl_id}", headers=headers)
+        assert r_get_deleted.status_code == 404
 
-    # 6. Delete non-existent crawl -> 404
-    r_delete_fake = await async_client.delete("/api/crawl/fake-id-9999", headers=headers)
-    assert r_delete_fake.status_code == 404
+        # 6. Delete non-existent crawl -> 404
+        r_delete_fake = await async_client.delete("/api/crawl/fake-id-9999", headers=headers)
+        assert r_delete_fake.status_code == 404
 
 
 @pytest.mark.asyncio
