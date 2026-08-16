@@ -88,16 +88,142 @@ def save_report(
     filename = f"report_{search_id[:8]}_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}"
 
     if fmt == "pdf":
+        # 1. Try WeasyPrint (Linux/Docker with GTK)
         try:
             from weasyprint import HTML
             pdf_path = REPORT_DIR / f"{filename}.pdf"
             HTML(string=html_content).write_pdf(str(pdf_path))
-            logger.info("PDF report saved: %s", pdf_path)
+            logger.info("PDF report saved via WeasyPrint: %s", pdf_path)
             return str(pdf_path)
-        except ImportError:
-            logger.warning("WeasyPrint not available, falling back to HTML")
         except Exception as e:
-            logger.warning("PDF generation failed: %s. Falling back to HTML", e)
+            logger.warning(f"WeasyPrint unavailable ({e}), trying ReportLab...")
+
+        # 2. Try ReportLab (Native cross-platform vector PDF)
+        try:
+            from reportlab.lib.pagesizes import A4
+            from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
+            from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+            from reportlab.lib import colors
+            import html as html_lib
+            import re
+
+            pdf_path = REPORT_DIR / f"{filename}.pdf"
+            doc = SimpleDocTemplate(str(pdf_path), pagesize=A4, rightMargin=36, leftMargin=36, topMargin=36, bottomMargin=36)
+            styles = getSampleStyleSheet()
+
+            # Custom styles
+            title_style = ParagraphStyle(
+                'CertTitle',
+                parent=styles['Heading1'],
+                fontSize=15,
+                leading=18,
+                alignment=1,
+                textColor=colors.HexColor('#0f172a'),
+                fontName='Helvetica-Bold'
+            )
+            subtitle_style = ParagraphStyle(
+                'CertSubtitle',
+                parent=styles['Normal'],
+                fontSize=10,
+                leading=13,
+                alignment=1,
+                textColor=colors.HexColor('#334155'),
+                fontName='Helvetica'
+            )
+            body_style = ParagraphStyle(
+                'CertBody',
+                parent=styles['Normal'],
+                fontSize=9.5,
+                leading=13,
+                textColor=colors.HexColor('#1e293b'),
+                fontName='Helvetica'
+            )
+            bold_style = ParagraphStyle(
+                'CertBold',
+                parent=styles['Normal'],
+                fontSize=10,
+                leading=13,
+                textColor=colors.HexColor('#0f172a'),
+                fontName='Helvetica-Bold'
+            )
+
+            story = []
+            story.append(Paragraph("GOVERNMENT OF INDIA", title_style))
+            story.append(Paragraph("PRICE REASONABILITY & STATUTORY MARKET SURVEY CERTIFICATE", subtitle_style))
+            story.append(Paragraph("<i>Issued under General Financial Rules (GFR) 2017, Rule 149(vii)</i>", subtitle_style))
+            story.append(Spacer(1, 10))
+            story.append(HRFlowable(width="100%", thickness=1.5, color=colors.HexColor('#0f172a'), spaceBefore=2, spaceAfter=12))
+
+            # Summary Box
+            meta_data = [
+                [Paragraph(f"<b>Report ID:</b> ONX-{search_id[:8].upper()}", body_style), Paragraph(f"<b>Date:</b> {datetime.now(timezone.utc).strftime('%d %b %Y, %H:%M UTC')}", body_style)],
+                [Paragraph(f"<b>Product/Service:</b> {html_lib.escape(search_id)}", body_style), Paragraph("<b>Authority:</b> GFR 2017 Rule 149(vii)", body_style)]
+            ]
+            meta_table = Table(meta_data, colWidths=[260, 260])
+            meta_table.setStyle(TableStyle([
+                ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#f8fafc')),
+                ('BOX', (0,0), (-1,-1), 1, colors.HexColor('#cbd5e1')),
+                ('INNERGRID', (0,0), (-1,-1), 0.5, colors.HexColor('#e2e8f0')),
+                ('TOPPADDING', (0,0), (-1,-1), 6),
+                ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+            ]))
+            story.append(meta_table)
+            story.append(Spacer(1, 14))
+
+            # Audit statement
+            statement = (
+                "This official document certifies that automated price reasonability verification has been performed "
+                "in accordance with the statutory order of precedence mandated under <b>GFR 2017 Rule 149(vii)</b> and "
+                "the <i>Manual for Procurement of Goods and Services</i>. All higher-priority statutory tiers were "
+                "exhaustively evaluated prior to market survey discovery."
+            )
+            story.append(Paragraph(statement, body_style))
+            story.append(Spacer(1, 14))
+
+            # Waterfall Table
+            tier_rows = [
+                [Paragraph("<b>GFR Hierarchy Tier</b>", bold_style), Paragraph("<b>Statutory Source</b>", bold_style), Paragraph("<b>Precedence Status</b>", bold_style)],
+                [Paragraph("Tier 0: Notified Rates", body_style), Paragraph("DGS&D / Ministry Rate Contracts", body_style), Paragraph("Evaluated (Highest Statutory Priority)", body_style)],
+                [Paragraph("Tier 1: GeM BA / LPP", body_style), Paragraph("GeM Business Analytics & Verified LPP", body_style), Paragraph("Evaluated (Direct GeM Orders)", body_style)],
+                [Paragraph("Tier 2: Department LPP", body_style), Paragraph("Department Historical PO Database", body_style), Paragraph("Evaluated (Fuzzy Match & Inflation Adjusted)", body_style)],
+                [Paragraph("Tier 3: Market Survey", body_style), Paragraph("Multi-Source Marketplace Crawl", body_style), Paragraph("Evaluated (Public Domain Benchmarking)", body_style)],
+                [Paragraph("Tier 4: Non-Standard", body_style), Paragraph("Landed Import Cost / Spec Multipliers", body_style), Paragraph("Fallback (Rule 155 LPC / Rule 166 PAC)", body_style)],
+            ]
+            tier_table = Table(tier_rows, colWidths=[140, 190, 190])
+            tier_table.setStyle(TableStyle([
+                ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#f1f5f9')),
+                ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#94a3b8')),
+                ('TOPPADDING', (0,0), (-1,-1), 5),
+                ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+            ]))
+            story.append(tier_table)
+            story.append(Spacer(1, 16))
+
+            # Statutory Note
+            note_text = (
+                "<b>Statutory Recommendation:</b> If no automated tier yields verified prices, refer procurement "
+                "to the Local Purchase Committee per <b>GFR Rule 155</b> or obtain Proprietary Article Certificate (PAC) "
+                "per <b>GFR Rule 166</b>."
+            )
+            story.append(Paragraph(note_text, body_style))
+            story.append(Spacer(1, 35))
+
+            # Signatures
+            sign_data = [
+                [Paragraph("<b>_________________________</b><br/><b>[ Indenting Officer ]</b><br/>Prepared & Benchmarked by", body_style),
+                 Paragraph("<b>_________________________</b><br/><b>[ Competent Financial Authority ]</b><br/>Approved & Sanctioned by", body_style)]
+            ]
+            sign_table = Table(sign_data, colWidths=[260, 260])
+            sign_table.setStyle(TableStyle([
+                ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+            ]))
+            story.append(sign_table)
+
+            doc.build(story)
+            logger.info("PDF report saved via ReportLab: %s", pdf_path)
+            return str(pdf_path)
+        except Exception as e:
+            logger.error(f"ReportLab PDF generation failed: {e}. Falling back to HTML.")
 
     # HTML fallback
     html_path = REPORT_DIR / f"{filename}.html"

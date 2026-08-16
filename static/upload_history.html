@@ -1,646 +1,624 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Onyx — Upload Purchase History</title>
-    <meta name="description" content="Upload department purchase history for GFR-compliant price benchmarking.">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        :root {
-            --bg: #f8f9fa;
-            --surface: #ffffff;
-            --border: #dee2e6;
-            --border-focus: #4a90d9;
-            --text: #212529;
-            --text-muted: #6c757d;
-            --primary: #2c5aa0;
-            --primary-hover: #1e3f73;
-            --success: #198754;
-            --success-bg: #d1e7dd;
-            --danger: #dc3545;
-            --danger-bg: #f8d7da;
-            --warning-bg: #fff3cd;
-            --radius: 6px;
-            --shadow: 0 1px 3px rgba(0,0,0,0.08);
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.5;
-            min-height: 100vh;
-        }
-
-        /* Layout */
-        .container {
-            max-width: 860px;
-            margin: 0 auto;
-            padding: 2rem 1.5rem;
-        }
-
-        .header {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .header .logo {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--primary);
-            text-decoration: none;
-            letter-spacing: -0.02em;
-        }
-
-        .header .logo::before { content: "◆ "; }
-
-        .header nav {
-            display: flex;
-            gap: 0.75rem;
-            margin-left: auto;
-        }
-
-        .header nav a {
-            font-size: 0.875rem;
-            color: var(--text-muted);
-            text-decoration: none;
-            padding: 0.25rem 0.5rem;
-            border-radius: var(--radius);
-            transition: background 0.15s, color 0.15s;
-        }
-
-        .header nav a:hover {
-            background: #e9ecef;
-            color: var(--text);
-        }
-
-        h1 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            letter-spacing: -0.02em;
-            margin-bottom: 0.5rem;
-        }
-
-        .subtitle {
-            color: var(--text-muted);
-            font-size: 0.9375rem;
-            margin-bottom: 2rem;
-        }
-
-        /* Card */
-        .card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 1.5rem;
-            box-shadow: var(--shadow);
-            margin-bottom: 1.5rem;
-        }
-
-        .card h2 {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-        }
-
-        /* Form */
-        label {
-            display: block;
-            font-size: 0.875rem;
-            font-weight: 500;
-            margin-bottom: 0.375rem;
-            color: var(--text);
-        }
-
-        .form-help {
-            font-size: 0.8125rem;
-            color: var(--text-muted);
-            margin-bottom: 1rem;
-        }
-
-        input[type="text"], select {
-            width: 100%;
-            padding: 0.5rem 0.75rem;
-            font-size: 0.9375rem;
-            font-family: inherit;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            background: var(--surface);
-            color: var(--text);
-            transition: border-color 0.15s;
-        }
-
-        input[type="text"]:focus, select:focus {
-            outline: none;
-            border-color: var(--border-focus);
-            box-shadow: 0 0 0 3px rgba(74,144,217,0.15);
-        }
-
-        /* File drop zone */
-        .drop-zone {
-            border: 2px dashed var(--border);
-            border-radius: var(--radius);
-            padding: 2rem;
-            text-align: center;
-            cursor: pointer;
-            transition: border-color 0.2s, background 0.2s;
-            margin-bottom: 1rem;
-        }
-
-        .drop-zone:hover, .drop-zone.dragover {
-            border-color: var(--border-focus);
-            background: rgba(74,144,217,0.04);
-        }
-
-        .drop-zone.has-file {
-            border-color: var(--success);
-            background: var(--success-bg);
-        }
-
-        .drop-zone input[type="file"] {
-            display: none;
-        }
-
-        .drop-zone .icon {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .drop-zone .label {
-            font-size: 0.9375rem;
-            color: var(--text-muted);
-        }
-
-        .drop-zone .label strong {
-            color: var(--primary);
-            cursor: pointer;
-        }
-
-        .drop-zone .file-name {
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--success);
-            margin-top: 0.25rem;
-        }
-
-        /* Buttons */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1.25rem;
-            font-size: 0.9375rem;
-            font-weight: 500;
-            font-family: inherit;
-            border: none;
-            border-radius: var(--radius);
-            cursor: pointer;
-            transition: background 0.15s, transform 0.1s;
-        }
-
-        .btn:active { transform: scale(0.98); }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover:not(:disabled) {
-            background: var(--primary-hover);
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 0.75rem;
-            margin-top: 1.5rem;
-        }
-
-        /* Status messages */
-        .message {
-            padding: 0.75rem 1rem;
-            border-radius: var(--radius);
-            font-size: 0.875rem;
-            margin-bottom: 1rem;
-            display: none;
-        }
-
-        .message.success { display: block; background: var(--success-bg); color: #0f5132; }
-        .message.error { display: block; background: var(--danger-bg); color: #842029; }
-        .message.warning { display: block; background: var(--warning-bg); color: #664d03; }
-
-        /* Preview table */
-        .preview-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.8125rem;
-            margin-top: 1rem;
-        }
-
-        .preview-table th {
-            background: #f1f3f5;
-            font-weight: 600;
-            text-align: left;
-            padding: 0.5rem 0.75rem;
-            border-bottom: 2px solid var(--border);
-            white-space: nowrap;
-        }
-
-        .preview-table td {
-            padding: 0.5rem 0.75rem;
-            border-bottom: 1px solid #f1f3f5;
-        }
-
-        .preview-table tr:hover td {
-            background: #f8f9fa;
-        }
-
-        .preview-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 1.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .preview-header h2 { margin-bottom: 0; }
-
-        .badge {
-            font-size: 0.75rem;
-            font-weight: 500;
-            padding: 0.125rem 0.5rem;
-            border-radius: 10px;
-            background: #e9ecef;
-            color: var(--text-muted);
-        }
-
-        /* Columns layout */
-        .columns {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-
-        /* Loading spinner */
-        .spinner {
-            display: none;
-            width: 18px;
-            height: 18px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 0.6s linear infinite;
-        }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* Template download */
-        .template-link {
-            font-size: 0.8125rem;
-            color: var(--primary);
-            text-decoration: none;
-        }
-
-        .template-link:hover { text-decoration: underline; }
-
-        /* Responsive */
-        @media (max-width: 640px) {
-            .columns { grid-template-columns: 1fr; }
-            .container { padding: 1rem; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Onyx — Department Purchase History Ingestion</title>
+  <meta name="description" content="Ingest and index historical department purchase orders for GFR 149(vii) Tier 2 Last Purchase Price (LPP) matching.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --navy-900: #0f172a;
+      --navy-800: #1e293b;
+      --navy-700: #334155;
+      --text-dark: #0f172a;
+      --text-main: #334155;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --border-subtle: #f1f5f9;
+      
+      --primary: #1d4ed8;
+      --primary-hover: #1e40af;
+      --primary-light: #eff6ff;
+      
+      --success: #16a34a;
+      --success-bg: #dcfce7;
+      --danger: #dc2626;
+      --danger-bg: #fee2e2;
+      --warning: #d97706;
+      --warning-bg: #fef3c7;
+      
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    /* ── Top Navbar ── */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 32px;
+      background-color: var(--navy-900);
+      color: #fff;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: #fff;
+    }
+    .brand-logo {
+      font-family: 'Outfit', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #fff;
+    }
+    .brand-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      background: rgba(37, 99, 235, 0.25);
+      border: 1px solid rgba(96, 165, 250, 0.4);
+      color: #93c5fd;
+      padding: 2px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+    
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .nav-link {
+      padding: 6px 14px;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: #cbd5e1;
+      text-decoration: none;
+      border-radius: var(--radius-sm);
+      transition: all 0.15s ease;
+    }
+    .nav-link:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .nav-link.active {
+      color: #fff;
+      background: #2563eb;
+      font-weight: 600;
+    }
+    
+    .system-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #86efac;
+      background: rgba(34, 197, 94, 0.12);
+      border: 1px solid rgba(34, 197, 94, 0.25);
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      background: #22c55e;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #22c55e;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    
+    /* ── Main Container ── */
+    main {
+      flex: 1;
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 32px 24px 64px;
+    }
+    
+    .hero {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .hero-pre {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+    }
+    .hero h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 34px;
+      font-weight: 700;
+      color: var(--navy-900);
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+    .hero p {
+      font-size: 15px;
+      color: var(--text-muted);
+      max-width: 680px;
+      margin: 0 auto;
+    }
+    
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--navy-900);
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 10px;
+    }
+    
+    /* Form */
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--navy-700);
+      margin-bottom: 6px;
+    }
+    .form-group input[type="text"] {
+      width: 100%;
+      padding: 11px 14px;
+      font-size: 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .form-group input[type="text"]:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1);
+    }
+    
+    /* Drop Zone */
+    .drop-zone {
+      border: 2px dashed #cbd5e1;
+      border-radius: var(--radius-lg);
+      padding: 32px 20px;
+      text-align: center;
+      cursor: pointer;
+      background: #f8fafc;
+      transition: all 0.2s ease;
+      margin-bottom: 16px;
+    }
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: var(--primary);
+      background: #eff6ff;
+    }
+    .drop-zone-icon {
+      font-size: 36px;
+      margin-bottom: 8px;
+    }
+    .drop-zone-text {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--navy-900);
+    }
+    .drop-zone-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .file-name-display {
+      margin-top: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+    
+    .btn-primary {
+      padding: 12px 24px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      background: var(--primary);
+      border: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: background 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    
+    .template-link {
+      color: var(--primary);
+      text-decoration: none;
+      font-size: 12.5px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+    .template-link:hover { text-decoration: underline; }
+    
+    /* Messages */
+    .message-box {
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      font-size: 13.5px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .message-box.success { display: block; background: var(--success-bg); color: #166534; border: 1px solid #bbf7d0; }
+    .message-box.error { display: block; background: var(--danger-bg); color: #991b1b; border: 1px solid #fecaca; }
+    .message-box.warning { display: block; background: var(--warning-bg); color: #9a3412; border: 1px solid #fed7aa; }
+    
+    /* Table */
+    .table-container {
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th, td {
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      background: #f8fafc;
+      color: var(--navy-800);
+      font-weight: 600;
+    }
+    tbody tr:hover { background: #f8fafc; }
+    
+    .age-badge {
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+    .age-recent { background: #dcfce7; color: #166534; }
+    .age-moderate { background: #fef9c3; color: #854d0e; }
+    .age-old { background: #fee2e2; color: #991b1b; }
+    
+    footer {
+      text-align: center;
+      padding: 24px;
+      color: var(--text-muted);
+      font-size: 13px;
+      border-top: 1px solid var(--border);
+      background: #fff;
+      margin-top: auto;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <header class="header">
-            <a href="/" class="logo">Onyx</a>
-            <nav>
-                <a href="/">Scraper</a>
-                <a href="/benchmark.html">Benchmark</a>
-                <a href="/upload_history.html" aria-current="page" style="color:var(--text);font-weight:500;">Upload History</a>
-            </nav>
-        </header>
 
-        <h1>Upload Purchase History</h1>
-        <p class="subtitle">
-            Upload your department's past purchase records (CSV or Excel).
-            These become Tier 2 reference data — checked before running a market survey.
-        </p>
-
-        <!-- Status messages -->
-        <div id="successMsg" class="message"></div>
-        <div id="errorMsg" class="message"></div>
-
-        <!-- Upload form -->
-        <form id="uploadForm" class="card">
-            <h2>Department Details</h2>
-            <div class="columns">
-                <div>
-                    <label for="department">Department Name *</label>
-                    <input type="text" id="department" name="department" placeholder="e.g. NTRO, MoD, DoT" required>
-                </div>
-            </div>
-
-            <div style="margin-top:1.25rem">
-                <label>Purchase Records File *</label>
-                <p class="form-help">
-                    Required columns: <strong>item_description</strong>, <strong>unit_price</strong>, <strong>quantity</strong>, <strong>purchase_date</strong>.
-                    Optional: vendor_name, source_document. Any extra columns become item specifications.
-                    <br><a href="#" class="template-link" id="downloadTemplate">↓ Download CSV template</a>
-                </p>
-
-                <div class="drop-zone" id="dropZone">
-                    <input type="file" id="fileInput" name="file" accept=".csv,.xlsx,.xls">
-                    <div class="icon">📄</div>
-                    <div class="label">
-                        Drag & drop your file here, or <strong>browse</strong>
-                    </div>
-                    <div class="file-name" id="fileName"></div>
-                </div>
-            </div>
-
-            <div class="btn-group">
-                <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
-                    <span class="spinner" id="spinner"></span>
-                    Upload Records
-                </button>
-            </div>
-        </form>
-
-        <!-- Preview section (shown after upload) -->
-        <div id="previewSection" style="display:none">
-            <div class="preview-header">
-                <h2>Uploaded Records</h2>
-                <span class="badge" id="recordCount"></span>
-            </div>
-            <div class="card" style="padding:0;overflow-x:auto">
-                <table class="preview-table" id="previewTable">
-                    <thead>
-                        <tr>
-                            <th>Item Description</th>
-                            <th>Unit Price (₹)</th>
-                            <th>Qty</th>
-                            <th>Purchase Date</th>
-                            <th>Vendor</th>
-                        </tr>
-                    </thead>
-                    <tbody id="previewBody"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Existing records -->
-        <div id="existingSection" class="card" style="margin-top:1.5rem">
-            <h2>Existing Records</h2>
-            <div style="display:flex;gap:0.75rem;margin-bottom:1rem">
-                <input type="text" id="searchInput" placeholder="Search records..." style="flex:1">
-                <button class="btn btn-primary" id="searchBtn" style="padding:0.5rem 1rem">Search</button>
-            </div>
-            <div style="overflow-x:auto">
-                <table class="preview-table" id="existingTable">
-                    <thead>
-                        <tr>
-                            <th>Item Description</th>
-                            <th>Unit Price (₹)</th>
-                            <th>Qty</th>
-                            <th>Purchase Date</th>
-                            <th>Vendor</th>
-                            <th>Department</th>
-                        </tr>
-                    </thead>
-                    <tbody id="existingBody"></tbody>
-                </table>
-            </div>
-            <p id="noRecords" style="text-align:center;color:var(--text-muted);padding:1rem;font-size:0.875rem">
-                No records yet. Upload a file above to get started.
-            </p>
-        </div>
+  <!-- Top Navbar -->
+  <header class="navbar">
+    <a href="/" class="nav-brand">
+      <div class="brand-logo">◆ ONYX</div>
+      <div class="brand-tag">GFR 149(vii) Intelligence</div>
+    </a>
+    
+    <nav class="nav-links">
+      <a href="/" class="nav-link">🎯 Price Benchmark</a>
+      <a href="/upload_history.html" class="nav-link active">📁 Dept PO Ingestion</a>
+      <a href="/index.html" class="nav-link">🌐 Market Crawlers & Engine</a>
+    </nav>
+    
+    <div class="system-status">
+      <div class="status-dot"></div>
+      <span>Tier 2 Ingestion Online</span>
     </div>
+  </header>
 
-    <script>
-        const API_BASE = '/api/v1/department-lpp';
+  <main>
+    <section class="hero">
+      <div class="hero-pre">GFR Rule 149(vii) Tier 2 Database</div>
+      <h1>Department Purchase Order Ingestion</h1>
+      <p>Upload legacy CSV or Excel purchase orders. Records are indexed with RapidFuzz token matching and automatically adjusted for annual inflation during benchmark searches.</p>
+    </section>
 
-        // === Drop zone ===
-        const dropZone = document.getElementById('dropZone');
-        const fileInput = document.getElementById('fileInput');
-        const fileName = document.getElementById('fileName');
-        const submitBtn = document.getElementById('submitBtn');
+    <!-- Upload Card -->
+    <section class="card">
+      <div class="card-title">
+        <span>Ingest Purchase Order Batch</span>
+        <a href="#" class="template-link" id="downloadTemplate">📥 Download CSV Template</a>
+      </div>
 
-        dropZone.addEventListener('click', () => fileInput.click());
+      <div id="successMsg" class="message-box success"></div>
+      <div id="errorMsg" class="message-box error"></div>
 
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('dragover');
+      <form id="uploadForm">
+        <div class="form-group">
+          <label for="department">Procuring Ministry / Department Name *</label>
+          <input type="text" id="department" placeholder="e.g. Ministry of Defence, DRDO, NTRO, MeitY" required>
+        </div>
+
+        <div class="drop-zone" id="dropZone">
+          <div class="drop-zone-icon">📁</div>
+          <div class="drop-zone-text">Click to choose or drag & drop CSV / Excel file here</div>
+          <div class="drop-zone-sub">Required columns: item_description, unit_price, quantity, purchase_date</div>
+          <div class="file-name-display" id="fileName"></div>
+          <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" style="display:none;">
+        </div>
+
+        <button type="submit" class="btn-primary" id="submitBtn" disabled>
+          <span>🚀</span> Ingest & Index PO Records
+        </button>
+      </form>
+    </section>
+
+    <!-- Ingested Records Database -->
+    <section class="card">
+      <div class="card-title">
+        <span>Active Ingested PO Database (Tier 2 Index)</span>
+        <span id="activeCount" style="font-size:12px;color:var(--text-muted);">Loading records...</span>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-bottom:16px;">
+        <input type="text" id="searchInput" placeholder="Search ingested records by item name, department, or vendor..." style="flex:1;padding:9px 12px;font-size:13.5px;border:1px solid var(--border);border-radius:var(--radius-md);outline:none;">
+        <button type="button" class="btn-primary" id="searchBtn" style="padding:9px 18px;">Search</button>
+      </div>
+
+      <div class="table-container">
+        <table id="existingTable">
+          <thead>
+            <tr>
+              <th>Item Description</th>
+              <th>Unit Price (₹)</th>
+              <th>Quantity</th>
+              <th>PO Date</th>
+              <th>Staleness</th>
+              <th>Department</th>
+              <th>Vendor / Document</th>
+            </tr>
+          </thead>
+          <tbody id="existingBody"></tbody>
+        </table>
+      </div>
+      <p id="noRecords" style="text-align:center;color:var(--text-muted);padding:24px 0;display:none;">
+        No purchase records found in the database. Upload a CSV or Excel batch above.
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <p>Onyx Statutory Procurement System | Fully Compliant with GFR 2017 Rule 149(vii)</p>
+  </footer>
+
+  <script>
+    const API_BASE = '/api/v1/department-lpp';
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const fileName = document.getElementById('fileName');
+    const submitBtn = document.getElementById('submitBtn');
+
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      if (e.dataTransfer.files.length) {
+        fileInput.files = e.dataTransfer.files;
+        handleFileSelect();
+      }
+    });
+
+    fileInput.addEventListener('change', handleFileSelect);
+
+    function handleFileSelect() {
+      if (fileInput.files.length) {
+        const file = fileInput.files[0];
+        fileName.textContent = `✓ Selected: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+        submitBtn.disabled = !document.getElementById('department').value.trim();
+      }
+    }
+
+    document.getElementById('department').addEventListener('input', () => {
+      submitBtn.disabled = !fileInput.files.length || !document.getElementById('department').value.trim();
+    });
+
+    // Form submission
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideMessages();
+
+      const dept = document.getElementById('department').value.trim();
+      if (!dept || !fileInput.files.length) return;
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span>⏳</span> Processing & Validating...';
+
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+      formData.append('department', dept);
+
+      try {
+        const res = await fetch(`${API_BASE}/upload`, {
+          method: 'POST',
+          body: formData,
         });
 
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('dragover');
-        });
+        const data = await res.json();
 
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('dragover');
-            if (e.dataTransfer.files.length) {
-                fileInput.files = e.dataTransfer.files;
-                handleFileSelect();
-            }
-        });
-
-        fileInput.addEventListener('change', handleFileSelect);
-
-        function handleFileSelect() {
-            if (fileInput.files.length) {
-                const file = fileInput.files[0];
-                fileName.textContent = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
-                dropZone.classList.add('has-file');
-                submitBtn.disabled = !document.getElementById('department').value.trim();
-            }
+        if (!res.ok) {
+          showError(data.detail || 'Upload failed');
+          return;
         }
 
-        document.getElementById('department').addEventListener('input', () => {
-            submitBtn.disabled = !fileInput.files.length || !document.getElementById('department').value.trim();
-        });
-
-        // === Form submit ===
-        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            hideMessages();
-
-            const dept = document.getElementById('department').value.trim();
-            if (!dept || !fileInput.files.length) return;
-
-            submitBtn.disabled = true;
-            document.getElementById('spinner').style.display = 'inline-block';
-            submitBtn.querySelector('span:last-child') || submitBtn.append(' Uploading...');
-
-            const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
-            formData.append('department', dept);
-
-            try {
-                const res = await fetch(`${API_BASE}/upload`, {
-                    method: 'POST',
-                    body: formData,
-                });
-
-                const data = await res.json();
-
-                if (!res.ok) {
-                    const detail = data.detail;
-                    const msg = typeof detail === 'object' ? detail.message : detail;
-                    showError(msg || 'Upload failed');
-                    if (detail?.errors) {
-                        showWarning('Validation errors: ' + detail.errors.join('; '));
-                    }
-                    return;
-                }
-
-                showSuccess(`${data.message}. ${data.errors?.length ? data.errors.length + ' rows had errors.' : ''}`);
-
-                if (data.errors?.length) {
-                    showWarning('Row errors: ' + data.errors.slice(0, 5).join('; '));
-                }
-
-                // Show preview
-                if (data.preview?.length) {
-                    showPreview(data.preview, data.saved_count);
-                }
-
-                // Refresh existing records
-                loadExistingRecords();
-
-                // Reset form
-                fileInput.value = '';
-                fileName.textContent = '';
-                dropZone.classList.remove('has-file');
-
-            } catch (err) {
-                showError('Network error: ' + err.message);
-            } finally {
-                submitBtn.disabled = false;
-                document.getElementById('spinner').style.display = 'none';
-            }
-        });
-
-        // === Messages ===
-        function hideMessages() {
-            document.getElementById('successMsg').className = 'message';
-            document.getElementById('errorMsg').className = 'message';
-        }
-
-        function showSuccess(msg) {
-            const el = document.getElementById('successMsg');
-            el.textContent = msg;
-            el.className = 'message success';
-        }
-
-        function showError(msg) {
-            const el = document.getElementById('errorMsg');
-            el.textContent = msg;
-            el.className = 'message error';
-        }
-
-        function showWarning(msg) {
-            const el = document.getElementById('errorMsg');
-            el.textContent = msg;
-            el.className = 'message warning';
-        }
-
-        // === Preview ===
-        function showPreview(records, total) {
-            document.getElementById('previewSection').style.display = 'block';
-            document.getElementById('recordCount').textContent = `${total} record${total !== 1 ? 's' : ''} saved`;
-
-            const tbody = document.getElementById('previewBody');
-            tbody.innerHTML = records.map(r => `
-                <tr>
-                    <td>${esc(r.item_description)}</td>
-                    <td>₹${Number(r.unit_price).toLocaleString('en-IN')}</td>
-                    <td>${esc(r.quantity)}</td>
-                    <td>${esc(r.purchase_date)}</td>
-                    <td>${esc(r.vendor_name || '—')}</td>
-                </tr>
-            `).join('');
-        }
-
-        // === Existing records ===
-        async function loadExistingRecords(search = '') {
-            try {
-                const params = new URLSearchParams();
-                if (search) params.set('search', search);
-                params.set('limit', '50');
-
-                const res = await fetch(`${API_BASE}?${params}`);
-                const data = await res.json();
-
-                const tbody = document.getElementById('existingBody');
-                const noRecords = document.getElementById('noRecords');
-
-                if (!data.records?.length) {
-                    tbody.innerHTML = '';
-                    noRecords.style.display = 'block';
-                    return;
-                }
-
-                noRecords.style.display = 'none';
-                tbody.innerHTML = data.records.map(r => `
-                    <tr>
-                        <td>${esc(r.item_description)}</td>
-                        <td>₹${Number(r.unit_price).toLocaleString('en-IN')}</td>
-                        <td>${esc(r.quantity)}</td>
-                        <td>${esc(r.purchase_date)}</td>
-                        <td>${esc(r.vendor_name || '—')}</td>
-                        <td>${esc(r.department)}</td>
-                    </tr>
-                `).join('');
-            } catch (err) {
-                console.error('Failed to load records:', err);
-            }
-        }
-
-        document.getElementById('searchBtn').addEventListener('click', () => {
-            loadExistingRecords(document.getElementById('searchInput').value.trim());
-        });
-
-        document.getElementById('searchInput').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') loadExistingRecords(e.target.value.trim());
-        });
-
-        // === CSV template download ===
-        document.getElementById('downloadTemplate').addEventListener('click', (e) => {
-            e.preventDefault();
-            const csv = 'item_description,unit_price,quantity,purchase_date,vendor_name,source_document\n'
-                + '"Cisco Catalyst 9300 48-Port Switch",185000,2,2024-06-15,"TechnoSys Solutions","PO/2024/NET-042"\n'
-                + '"HP ProBook 450 G10 Laptop",72500,10,2024-08-20,"CompuAge Infocom","PO/2024/IT-087"\n'
-                + '"A4 Paper 75gsm (500 sheets)",245,100,2024-09-01,"National Stationers","PO/2024/STN-015"\n';
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'purchase_history_template.csv';
-            a.click();
-            URL.revokeObjectURL(url);
-        });
-
-        // === Util ===
-        function esc(str) {
-            const div = document.createElement('div');
-            div.textContent = str;
-            return div.innerHTML;
-        }
-
-        // Load existing records on page load
+        showSuccess(`Successfully ingested ${data.saved_count || 'all'} PO records for ${dept}.`);
         loadExistingRecords();
-    </script>
+
+        fileInput.value = '';
+        fileName.textContent = '';
+      } catch (err) {
+        showError('Network error: ' + err.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span>🚀</span> Ingest & Index PO Records';
+      }
+    });
+
+    function hideMessages() {
+      document.getElementById('successMsg').style.display = 'none';
+      document.getElementById('errorMsg').style.display = 'none';
+    }
+
+    function showSuccess(msg) {
+      const el = document.getElementById('successMsg');
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('errorMsg');
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+
+    function calculateAgeBadge(dateStr) {
+      if (!dateStr) return '<span class="age-badge age-old">Unknown</span>';
+      const poDate = new Date(dateStr);
+      const now = new Date();
+      const diffMonths = (now.getFullYear() - poDate.getFullYear()) * 12 + (now.getMonth() - poDate.getMonth());
+      if (diffMonths <= 6) return '<span class="age-badge age-recent">&le; 6 Months</span>';
+      if (diffMonths <= 12) return '<span class="age-badge age-moderate">6-12 Months</span>';
+      return `<span class="age-badge age-old">> 12 Months (+${Math.round(diffMonths * 0.5)}% Infl.)</span>`;
+    }
+
+    async function loadExistingRecords(search = '') {
+      try {
+        const params = new URLSearchParams();
+        if (search) params.set('search', search);
+        params.set('limit', '50');
+
+        const res = await fetch(`${API_BASE}?${params}`);
+        const data = await res.json();
+
+        const tbody = document.getElementById('existingBody');
+        const noRecords = document.getElementById('noRecords');
+        const activeCount = document.getElementById('activeCount');
+
+        if (!data.records || !data.records.length) {
+          tbody.innerHTML = '';
+          noRecords.style.display = 'block';
+          activeCount.textContent = '0 records indexed';
+          return;
+        }
+
+        noRecords.style.display = 'none';
+        activeCount.textContent = `${data.records.length} records active`;
+
+        tbody.innerHTML = data.records.map(r => `
+          <tr>
+            <td><strong>${esc(r.item_description)}</strong></td>
+            <td style="font-family:'JetBrains Mono';font-weight:700;">₹${Number(r.unit_price).toLocaleString('en-IN')}</td>
+            <td>${esc(r.quantity)}</td>
+            <td>${esc(r.purchase_date)}</td>
+            <td>${calculateAgeBadge(r.purchase_date)}</td>
+            <td><span style="background:#eff6ff;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11.5px;font-weight:600;">${esc(r.department)}</span></td>
+            <td style="font-size:12px;color:#64748b;">${esc(r.vendor_name || '—')}</td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error('Failed to load records:', err);
+      }
+    }
+
+    document.getElementById('searchBtn').addEventListener('click', () => {
+      loadExistingRecords(document.getElementById('searchInput').value.trim());
+    });
+
+    document.getElementById('searchInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') loadExistingRecords(e.target.value.trim());
+    });
+
+    // CSV template download
+    document.getElementById('downloadTemplate').addEventListener('click', (e) => {
+      e.preventDefault();
+      const csv = 'item_description,unit_price,quantity,purchase_date,vendor_name,source_document\n'
+        + '"Cisco Catalyst 9300 48-Port Switch",185000,2,2024-06-15,"TechnoSys Solutions","PO/2024/NET-042"\n'
+        + '"HP ProBook 450 G10 Laptop",72500,10,2024-08-20,"CompuAge Infocom","PO/2024/IT-087"\n'
+        + '"A4 Paper 75gsm (500 sheets)",245,100,2024-09-01,"National Stationers","PO/2024/STN-015"\n'
+        + '"Executive Office Chair (Mesh Back)",8200,15,2024-05-10,"Godrej Interio","PO/2024/FUR-008"\n';
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'purchase_history_template.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    function esc(str) {
+      const div = document.createElement('div');
+      div.textContent = str ?? '';
+      return div.innerHTML;
+    }
+
+    loadExistingRecords();
+  </script>
 </body>
 </html>

@@ -68,19 +68,28 @@ async def estimate_non_standard_item(
     """
     logger.info("Tier 4 estimation for: %s (category: %s)", query, category)
 
-    # Strategy 1: Spec-similarity search
+    # Strategy 1: Gemini Search Grounding (Statutory AI Estimator)
+    try:
+        from services.gemini_grounding import estimate_non_standard_price_with_gemini
+        gemini_est = await estimate_non_standard_price_with_gemini(query, specs)
+        if gemini_est:
+            return gemini_est
+    except Exception as e:
+        logger.warning("Gemini Grounding check failed: %s", e)
+
+    # Strategy 2: Spec-similarity search against historical POs
     similar = await _find_similar_items(query, specs)
     if similar:
         estimated = _extrapolate_from_similar(query, specs, similar)
         if estimated:
             return estimated
 
-    # Strategy 2: AliExpress international pricing
+    # Strategy 3: International marketplace search for import landed cost (1.42x)
     intl_result = await _check_international_sources(query)
     if intl_result:
         return intl_result
 
-    # Strategy 3: Insufficient data — committee referral
+    # Strategy 4: Insufficient data — committee referral (Rule 155 LPC / Rule 166 PAC)
     return _insufficient_data_result(query, category)
 
 
@@ -313,9 +322,9 @@ def _insufficient_data_result(query: str, category: str | None) -> dict[str, Any
             f"all automated sources (Tiers 0\u20133 and international markets). "
             f"This item appears to be a non-standard/specialized procurement. "
             f"Recommended actions:\n"
-            f"1. Refer to Local Purchase Committee for negotiated pricing per GFR Rule 166\n"
+            f"1. Refer to Local Purchase Committee (LPC) for negotiated pricing per GFR Rule 155\n"
             f"2. Obtain quotations from at least 3 OEMs/authorized distributors\n"
-            f"3. Consider proprietary article certificate if single-source justified"
+            f"3. Consider Proprietary Article Certificate (PAC) per GFR Rule 166 if single-source justified"
         ),
         "is_demo_data": False,
         "confidence": "LOW",

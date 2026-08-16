@@ -16,7 +16,7 @@ async def seed_database() -> dict[str, int]:
     results = await seed_all()
     total = sum(results.values())
     if total > 0:
-        logger.info("Database seeded: %s", results)
+        logger.info(f"Database seeded: {results}")
     else:
         logger.debug("Database already seeded, no new data inserted")
     return results

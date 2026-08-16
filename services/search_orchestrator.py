@@ -113,12 +113,22 @@ async def run_market_survey(query: str, specs: dict[str, Any] | None = None) -> 
 
     logger.info("Starting market survey for '%s' across %d sources", query, len(sources))
 
-    # ── Parallel fetch ──
+    # ── Parallel fetch across standard sources + SerpAPI ──
+    from services.serpapi_service import search_google_shopping_india
+
     fetch_tasks = [_fetch_source(source, query) for source in sources]
+    serp_task = search_google_shopping_india(query)
+
     fetch_results = await asyncio.gather(*fetch_tasks, return_exceptions=True)
+    serp_results = await serp_task
 
     # ── Extract prices from each successful fetch ──
     all_results: list[dict[str, Any]] = []
+
+    # Add SerpAPI results if found
+    if serp_results:
+        all_results.extend(serp_results)
+
     for fetch_result in fetch_results:
         if not isinstance(fetch_result, dict):
             logger.warning("Fetch task exception: %s", fetch_result)

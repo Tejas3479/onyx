@@ -11,7 +11,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from database import init_db
@@ -289,6 +289,16 @@ app.include_router(crawl_router)
 app.include_router(admin_router)
 app.include_router(auth_router)
 app.include_router(reports_router)
+
+# Flagship Root Route: National Statutory Portal Landing Page
+@app.get("/", response_class=FileResponse, include_in_schema=False)
+async def serve_root():
+    return FileResponse("static/landing.html")
+
+@app.get("/benchmark", response_class=FileResponse, include_in_schema=False)
+async def serve_benchmark():
+    return FileResponse("static/benchmark.html")
+
 
 # Mount static files
 if os.path.isdir("static"):

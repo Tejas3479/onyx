@@ -89,13 +89,31 @@ async def generate_report(req: ReportRequest):
     )
 
 
+@router.get("/reports/generate-from-query")
 @router.post("/reports/generate-from-query", response_class=HTMLResponse)
-async def generate_report_from_query(req: ReportFromQueryRequest):
-    """Generate a report by running a fresh benchmark and rendering the template."""
+async def generate_report_from_query(
+    req: ReportFromQueryRequest | None = None,
+    product_name: str | None = None,
+    department_name: str | None = None,
+    signatory_name: str | None = None,
+    output_format: str = "html",
+):
+    """Generate a report by running a fresh benchmark and rendering the template.
+    
+    Supports both POST JSON payload and GET query parameters.
+    """
+    p_name = req.product_name if req else (product_name or "")
+    dept_name = req.department_name if req else department_name
+    sig_name = req.signatory_name if req else signatory_name
+    fmt = req.output_format if req else output_format
+
+    if not p_name:
+        raise HTTPException(status_code=400, detail="product_name query parameter is required")
+
     try:
         result = await get_price_benchmark(
-            query=req.product_name,
-            department=req.department_name,
+            query=p_name,
+            department=dept_name,
         )
     except Exception as e:
         logger.exception("Benchmark for report failed")
@@ -103,8 +121,8 @@ async def generate_report_from_query(req: ReportFromQueryRequest):
 
     primary = result["primary_result"]
     html = generate_report_html(
-        search_id=req.product_name,
-        query=req.product_name,
+        search_id=p_name,
+        query=p_name,
         query_mode="product",
         resolved_tier=result["resolved_tier"],
         tier_label=result["tier_label"],
@@ -112,28 +130,28 @@ async def generate_report_from_query(req: ReportFromQueryRequest):
         all_results=result["all_results"],
         tier_trace=result["tier_trace"],
         statistics=result["statistics"],
-        department_name=req.department_name,
-        signatory_name=req.signatory_name,
+        department_name=dept_name,
+        signatory_name=sig_name,
     )
 
-    if req.output_format == "pdf":
-        file_path = save_report(html, req.product_name, fmt="pdf")
+    if fmt == "pdf":
+        file_path = save_report(html, p_name, fmt="pdf")
         if file_path.endswith(".pdf"):
             return FileResponse(
                 file_path,
                 media_type="application/pdf",
-                filename=f"benchmark_report_{req.product_name[:20]}.pdf",
+                filename=f"benchmark_report_{p_name[:20].replace(' ', '_')}.pdf",
             )
         else:
             return FileResponse(
                 file_path,
                 media_type="text/html",
-                filename=f"benchmark_report_{req.product_name[:20]}.html",
+                filename=f"benchmark_report_{p_name[:20].replace(' ', '_')}.html",
             )
 
-    file_path = save_report(html, req.product_name, fmt="html")
+    file_path = save_report(html, p_name, fmt="html")
     return FileResponse(
         file_path,
         media_type="text/html",
-        filename=f"benchmark_report_{req.product_name[:20]}.html",
+        filename=f"benchmark_report_{p_name[:20].replace(' ', '_')}.html",
     )

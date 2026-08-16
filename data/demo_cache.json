@@ -149,5 +149,160 @@
             "extraction_completeness": 0.85,
             "is_demo_data": true
         }
+    ],
+    "software defined radio": [
+        {
+            "product_name": "Ettus USRP B210 Software Defined Radio (70MHz-6GHz)",
+            "price": 178500.00,
+            "currency": "INR",
+            "source_name": "National Instruments India",
+            "source_url": "https://www.ni.com/en-in/shop/select/usrp-software-defined-radio-device",
+            "vendor_name": "NI India",
+            "availability": "Special Order",
+            "confidence": "HIGH",
+            "reliability": "HIGH",
+            "extraction_completeness": 0.9,
+            "is_demo_data": true
+        },
+        {
+            "product_name": "HackRF One SDR Transceiver (1MHz to 6GHz)",
+            "price": 32500.00,
+            "currency": "INR",
+            "source_name": "IndiaMART",
+            "source_url": "https://dir.indiamart.com/search.mp?ss=hackrf+one+sdr",
+            "vendor_name": "RF Electronics Hub",
+            "availability": "In Stock",
+            "confidence": "MEDIUM",
+            "reliability": "HIGH",
+            "extraction_completeness": 0.8,
+            "is_demo_data": true
+        }
+    ],
+    "radar waveguide": [
+        {
+            "product_name": "WR-90 Ka-Band Radar Waveguide Flange Assembly",
+            "price": 14200.00,
+            "currency": "INR",
+            "source_name": "Pasternack India / RF Distributor",
+            "source_url": "https://www.pasternack.com/wr-90-waveguide-straight-pe-w90s001-p.aspx",
+            "vendor_name": "RF Components India",
+            "availability": "Custom Order",
+            "confidence": "HIGH",
+            "reliability": "HIGH",
+            "extraction_completeness": 0.85,
+            "is_demo_data": true
+        }
+    ],
+    "vhf transceiver": [
+        {
+            "product_name": "Motorola DM4600e VHF/UHF Digital Base Station Mobile Radio",
+            "price": 54000.00,
+            "currency": "INR",
+            "source_name": "GeM Portal",
+            "source_url": "https://mkp.gem.gov.in/search?q=motorola+dm4600e",
+            "vendor_name": "Motorola Solutions India",
+            "availability": "In Stock",
+            "confidence": "HIGH",
+            "reliability": "HIGH",
+            "extraction_completeness": 0.9,
+            "is_demo_data": true
+        },
+        {
+            "product_name": "VHF High Band 25W Fixed Wireless Transceiver",
+            "price": 48500.00,
+            "currency": "INR",
+            "source_name": "IndiaMART",
+            "source_url": "https://dir.indiamart.com/search.mp?ss=vhf+transceiver",
+            "vendor_name": "Telecom Systems India",
+            "availability": "In Stock",
+            "confidence": "MEDIUM",
+            "reliability": "HIGH",
+            "extraction_completeness": 0.8,
+            "is_demo_data": true
+        }
+    ],
+    "executive office chair": [
+        {
+            "product_name": "Godrej Interio Motion High Back Ergonomic Mesh Chair",
+            "price": 8450.00,
+            "currency": "INR",
+            "source_name": "GeM Portal",
+            "source_url": "https://mkp.gem.gov.in/search?q=godrej+interio+chair",
+            "vendor_name": "Godrej Interio",
+            "availability": "In Stock",
+            "confidence": "HIGH",
+            "reliability": "HIGH",
+            "extraction_completeness": 0.85,
+            "is_demo_data": true
+        },
+        {
+            "product_name": "Green Soul Ergonomic Executive Office Chair",
+            "price": 7999.00,
+            "currency": "INR",
+            "source_name": "Amazon India",
+            "source_url": "https://www.amazon.in/s?k=executive+office+chair",
+            "vendor_name": "Green Soul Store",
+            "availability": "In Stock",
+            "confidence": "HIGH",
+            "reliability": "HIGH",
+            "extraction_completeness": 0.85,
+            "is_demo_data": true
+        }
+    ],
+    "1.5 ton split ac": [
+        {
+            "product_name": "Voltas 1.5 Ton 5 Star Inverter Split AC (Copper)",
+            "price": 38490.00,
+            "currency": "INR",
+            "source_name": "GeM Portal",
+            "source_url": "https://mkp.gem.gov.in/search?q=voltas+1.5+ton+split+ac",
+            "vendor_name": "Voltas Ltd",
+            "availability": "In Stock",
+            "confidence": "HIGH",
+            "reliability": "HIGH",
+            "extraction_completeness": 0.9,
+            "is_demo_data": true
+        },
+        {
+            "product_name": "Daikin 1.5 Ton 5 Star Inverter Split AC",
+            "price": 44990.00,
+            "currency": "INR",
+            "source_name": "Amazon India",
+            "source_url": "https://www.amazon.in/s?k=daikin+1.5+ton+split+ac",
+            "vendor_name": "Daikin India",
+            "availability": "In Stock",
+            "confidence": "HIGH",
+            "reliability": "HIGH",
+            "extraction_completeness": 0.9,
+            "is_demo_data": true
+        }
+    ],
+    "annual maintenance contract - desktop": [
+        {
+            "product_name": "Comprehensive Annual Maintenance Contract for Desktop PC (including motherboard & display parts)",
+            "price": 2800.00,
+            "currency": "INR",
+            "source_name": "GeM Service Marketplace",
+            "source_url": "https://mkp.gem.gov.in/services/amc-desktop",
+            "vendor_name": "Wipro InfoTech Services",
+            "availability": "Active Tender",
+            "confidence": "HIGH",
+            "reliability": "HIGH",
+            "extraction_completeness": 0.9,
+            "is_demo_data": true
+        },
+        {
+            "product_name": "Annual Maintenance Contract Desktop Computer Systems (On-site 24x7)",
+            "price": 2650.00,
+            "currency": "INR",
+            "source_name": "MeitY Empanelled AMC Registry",
+            "source_url": "https://meity.gov.in/services/amc",
+            "vendor_name": "HCL Infosystems",
+            "availability": "Approved Vendor",
+            "confidence": "HIGH",
+            "reliability": "HIGH",
+            "extraction_completeness": 0.9,
+            "is_demo_data": true
+        }
     ]
 }
