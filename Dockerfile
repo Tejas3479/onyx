@@ -7,14 +7,13 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR /app
 
-# Install OS dependencies for WeasyPrint and Playwright
+# Install OS dependencies for WeasyPrint (HTML->PDF generation)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         libpango-1.0-0 \
         libpangocairo-1.0-0 \
         libgdk-pixbuf2.0-0 \
         shared-mime-info && \
-    playwright install-deps && \
     rm -rf /var/lib/apt/lists/*
 
 # Install python dependencies
