@@ -32,5 +32,5 @@ __all__ = [
     "run_fetch",
     "sanitize_proxy_url",
     "sanitize_url",
-    "session_manager"
+    "session_manager",
 ]

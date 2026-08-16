@@ -10,6 +10,7 @@ import logging
 import os
 import re
 import typing
+
 import httpx
 
 logger = logging.getLogger("onyx.gemini_grounding")
@@ -49,8 +50,8 @@ Provide your output ONLY as a valid JSON object with the following keys:
         "tools": [{"google_search": {}}],
         "generationConfig": {
             "temperature": 0.2,
-            "responseMimeType": "application/json"
-        }
+            "responseMimeType": "application/json",
+        },
     }
 
     try:
@@ -58,7 +59,9 @@ Provide your output ONLY as a valid JSON object with the following keys:
         async with httpx.AsyncClient(timeout=timeout_sec) as client:
             res = await client.post(url, json=payload)
             if res.status_code != 200:
-                logger.warning("Gemini API error (%d): %s", res.status_code, res.text[:200])
+                logger.warning(
+                    "Gemini API error (%d): %s", res.status_code, res.text[:200]
+                )
                 return None
 
             data = res.json()
@@ -77,17 +80,26 @@ Provide your output ONLY as a valid JSON object with the following keys:
                 parsed = json.loads(json_match.group(0))
                 price = parsed.get("estimated_unit_price_inr")
                 if price and float(price) > 0:
-                    logger.info("Gemini Search Grounding estimated %s for '%s'", price, query)
+                    logger.info(
+                        "Gemini Search Grounding estimated %s for '%s'", price, query
+                    )
                     return {
                         "source_name": "Gemini Search Grounding (Statutory AI Estimator)",
                         "price": float(price),
-                        "price_range_low": float(parsed.get("price_range_low_inr", price * 0.9)),
-                        "price_range_high": float(parsed.get("price_range_high_inr", price * 1.15)),
+                        "price_range_low": float(
+                            parsed.get("price_range_low_inr", price * 0.9)
+                        ),
+                        "price_range_high": float(
+                            parsed.get("price_range_high_inr", price * 1.15)
+                        ),
                         "currency": "INR",
                         "confidence": parsed.get("confidence", "MEDIUM"),
                         "reliability": "HIGH",
                         "evidence_url": "https://ai.google.dev/gemini-api/docs/grounding",
-                        "rationale": parsed.get("rationale", f"GFR Tier 4 estimate based on search-grounded market synthesis for '{query}'."),
+                        "rationale": parsed.get(
+                            "rationale",
+                            f"GFR Tier 4 estimate based on search-grounded market synthesis for '{query}'.",
+                        ),
                         "is_demo_data": False,
                     }
 

@@ -49,7 +49,7 @@ async def upload_purchase_history(
     if len(content) > MAX_UPLOAD_SIZE:
         raise HTTPException(
             status_code=413,
-            detail=f"File too large. Maximum size: {MAX_UPLOAD_SIZE // (1024*1024)}MB",
+            detail=f"File too large. Maximum size: {MAX_UPLOAD_SIZE // (1024 * 1024)}MB",
         )
 
     if len(content) == 0:
@@ -77,7 +77,9 @@ async def upload_purchase_history(
 
     logger.info(
         "Uploaded %d records for department '%s' from '%s'",
-        saved_count, department, file.filename,
+        saved_count,
+        department,
+        file.filename,
     )
 
     return {

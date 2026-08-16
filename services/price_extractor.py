@@ -15,12 +15,8 @@ from typing import Any
 logger = logging.getLogger("onyx.price_extractor")
 
 # Common currency symbols and patterns
-INR_PATTERN = re.compile(
-    r"(?:₹|Rs\.?|INR)\s*([\d,]+(?:\.\d{1,2})?)", re.IGNORECASE
-)
-USD_PATTERN = re.compile(
-    r"(?:\$|USD)\s*([\d,]+(?:\.\d{1,2})?)", re.IGNORECASE
-)
+INR_PATTERN = re.compile(r"(?:₹|Rs\.?|INR)\s*([\d,]+(?:\.\d{1,2})?)", re.IGNORECASE)
+USD_PATTERN = re.compile(r"(?:\$|USD)\s*([\d,]+(?:\.\d{1,2})?)", re.IGNORECASE)
 
 # "Contact for Price" and similar non-price indicators
 NO_PRICE_INDICATORS = [
@@ -99,18 +95,20 @@ def extract_prices_from_content(
 
     if not prices_found:
         if has_no_price:
-            results.append({
-                "product_name": _extract_product_name(content),
-                "price": None,
-                "currency": "INR",
-                "source_name": source_name,
-                "source_url": source_url,
-                "vendor_name": None,
-                "availability": "Contact for Price",
-                "confidence": "LOW",
-                "reliability": "LOW",
-                "extraction_completeness": 0.2,
-            })
+            results.append(
+                {
+                    "product_name": _extract_product_name(content),
+                    "price": None,
+                    "currency": "INR",
+                    "source_name": source_name,
+                    "source_url": source_url,
+                    "vendor_name": None,
+                    "availability": "Contact for Price",
+                    "confidence": "LOW",
+                    "reliability": "LOW",
+                    "extraction_completeness": 0.2,
+                }
+            )
         return results
 
     # Create entries for each unique price found
@@ -123,18 +121,20 @@ def extract_prices_from_content(
             has_availability=not has_no_price,
         )
 
-        results.append({
-            "product_name": _extract_product_name(content),
-            "price": price,
-            "currency": "INR",
-            "source_name": source_name,
-            "source_url": source_url,
-            "vendor_name": None,
-            "availability": "In Stock" if not has_no_price else "Contact for Price",
-            "confidence": "MEDIUM",
-            "reliability": "MEDIUM",
-            "extraction_completeness": completeness,
-        })
+        results.append(
+            {
+                "product_name": _extract_product_name(content),
+                "price": price,
+                "currency": "INR",
+                "source_name": source_name,
+                "source_url": source_url,
+                "vendor_name": None,
+                "availability": "In Stock" if not has_no_price else "Contact for Price",
+                "confidence": "MEDIUM",
+                "reliability": "MEDIUM",
+                "extraction_completeness": completeness,
+            }
+        )
 
     return results
 
@@ -172,10 +172,10 @@ def _score_completeness(
 ) -> float:
     """Score extraction completeness as 0.0-1.0 based on field presence."""
     fields = [
-        (has_price, 0.4),        # Price is most important
-        (has_product_name, 0.3), # Product identification
-        (has_vendor, 0.15),      # Vendor info
-        (has_availability, 0.15), # Stock status
+        (has_price, 0.4),  # Price is most important
+        (has_product_name, 0.3),  # Product identification
+        (has_vendor, 0.15),  # Vendor info
+        (has_availability, 0.15),  # Stock status
     ]
     return sum(weight for present, weight in fields if present)
 
@@ -202,19 +202,26 @@ def score_price_reliability(
 
     mean = sum(all_prices) / n
     variance = sum((p - mean) ** 2 for p in all_prices) / n
-    std_dev = variance ** 0.5
+    std_dev = variance**0.5
 
     # Outlier check: >2σ from mean
     if std_dev > 0 and abs(price - mean) > 2 * std_dev:
         logger.debug(
             "Price %.2f from %s is an outlier (mean=%.2f, std=%.2f)",
-            price, source_name, mean, std_dev,
+            price,
+            source_name,
+            mean,
+            std_dev,
         )
         return "LOW"
 
     # Cross-source corroboration: within ±10% of median
     sorted_prices = sorted(all_prices)
-    median = sorted_prices[n // 2] if n % 2 else (sorted_prices[n // 2 - 1] + sorted_prices[n // 2]) / 2
+    median = (
+        sorted_prices[n // 2]
+        if n % 2
+        else (sorted_prices[n // 2 - 1] + sorted_prices[n // 2]) / 2
+    )
 
     if median > 0 and abs(price - median) / median <= 0.10:
         return "HIGH"

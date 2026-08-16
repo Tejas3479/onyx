@@ -15,17 +15,18 @@ DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///data/onyx.db")
 # SQLite uses StaticPool internally and does not support these options.
 _engine_kwargs: dict[str, Any] = {"echo": False}
 if "sqlite" not in DATABASE_URL:
-    _engine_kwargs.update({
-        "pool_size": 10,
-        "max_overflow": 20,
-        "pool_pre_ping": True,
-        "pool_recycle": 300,
-    })
+    _engine_kwargs.update(
+        {
+            "pool_size": 10,
+            "max_overflow": 20,
+            "pool_pre_ping": True,
+            "pool_recycle": 300,
+        }
+    )
 
 engine = create_async_engine(DATABASE_URL, **_engine_kwargs)
-async_session_maker = sessionmaker(
-    engine, class_=AsyncSession, expire_on_commit=False
-)
+async_session_maker = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+
 
 async def init_db():
     if "sqlite" in DATABASE_URL:
@@ -37,20 +38,24 @@ async def init_db():
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
 
+
 async def get_session() -> AsyncSession:
     async with async_session_maker() as session:
         yield session
 
+
 class CrawlJob(SQLModel, table=True):  # type: ignore[call-arg]
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
     url: str
-    status: str = Field(default="pending")  # pending, running, completed, failed, interrupted
+    status: str = Field(
+        default="pending"
+    )  # pending, running, completed, failed, interrupted
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     completed_at: datetime | None = None
     results: list[dict[str, Any]] = Field(default=[], sa_column=Column(JSON))
     stats: dict[str, Any] = Field(default={}, sa_column=Column(JSON))
     error_message: str | None = None
-    
+
     # Configuration metadata
     max_pages: int = 1
     max_depth: int = 1
@@ -59,12 +64,14 @@ class CrawlJob(SQLModel, table=True):  # type: ignore[call-arg]
     webhook_url: str | None = None
     destinations: list[str] = Field(default=[], sa_column=Column(JSON))
 
+
 class Destination(SQLModel, table=True):  # type: ignore[call-arg]
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
     name: str
     type: str  # pinecone, weaviate, supabase
     config: dict[str, Any] = Field(default={}, sa_column=Column(JSON))
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 
 class ScheduledCrawl(SQLModel, table=True):  # type: ignore[call-arg]
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
@@ -73,6 +80,7 @@ class ScheduledCrawl(SQLModel, table=True):  # type: ignore[call-arg]
     next_run_at: datetime | None = None
     status: str = Field(default="active")  # active, paused
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 
 class BatchJob(SQLModel, table=True):  # type: ignore[call-arg]
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
@@ -85,10 +93,12 @@ class BatchJob(SQLModel, table=True):  # type: ignore[call-arg]
     export_path: str | None = None
     error_message: str | None = None
 
+
 class ApiKey(SQLModel, table=True):  # type: ignore[call-arg]
     key: str = Field(primary_key=True)
     name: str | None = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 
 class Proxy(SQLModel, table=True):  # type: ignore[call-arg]
     id: int | None = Field(default=None, primary_key=True)
@@ -97,17 +107,20 @@ class Proxy(SQLModel, table=True):  # type: ignore[call-arg]
     fail_count: int = Field(default=0)
     last_used_at: datetime | None = None
 
+
 # ===== ONYX: Tier Waterfall Tables =====
+
 
 class NotifiedRate(SQLModel, table=True):  # type: ignore[call-arg]
     """Tier 0 — DGS&D rate contracts / ministry-notified fixed rates."""
+
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
-    item_category: str        # "Stationery", "IT Equipment", "AMC Services"
-    item_description: str     # "A4 Paper 75gsm", "Desktop Computer i5"
+    item_category: str  # "Stationery", "IT Equipment", "AMC Services"
+    item_description: str  # "A4 Paper 75gsm", "Desktop Computer i5"
     rate: float
-    unit: str                 # "per ream", "per unit", "per month"
+    unit: str  # "per ream", "per unit", "per month"
     currency: str = Field(default="INR")
-    authority: str            # "DGS&D", "Ministry of Finance"
+    authority: str  # "DGS&D", "Ministry of Finance"
     contract_number: str | None = None
     valid_from: date
     valid_until: date | None = None
@@ -117,13 +130,14 @@ class NotifiedRate(SQLModel, table=True):  # type: ignore[call-arg]
 
 class GemLPPCache(SQLModel, table=True):  # type: ignore[call-arg]
     """Tier 1 — Cached GeM catalog prices or BA reference prices."""
+
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
-    query_matched: str         # the search query this was found for
+    query_matched: str  # the search query this was found for
     product_name: str
     gem_product_id: str | None = None
     catalog_price: float | None = None
-    lpp_price: float | None = None    # Last Purchase Price if available
-    source_label: str          # "GeM Catalog Price" or "GeM LPP (demo)"
+    lpp_price: float | None = None  # Last Purchase Price if available
+    source_label: str  # "GeM Catalog Price" or "GeM LPP (demo)"
     source_url: str | None = None
     seller_name: str | None = None
     specifications: dict[str, Any] = Field(default={}, sa_column=Column(JSON))
@@ -133,35 +147,38 @@ class GemLPPCache(SQLModel, table=True):  # type: ignore[call-arg]
 
 class DepartmentPurchaseRecord(SQLModel, table=True):  # type: ignore[call-arg]
     """Tier 2 — Department's own purchase history, uploaded via CSV."""
+
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
     department: str
     item_description: str
-    normalized_item_key: str   # lowercased, stopwords removed, for matching
+    normalized_item_key: str  # lowercased, stopwords removed, for matching
     specs: dict[str, Any] = Field(default={}, sa_column=Column(JSON))
     unit_price: float
     quantity_purchased: int
     purchase_date: date
     vendor_name: str | None = None
     source_document: str | None = None  # filename of uploaded PO/invoice
-    uploaded_by: str | None = None      # user_id
+    uploaded_by: str | None = None  # user_id
     uploaded_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class NonStandardEstimate(SQLModel, table=True):  # type: ignore[call-arg]
     """Tier 4 — Spec-similarity / should-cost model outputs."""
+
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
-    search_id: str              # FK to PriceSearch
-    method_used: str            # "spec_similarity", "price_per_spec_unit", "insufficient_data"
+    search_id: str  # FK to PriceSearch
+    method_used: str  # "spec_similarity", "price_per_spec_unit", "insufficient_data"
     comparable_items: list[dict[str, Any]] = Field(default=[], sa_column=Column(JSON))
     estimated_price: float | None = None
     price_range_low: float | None = None
     price_range_high: float | None = None
-    confidence_rationale: str   # human-readable explanation
+    confidence_rationale: str  # human-readable explanation
     spec_match_score: float | None = None  # 0.0–1.0
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 # ===== ONYX: Price Benchmarking Tables =====
+
 
 class User(SQLModel, table=True):  # type: ignore[call-arg]
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
@@ -176,32 +193,32 @@ class User(SQLModel, table=True):  # type: ignore[call-arg]
 
 class PriceSearch(SQLModel, table=True):  # type: ignore[call-arg]
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
-    user_id: str                        # FK to User
-    query: str                          # "Cisco Catalyst 9300"
-    query_type: str = "make_model"      # "make_model" or "specifications"
-    category: str | None = None         # "Networking", "Computing", etc.
+    user_id: str  # FK to User
+    query: str  # "Cisco Catalyst 9300"
+    query_type: str = "make_model"  # "make_model" or "specifications"
+    category: str | None = None  # "Networking", "Computing", etc.
     quantity: int = Field(default=1)
     status: str = Field(default="pending")  # pending, searching, completed, failed
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     completed_at: datetime | None = None
     sources_checked: int = Field(default=0)
     results_found: int = Field(default=0)
-    
+
     # Tier waterfall tracking
-    resolved_tier: int | None = None        # 0–4, which tier produced the result
-    tier_label: str | None = None           # "Notified Rate" / "GeM BA" / etc.
+    resolved_tier: int | None = None  # 0–4, which tier produced the result
+    tier_label: str | None = None  # "Notified Rate" / "GeM BA" / etc.
     tier_skip_reasons: dict[str, Any] = Field(default={}, sa_column=Column(JSON))
     query_mode: str = Field(default="product")  # "product" or "service"
-    service_type: str | None = None         # AMC, manpower, consulting (if service mode)
+    service_type: str | None = None  # AMC, manpower, consulting (if service mode)
     service_duration: str | None = None
     service_scope: str | None = None
-    service_location: str | None = None     # location for service queries
+    service_location: str | None = None  # location for service queries
 
 
 class PriceResult(SQLModel, table=True):  # type: ignore[call-arg]
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
-    search_id: str                      # FK to PriceSearch
-    source_name: str                    # "Amazon India", "GeM Portal", etc.
+    search_id: str  # FK to PriceSearch
+    source_name: str  # "Amazon India", "GeM Portal", etc.
     source_url: str
     product_name: str | None = None
     brand: str | None = None
@@ -210,11 +227,11 @@ class PriceResult(SQLModel, table=True):  # type: ignore[call-arg]
     currency: str = Field(default="INR")
     price_includes_gst: bool | None = None
     vendor_name: str | None = None
-    availability: str | None = None     # "In Stock", "Out of Stock", "Contact for Price"
+    availability: str | None = None  # "In Stock", "Out of Stock", "Contact for Price"
     specifications: dict[str, Any] = Field(default={}, sa_column=Column(JSON))
     confidence: str = Field(default="LOW")  # HIGH, MEDIUM, LOW
     screenshot_path: str | None = None
-    raw_content: str | None = None      # Stored markdown for reference
+    raw_content: str | None = None  # Stored markdown for reference
     extracted_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -233,10 +250,10 @@ class PriceHistory(SQLModel, table=True):  # type: ignore[call-arg]
 
 class PriceAlert(SQLModel, table=True):  # type: ignore[call-arg]
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
-    user_id: str                        # FK to User
+    user_id: str  # FK to User
     product_query: str
     target_price: float
-    condition: str = "below"            # "below" or "above"
+    condition: str = "below"  # "below" or "above"
     is_active: bool = Field(default=True)
     last_triggered: datetime | None = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -244,10 +261,10 @@ class PriceAlert(SQLModel, table=True):  # type: ignore[call-arg]
 
 class Report(SQLModel, table=True):  # type: ignore[call-arg]
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
-    user_id: str                        # FK to User
-    search_id: str                      # FK to PriceSearch
+    user_id: str  # FK to User
+    search_id: str  # FK to PriceSearch
     title: str
-    file_path: str | None = None        # Path to generated PDF
+    file_path: str | None = None  # Path to generated PDF
     department_name: str | None = None
     signatory_name: str | None = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -267,12 +284,12 @@ class ProxyManager:
             proxy = result.scalars().first()
             if not proxy:
                 return None
-            
+
             # Update last used
             proxy.last_used_at = datetime.now(timezone.utc)
             session.add(proxy)
             await session.commit()
-            
+
             return proxy.url
 
     @staticmethod
@@ -286,7 +303,7 @@ class ProxyManager:
                     proxy.is_active = False
                 session.add(proxy)
                 await session.commit()
-                
+
     @staticmethod
     async def report_success(url: str):
         async with async_session_maker() as session:

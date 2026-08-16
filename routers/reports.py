@@ -24,14 +24,14 @@ async def generate_report(req: ReportRequest):
         search = await session.get(PriceSearch, req.search_id)
         if not search:
             raise HTTPException(status_code=404, detail="Search ID not found")
-        
+
         result_stmt = select(PriceResult).where(PriceResult.search_id == req.search_id)
         results_db = (await session.execute(result_stmt)).scalars().all()
 
     # Reconstruct data structures for generate_report_html
     primary: dict[str, typing.Any] = {}
     all_results: list[dict[str, typing.Any]] = []
-    
+
     # In database, PriceResult doesn't inherently track "primary" vs "all".
     # But usually the first one or the one with the source URL is treated as such,
     # or we can reconstruct based on resolved_tier and tier_skip_reasons.
@@ -47,7 +47,7 @@ async def generate_report(req: ReportRequest):
         all_results.append(result_dict)
         if not primary and r.price:
             primary = result_dict
-            
+
     if not primary and all_results:
         primary = all_results[0]
 
@@ -59,7 +59,9 @@ async def generate_report(req: ReportRequest):
         tier_label=search.tier_label,
         primary_result=primary,
         all_results=all_results,
-        tier_trace=search.tier_skip_reasons if isinstance(search.tier_skip_reasons, dict) else {},
+        tier_trace=search.tier_skip_reasons
+        if isinstance(search.tier_skip_reasons, dict)
+        else {},
         statistics={},  # Skip for now
         department_name=req.department_name,
         signatory_name=req.signatory_name,
@@ -99,7 +101,7 @@ async def generate_report_from_query(
     output_format: str = "html",
 ):
     """Generate a report by running a fresh benchmark and rendering the template.
-    
+
     Supports both POST JSON payload and GET query parameters.
     """
     p_name = req.product_name if req else (product_name or "")
@@ -108,7 +110,9 @@ async def generate_report_from_query(
     fmt = req.output_format if req else output_format
 
     if not p_name:
-        raise HTTPException(status_code=400, detail="product_name query parameter is required")
+        raise HTTPException(
+            status_code=400, detail="product_name query parameter is required"
+        )
 
     try:
         result = await get_price_benchmark(

@@ -33,6 +33,7 @@ def extract_links(html: str, base_url: str) -> list[str]:
         logger.error(f"Error extracting links: {e}")
         return []
 
+
 class CrawlManager:
     def __init__(self):
         self.tasks: dict[str, asyncio.Task] = {}
@@ -53,7 +54,7 @@ class CrawlManager:
         stealth: bool = False,
         webhook_url: str | None = None,
         destinations: list[str] | None = None,
-        arq_pool=None
+        arq_pool=None,
     ) -> str:
         async with async_session_maker() as session:
             job = CrawlJob(
@@ -64,13 +65,13 @@ class CrawlManager:
                 output_format=output_format,
                 webhook_url=webhook_url,
                 destinations=destinations or [],
-                status="running"
+                status="running",
             )
             session.add(job)
             await session.commit()
             await session.refresh(job)
             crawl_id = job.id
-            
+
         pool = arq_pool or self.arq_pool
         if pool:
             try:
@@ -88,14 +89,32 @@ class CrawlManager:
                     actions,
                     extraction_prompt,
                     stealth,
-                    webhook_url
+                    webhook_url,
                 )
                 logger.info(f"Enqueued crawl job {crawl_id} to ARQ worker queue")
                 return crawl_id
             except Exception as e:
-                logger.warning(f"Failed to enqueue to ARQ pool ({e}), falling back to local task.")
+                logger.warning(
+                    f"Failed to enqueue to ARQ pool ({e}), falling back to local task."
+                )
 
-        task = asyncio.create_task(self._run_crawl(crawl_id, url, max_pages, max_depth, render_js, output_format, strip_links, css_selector, limit_domain, actions, extraction_prompt, stealth, webhook_url))
+        task = asyncio.create_task(
+            self._run_crawl(
+                crawl_id,
+                url,
+                max_pages,
+                max_depth,
+                render_js,
+                output_format,
+                strip_links,
+                css_selector,
+                limit_domain,
+                actions,
+                extraction_prompt,
+                stealth,
+                webhook_url,
+            )
+        )
         self.tasks[crawl_id] = task
         return crawl_id
 
@@ -108,7 +127,9 @@ class CrawlManager:
 
     async def list_crawls(self) -> list[dict]:
         async with async_session_maker() as session:
-            result = await session.execute(select(CrawlJob).order_by(desc(CrawlJob.created_at)))
+            result = await session.execute(
+                select(CrawlJob).order_by(desc(CrawlJob.created_at))
+            )
             jobs = result.scalars().all()
             return [
                 {
@@ -118,7 +139,7 @@ class CrawlManager:
                     "pages_crawled": j.stats.get("pages_crawled", 0),
                     "max_pages": j.max_pages,
                     "created_at": j.created_at.isoformat(),
-                    "url_count": len(j.results) if isinstance(j.results, list) else 0
+                    "url_count": len(j.results) if isinstance(j.results, list) else 0,
                 }
                 for j in jobs
             ]
@@ -135,31 +156,53 @@ class CrawlManager:
                 return True
             return False
 
-    async def _update_job_state(self, crawl_id: str, results: list, crawled_count: int, status: str | None = None, error_message: str | None = None):
+    async def _update_job_state(
+        self,
+        crawl_id: str,
+        results: list,
+        crawled_count: int,
+        status: str | None = None,
+        error_message: str | None = None,
+    ):
         async with async_session_maker() as session:
             job = await session.get(CrawlJob, crawl_id)
             if not job:
                 return
-            
+
             # Create new lists/dicts to ensure SQLAlchemy detects changes to JSON columns
             new_results = list(job.results) if job.results else []
             new_results.extend(results)
             job.results = new_results
-            
+
             new_stats = dict(job.stats) if job.stats else {}
             new_stats["pages_crawled"] = crawled_count
             job.stats = new_stats
-            
+
             if status:
                 job.status = status
             if error_message:
                 job.error_message = error_message
-                
+
             session.add(job)
             await session.commit()
 
-    async def _run_crawl(self, crawl_id: str, seed_url: str, max_pages: int, max_depth: int, render_js: bool, output_format: str, strip_links: bool, css_selector: str | None, limit_domain: bool, actions: list | None, extraction_prompt: str | None = None, stealth: bool = False, webhook_url: str | None = None):
-        queue = [(seed_url, 0)] # (url, depth)
+    async def _run_crawl(
+        self,
+        crawl_id: str,
+        seed_url: str,
+        max_pages: int,
+        max_depth: int,
+        render_js: bool,
+        output_format: str,
+        strip_links: bool,
+        css_selector: str | None,
+        limit_domain: bool,
+        actions: list | None,
+        extraction_prompt: str | None = None,
+        stealth: bool = False,
+        webhook_url: str | None = None,
+    ):
+        queue = [(seed_url, 0)]  # (url, depth)
         visited = set()
         crawled_count = 0
         base_domain = urlparse(seed_url).netloc
@@ -173,7 +216,9 @@ class CrawlManager:
             nonlocal crawled_count
             proxy_url = await ProxyManager.get_proxy()
             try:
-                logger.info(f"Crawl {crawl_id}: scraping {url} (depth: {depth}) using proxy {proxy_url}")
+                logger.info(
+                    f"Crawl {crawl_id}: scraping {url} (depth: {depth}) using proxy {proxy_url}"
+                )
                 res = await run_fetch(
                     url=url,
                     method="GET",
@@ -197,7 +242,7 @@ class CrawlManager:
                     css_selector=css_selector,
                     actions=actions,
                     extraction_prompt=extraction_prompt,
-                    stealth=stealth
+                    stealth=stealth,
                 )
 
                 async with lock:
@@ -216,7 +261,11 @@ class CrawlManager:
                         if html:
                             try:
                                 soup = BeautifulSoup(html, "lxml")
-                                title = soup.find("title").get_text().strip() if soup.find("title") else "No Title"
+                                title = (
+                                    soup.find("title").get_text().strip()
+                                    if soup.find("title")
+                                    else "No Title"
+                                )
                             except Exception:
                                 pass
 
@@ -224,40 +273,48 @@ class CrawlManager:
                             "url": url,
                             "status_code": res.get("status_code"),
                             "title": title,
-                            "content": content
+                            "content": content,
                         }
 
                         # Extract links if not at max depth and crawled_count < max_pages
                         if depth < max_depth:
                             new_links = extract_links(html, url)
                             for link in new_links:
-                                if limit_domain and urlparse(link).netloc != base_domain:
+                                if (
+                                    limit_domain
+                                    and urlparse(link).netloc != base_domain
+                                ):
                                     continue
-                                if link not in visited and not any(q[0] == link for q in queue):
+                                if link not in visited and not any(
+                                    q[0] == link for q in queue
+                                ):
                                     queue.append((link, depth + 1))
                     else:
                         new_result = {
                             "url": url,
                             "status_code": res.get("status_code", 0),
                             "error": res.get("error"),
-                            "error_message": res.get("error_message")
+                            "error_message": res.get("error_message"),
                         }
-                    
+
                     if new_result:
-                        await self._update_job_state(crawl_id, [new_result], crawled_count)
-                        
+                        await self._update_job_state(
+                            crawl_id, [new_result], crawled_count
+                        )
+
             except Exception as e:
                 logger.error(f"Failed to crawl {url}: {e}")
             finally:
                 semaphore.release()
 
-        
         try:
             while (queue or active_tasks) and crawled_count < max_pages:
                 async with async_session_maker() as session:
                     job = await session.get(CrawlJob, crawl_id)
                     if not job:
-                        logger.info(f"Crawl {crawl_id} was deleted/cancelled. Exiting loop.")
+                        logger.info(
+                            f"Crawl {crawl_id} was deleted/cancelled. Exiting loop."
+                        )
                         break
 
                 finished = {t for t in active_tasks if t.done()}
@@ -267,7 +324,11 @@ class CrawlManager:
                     while queue and queue[0][0] in visited:
                         queue.pop(0)
 
-                    if queue and len(active_tasks) < CONCURRENCY and crawled_count + len(active_tasks) < max_pages:
+                    if (
+                        queue
+                        and len(active_tasks) < CONCURRENCY
+                        and crawled_count + len(active_tasks) < max_pages
+                    ):
                         url, depth = queue.pop(0)
                         visited.add(url)
 
@@ -277,7 +338,9 @@ class CrawlManager:
                         continue
 
                 if active_tasks:
-                    await asyncio.wait(active_tasks, return_when=asyncio.FIRST_COMPLETED)
+                    await asyncio.wait(
+                        active_tasks, return_when=asyncio.FIRST_COMPLETED
+                    )
                 else:
                     break
 
@@ -285,8 +348,10 @@ class CrawlManager:
 
             if active_tasks:
                 await asyncio.gather(*active_tasks, return_exceptions=True)
-                
-            await self._update_job_state(crawl_id, [], crawled_count, status="completed")
+
+            await self._update_job_state(
+                crawl_id, [], crawled_count, status="completed"
+            )
 
         except asyncio.CancelledError:
             logger.info(f"Crawl {crawl_id} task was explicitly cancelled.")
@@ -294,10 +359,18 @@ class CrawlManager:
                 t.cancel()
             if active_tasks:
                 await asyncio.gather(*active_tasks, return_exceptions=True)
-            await self._update_job_state(crawl_id, [], crawled_count, status="interrupted", error_message="Crawl explicitly cancelled.")
+            await self._update_job_state(
+                crawl_id,
+                [],
+                crawled_count,
+                status="interrupted",
+                error_message="Crawl explicitly cancelled.",
+            )
         except Exception as e:
             logger.error(f"Crawl {crawl_id} failed with error: {e}")
-            await self._update_job_state(crawl_id, [], crawled_count, status="failed", error_message=str(e))
+            await self._update_job_state(
+                crawl_id, [], crawled_count, status="failed", error_message=str(e)
+            )
         finally:
             if crawl_id in self.tasks:
                 del self.tasks[crawl_id]

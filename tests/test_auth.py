@@ -26,14 +26,18 @@ async def auth_client():
 
 
 def test_get_jwt_secret_key_success():
-    with patch.dict(os.environ, {"JWT_SECRET_KEY": "a-very-secret-key-for-jwt-testing-123"}):
+    with patch.dict(
+        os.environ, {"JWT_SECRET_KEY": "a-very-secret-key-for-jwt-testing-123"}
+    ):
         assert get_jwt_secret_key() == "a-very-secret-key-for-jwt-testing-123"
 
 
 def test_get_jwt_secret_key_missing_fail_fast():
     with (
         patch.dict(os.environ, {"JWT_SECRET_KEY": ""}),
-        pytest.raises(RuntimeError, match="JWT_SECRET_KEY environment variable is not set"),
+        pytest.raises(
+            RuntimeError, match="JWT_SECRET_KEY environment variable is not set"
+        ),
     ):
         get_jwt_secret_key()
 
@@ -41,7 +45,9 @@ def test_get_jwt_secret_key_missing_fail_fast():
 def test_get_jwt_secret_key_whitespace_fail_fast():
     with (
         patch.dict(os.environ, {"JWT_SECRET_KEY": "   "}),
-        pytest.raises(RuntimeError, match="JWT_SECRET_KEY environment variable is not set"),
+        pytest.raises(
+            RuntimeError, match="JWT_SECRET_KEY environment variable is not set"
+        ),
     ):
         get_jwt_secret_key()
 

@@ -11,9 +11,7 @@ router = APIRouter(tags=["admin"])
 @router.post("/api/destinations", dependencies=[Depends(verify_api_key)])
 async def create_destination(dest: DestinationCreate):
     async with async_session_maker() as session:
-        new_dest = Destination(
-            name=dest.name, type=dest.type, config=dest.config
-        )
+        new_dest = Destination(name=dest.name, type=dest.type, config=dest.config)
         session.add(new_dest)
         await session.commit()
         await session.refresh(new_dest)
@@ -27,16 +25,12 @@ async def list_destinations():
         return [d.model_dump() for d in result.scalars().all()]
 
 
-@router.delete(
-    "/api/destinations/{dest_id}", dependencies=[Depends(verify_api_key)]
-)
+@router.delete("/api/destinations/{dest_id}", dependencies=[Depends(verify_api_key)])
 async def delete_destination(dest_id: str):
     async with async_session_maker() as session:
         dest = await session.get(Destination, dest_id)
         if not dest:
-            raise HTTPException(
-                status_code=404, detail="Destination not found"
-            )
+            raise HTTPException(status_code=404, detail="Destination not found")
         await session.delete(dest)
         await session.commit()
         return {"deleted": True, "id": dest_id}
@@ -66,9 +60,7 @@ async def list_schedules():
         return [s.model_dump() for s in result.scalars().all()]
 
 
-@router.delete(
-    "/api/schedule/{sched_id}", dependencies=[Depends(verify_api_key)]
-)
+@router.delete("/api/schedule/{sched_id}", dependencies=[Depends(verify_api_key)])
 async def delete_schedule(sched_id: str):
     async with async_session_maker() as session:
         sched = await session.get(ScheduledCrawl, sched_id)
@@ -82,9 +74,7 @@ async def delete_schedule(sched_id: str):
 @router.post("/api/proxies", dependencies=[Depends(verify_api_key)])
 async def add_proxy(proxy: ProxyCreate):
     async with async_session_maker() as session:
-        result = await session.execute(
-            select(Proxy).where(Proxy.url == proxy.url)
-        )
+        result = await session.execute(select(Proxy).where(Proxy.url == proxy.url))
         existing = result.scalars().first()
         if existing:
             return {"status": "already_exists", "id": existing.id}

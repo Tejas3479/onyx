@@ -51,7 +51,9 @@ async def seed_notified_rates() -> int:
                 authority=item["authority"],
                 contract_number=item.get("contract_number"),
                 valid_from=date.fromisoformat(item["valid_from"]),
-                valid_until=date.fromisoformat(item["valid_until"]) if item.get("valid_until") else None,
+                valid_until=date.fromisoformat(item["valid_until"])
+                if item.get("valid_until")
+                else None,
                 is_active=True,
             )
             session.add(record)

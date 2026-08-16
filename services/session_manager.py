@@ -21,6 +21,7 @@ class SessionManager:
     Manages both curl_cffi and Playwright sessions keyed by session_id.
     Metadata is persisted in Redis, while actual connections are held in local memory.
     """
+
     def __init__(self):
         self.local_sessions: dict[str, dict] = {}
         self.ttl_seconds: int = SESSION_TTL_MINUTES * 60
@@ -46,12 +47,14 @@ class SessionManager:
         async with self._lock:
             now_str = dt_class.now(timezone.utc).isoformat()
             redis_key = f"session:{session_id}"
-            
+
             data = await redis_client.get(redis_key)
             if data:
                 session_meta = json.loads(data)
                 if session_meta["engine"] != engine:
-                    logger.info(f"Switching session engine for {session_id} from {session_meta['engine']} to {engine}")
+                    logger.info(
+                        f"Switching session engine for {session_id} from {session_meta['engine']} to {engine}"
+                    )
                     session_meta["engine"] = engine
                     if session_id in self.local_sessions:
                         await self._close_local(session_id)
@@ -60,27 +63,36 @@ class SessionManager:
             else:
                 current_count = await self.count_sessions()
                 if current_count >= MAX_SESSIONS:
-                    logger.warning(f"Session limit reached ({MAX_SESSIONS}). Rejecting new session {session_id}.")
-                    raise HTTPException(status_code=429, detail=f"Maximum concurrent sessions ({MAX_SESSIONS}) reached.")
-                    
-                logger.info(f"Creating new session context: {session_id} (engine: {engine})")
+                    logger.warning(
+                        f"Session limit reached ({MAX_SESSIONS}). Rejecting new session {session_id}."
+                    )
+                    raise HTTPException(
+                        status_code=429,
+                        detail=f"Maximum concurrent sessions ({MAX_SESSIONS}) reached.",
+                    )
+
+                logger.info(
+                    f"Creating new session context: {session_id} (engine: {engine})"
+                )
                 session_meta = {
                     "session_id": session_id,
                     "cookies": {},
                     "last_active": now_str,
                     "created_at": now_str,
                     "request_count": 1,
-                    "engine": engine
+                    "engine": engine,
                 }
-                
-            await redis_client.setex(redis_key, self.ttl_seconds, json.dumps(session_meta))
-            
+
+            await redis_client.setex(
+                redis_key, self.ttl_seconds, json.dumps(session_meta)
+            )
+
             if session_id not in self.local_sessions:
                 self.local_sessions[session_id] = {
                     "curl_session": None,
-                    "playwright_context": None
+                    "playwright_context": None,
                 }
-                
+
             self.local_sessions[session_id].update(session_meta)
             return self.local_sessions[session_id]
 
@@ -91,7 +103,9 @@ class SessionManager:
             if data:
                 session_meta = json.loads(data)
                 session_meta["cookies"].update(new_cookies)
-                await redis_client.setex(redis_key, self.ttl_seconds, json.dumps(session_meta))
+                await redis_client.setex(
+                    redis_key, self.ttl_seconds, json.dumps(session_meta)
+                )
 
     async def delete_session(self, session_id: str):
         async with self._lock:
@@ -146,14 +160,18 @@ class SessionManager:
                         s = json.loads(val)
                         created_str = s["created_at"]
                         last_active_str = s["last_active"]
-                        result.append({
-                            "session_id": s["session_id"],
-                            "engine": s["engine"],
-                            "created_at": created_str + ("Z" if not created_str.endswith("Z") else ""),
-                            "last_active": last_active_str + ("Z" if not last_active_str.endswith("Z") else ""),
-                            "request_count": s["request_count"],
-                            "cookie_count": len(s["cookies"])
-                        })
+                        result.append(
+                            {
+                                "session_id": s["session_id"],
+                                "engine": s["engine"],
+                                "created_at": created_str
+                                + ("Z" if not created_str.endswith("Z") else ""),
+                                "last_active": last_active_str
+                                + ("Z" if not last_active_str.endswith("Z") else ""),
+                                "request_count": s["request_count"],
+                                "cookie_count": len(s["cookies"]),
+                            }
+                        )
             if cursor == 0:
                 break
         return result

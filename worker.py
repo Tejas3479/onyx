@@ -30,12 +30,16 @@ logger = logging.getLogger("onyx.worker")
 
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
+
 def get_redis_settings() -> RedisSettings:
     parsed = urlparse(REDIS_URL)
     host = parsed.hostname or "localhost"
     port = parsed.port or 6379
-    database = int(parsed.path.lstrip("/")) if parsed.path and parsed.path.lstrip("/") else 0
+    database = (
+        int(parsed.path.lstrip("/")) if parsed.path and parsed.path.lstrip("/") else 0
+    )
     return RedisSettings(host=host, port=port, database=database)
+
 
 async def notify_webhook(webhook_url: str, payload: dict):
     if not webhook_url:
@@ -44,12 +48,15 @@ async def notify_webhook(webhook_url: str, payload: dict):
         if not await is_ssrf_safe(webhook_url):
             logger.error(f"Webhook URL blocked by SSRF protection: {webhook_url}")
             return
-            
+
         async with httpx.AsyncClient(timeout=15.0, follow_redirects=False) as client:
             resp = await client.post(webhook_url, json=payload)
-            logger.info(f"Webhook notification sent to {webhook_url}, status: {resp.status_code}")
+            logger.info(
+                f"Webhook notification sent to {webhook_url}, status: {resp.status_code}"
+            )
     except Exception as e:
         logger.error(f"Failed to send webhook to {webhook_url}: {e}")
+
 
 async def process_destinations(results: list, destination_ids: list[str]):
     if not destination_ids or not results:
@@ -60,58 +67,71 @@ async def process_destinations(results: list, destination_ids: list[str]):
             dest = await session.get(Destination, d_id)
             if dest:
                 destinations.append(dest)
-                
+
     if not destinations:
         return
-        
-    logger.info(f"Processing {len(results)} results for {len(destinations)} destinations.")
-    
+
+    logger.info(
+        f"Processing {len(results)} results for {len(destinations)} destinations."
+    )
+
     # Generate embeddings if needed
     embeddings = []
     openai_key = os.getenv("OPENAI_API_KEY")
-    
+
     # Try to prepare text blocks
     texts = [str(r.get("content", ""))[:8000] for r in results if r.get("content")]
     if not texts:
         return
-        
+
     try:
         if openai_key:
             client = openai.AsyncOpenAI(api_key=openai_key)
-            resp = await client.embeddings.create(input=texts, model="text-embedding-3-small")
+            resp = await client.embeddings.create(
+                input=texts, model="text-embedding-3-small"
+            )
             embeddings = [d.embedding for d in resp.data]
     except Exception as e:
         logger.error(f"Failed to generate embeddings: {e}")
-        
+
     for dest in destinations:
         try:
             if dest.type == "pinecone":
                 from pinecone import Pinecone
+
                 pc = Pinecone(api_key=dest.config.get("api_key", ""))
                 index = pc.Index(dest.config.get("index_name", ""))
-                
+
                 vectors = []
                 for i, r in enumerate(results):
                     if i < len(embeddings) and embeddings[i]:
-                        vectors.append({
-                            "id": f"crawl-{r.get('url', str(i))}",
-                            "values": embeddings[i],
-                            "metadata": {"url": r.get("url"), "title": r.get("title", "")}
-                        })
+                        vectors.append(
+                            {
+                                "id": f"crawl-{r.get('url', str(i))}",
+                                "values": embeddings[i],
+                                "metadata": {
+                                    "url": r.get("url"),
+                                    "title": r.get("title", ""),
+                                },
+                            }
+                        )
                 if vectors:
                     index.upsert(vectors=vectors)
                     logger.info(f"Pushed {len(vectors)} vectors to Pinecone")
-                    
+
             elif dest.type == "supabase":
                 from supabase import create_client
-                supabase = create_client(dest.config.get("url", ""), dest.config.get("key", ""))
+
+                supabase = create_client(
+                    dest.config.get("url", ""), dest.config.get("key", "")
+                )
                 table_name = dest.config.get("table_name", "documents")
-                
+
                 rows = []
                 for i, r in enumerate(results):
                     row = {
                         "content": r.get("content", ""),
-                        "metadata": {"url": r.get("url"), "title": r.get("title", "")}
+                        "metadata": {"url": r.get("url"), "title": r.get("title", "")},
                     }
                     if i < len(embeddings) and embeddings[i]:
                         row["embedding"] = embeddings[i]
@@ -119,77 +139,88 @@ async def process_destinations(results: list, destination_ids: list[str]):
                 if rows:
                     supabase.table(table_name).insert(rows).execute()
                     logger.info(f"Pushed {len(rows)} rows to Supabase")
-                    
+
             elif dest.type == "weaviate":
                 from urllib.parse import urlparse
 
                 import weaviate
                 from weaviate.classes.init import Auth
-                
+
                 # Wrap synchronous Weaviate calls to prevent event loop blocking
                 def _push_to_weaviate(target_dest, target_results, target_embeddings):
                     raw_url = target_dest.config.get("url", "")
                     api_key = target_dest.config.get("api_key", "")
-                    
+
                     parsed = urlparse(raw_url)
                     host = parsed.hostname or "localhost"
                     port = parsed.port or (443 if parsed.scheme == "https" else 80)
                     is_secure = parsed.scheme == "https"
-                    
+
                     auth_creds = Auth.api_key(api_key) if api_key else None
-                    
+
                     with weaviate.connect_to_custom(
                         http_host=host,
                         http_port=port,
                         http_secure=is_secure,
-                        auth_credentials=auth_creds
+                        auth_credentials=auth_creds,
                     ) as client:
                         class_name = target_dest.config.get("class_name", "Document")
                         collection = client.collections.get(class_name)
-                        
+
                         with collection.batch.dynamic() as batch:
                             for i, r in enumerate(target_results):
                                 properties = {
                                     "content": r.get("content", ""),
                                     "url": r.get("url", ""),
-                                    "title": r.get("title", "")
+                                    "title": r.get("title", ""),
                                 }
-                                vector = target_embeddings[i] if i < len(target_embeddings) and target_embeddings[i] else None
+                                vector = (
+                                    target_embeddings[i]
+                                    if i < len(target_embeddings)
+                                    and target_embeddings[i]
+                                    else None
+                                )
                                 if vector:
-                                    batch.add_object(properties=properties, vector=vector)
+                                    batch.add_object(
+                                        properties=properties, vector=vector
+                                    )
                                 else:
                                     batch.add_object(properties=properties)
-                
+
                 await asyncio.to_thread(_push_to_weaviate, dest, results, embeddings)
                 logger.info("Pushed rows to Weaviate (v4 API)")
-                    
+
         except Exception as e:
             logger.error(f"Destination push failed for {dest.name}: {e}")
+
 
 async def run_scheduled_crawls_cron(ctx: dict):
     await init_db()
     from croniter import croniter
+
     now = datetime.now(timezone.utc)
-    
+
     async with async_session_maker() as session:
-        result = await session.execute(select(ScheduledCrawl).where(ScheduledCrawl.status == "active"))
+        result = await session.execute(
+            select(ScheduledCrawl).where(ScheduledCrawl.status == "active")
+        )
         schedules = result.scalars().all()
-        
+
         for sched in schedules:
             if not croniter.is_valid(sched.cron_expression):
                 continue
-                
+
             cron_obj = croniter(sched.cron_expression, now)
             # If next_run_at is None, set it
             if not sched.next_run_at:
                 sched.next_run_at = cron_obj.get_next(datetime)
                 session.add(sched)
                 continue
-                
+
             if now >= sched.next_run_at:
                 # Time to run
                 logger.info(f"Triggering scheduled crawl {sched.id}")
-                
+
                 # Spawn job
                 payload = sched.payload or {}
                 url = payload.get("url")
@@ -201,11 +232,11 @@ async def run_scheduled_crawls_cron(ctx: dict):
                         render_js=payload.get("render_js", False),
                         output_format=payload.get("output_format", "html"),
                         webhook_url=payload.get("webhook_url"),
-                        destinations=payload.get("destinations", [])
+                        destinations=payload.get("destinations", []),
                     )
                     session.add(job)
                     await session.commit()
-                    
+
                     redis_pool = ctx.get("redis")
                     if redis_pool:
                         await redis_pool.enqueue_job(
@@ -222,14 +253,15 @@ async def run_scheduled_crawls_cron(ctx: dict):
                             payload.get("actions"),
                             payload.get("extraction_prompt"),
                             payload.get("stealth", False),
-                            job.webhook_url
+                            job.webhook_url,
                         )
-                
+
                 # Update next run time
                 sched.next_run_at = cron_obj.get_next(datetime)
                 session.add(sched)
-                
+
         await session.commit()
+
 
 async def run_crawl_task(
     ctx: dict,
@@ -245,9 +277,10 @@ async def run_crawl_task(
     actions: list | None,
     extraction_prompt: str | None = None,
     stealth: bool = False,
-    webhook_url: str | None = None
+    webhook_url: str | None = None,
 ):
     from fetcher import crawl_manager
+
     logger.info(f"ARQ Worker starting crawl job {crawl_id} for URL {seed_url}")
     await init_db()
 
@@ -265,7 +298,7 @@ async def run_crawl_task(
             actions=actions,
             extraction_prompt=extraction_prompt,
             stealth=stealth,
-            webhook_url=webhook_url
+            webhook_url=webhook_url,
         )
 
         # Fetch completed job and trigger webhook / destinations
@@ -273,16 +306,24 @@ async def run_crawl_task(
             completed_job = await session.get(CrawlJob, crawl_id)
             if completed_job:
                 if completed_job.destinations and completed_job.results:
-                    await process_destinations(completed_job.results, completed_job.destinations)
-                    
+                    await process_destinations(
+                        completed_job.results, completed_job.destinations
+                    )
+
                 if completed_job.webhook_url:
-                    await notify_webhook(completed_job.webhook_url, completed_job.model_dump())
+                    await notify_webhook(
+                        completed_job.webhook_url, completed_job.model_dump()
+                    )
 
     except Exception as e:
         logger.error(f"ARQ crawl task {crawl_id} failed: {e}")
-        await crawl_manager._update_job_state(crawl_id, [], 0, status="failed", error_message=str(e))
+        await crawl_manager._update_job_state(
+            crawl_id, [], 0, status="failed", error_message=str(e)
+        )
         if webhook_url:
-            await notify_webhook(webhook_url, {"crawl_id": crawl_id, "status": "failed", "error": str(e)})
+            await notify_webhook(
+                webhook_url, {"crawl_id": crawl_id, "status": "failed", "error": str(e)}
+            )
 
 
 async def run_batch_crawl_task(
@@ -291,7 +332,7 @@ async def run_batch_crawl_task(
     urls: list[str],
     render_js: bool,
     output_format: str,
-    webhook_url: str | None = None
+    webhook_url: str | None = None,
 ):
     logger.info(f"ARQ Worker starting batch job {batch_id} with {len(urls)} URLs")
     await init_db()
@@ -331,14 +372,14 @@ async def run_batch_crawl_task(
                 strip_links=False,
                 llm_api_key=None,
                 llm_provider="openai" if os.getenv("OPENAI_API_KEY") else "gemini",
-                json_schema=None
+                json_schema=None,
             )
             processed_count += 1
             item = {
                 "url": url,
                 "status_code": res.get("status_code", 0),
                 "content": res.get("content", ""),
-                "error": res.get("error")
+                "error": res.get("error"),
             }
             aggregated_results.append(item)
         except Exception as e:
@@ -355,7 +396,7 @@ async def run_batch_crawl_task(
     def _write_export():
         with open(export_path, "w", encoding="utf-8") as f:
             json.dump(aggregated_results, f, indent=2)
-            
+
     await asyncio.to_thread(_write_export)
 
     async with async_session_maker() as session:
@@ -368,21 +409,27 @@ async def run_batch_crawl_task(
             await session.commit()
 
     if webhook_url:
-        await notify_webhook(webhook_url, {
-            "batch_id": batch_id,
-            "status": "completed",
-            "total_urls": len(urls),
-            "export_path": export_path,
-            "results": aggregated_results
-        })
+        await notify_webhook(
+            webhook_url,
+            {
+                "batch_id": batch_id,
+                "status": "completed",
+                "total_urls": len(urls),
+                "export_path": export_path,
+                "results": aggregated_results,
+            },
+        )
+
 
 async def startup(ctx):
     await init_db()
     logger.info("ARQ Worker initialized.")
 
+
 async def shutdown(ctx):
     await playwright_mgr.close()
     logger.info("ARQ Worker shutdown.")
+
 
 class WorkerSettings:
     functions: list = [run_crawl_task, run_batch_crawl_task]  # noqa: RUF012

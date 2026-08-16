@@ -50,9 +50,7 @@ class ProxyConfig(BaseModel):
             "socks4",
             "socks5h",
         ):
-            raise ValueError(
-                "Proxy URL scheme must be http, https, socks5, or socks4"
-            )
+            raise ValueError("Proxy URL scheme must be http, https, socks5, or socks4")
         if not parsed.netloc:
             raise ValueError("Invalid proxy URL format")
         return v_str
@@ -92,9 +90,7 @@ class FetchRequest(BaseModel):
     screenshot: bool = False
     screenshot_format: Literal["png", "jpeg"] = "png"
     extraction_prompt: str | None = Field(None, max_length=5000)
-    wait_until: Literal["domcontentloaded", "load", "networkidle"] = (
-        "networkidle"
-    )
+    wait_until: Literal["domcontentloaded", "load", "networkidle"] = "networkidle"
     stealth: bool = False
 
     @field_validator("url")
@@ -273,6 +269,7 @@ class ReportRequest(BaseModel):
     include_screenshots: bool = True
     output_format: str = "html"
 
+
 class ReportFromQueryRequest(BaseModel):
     product_name: str
     department_name: str | None = None
@@ -286,6 +283,7 @@ class ReportFromQueryRequest(BaseModel):
 class RateResult(BaseModel):
     """Intermediate result from a single tier's lookup function.
     Used internally by tier services before conversion to TierResult."""
+
     source_name: str
     price: float | None = None
     price_range_low: float | None = None
@@ -316,6 +314,7 @@ class RateResult(BaseModel):
 
 class TierResult(BaseModel):
     """Result from a single tier in the waterfall."""
+
     tier: int  # 0–4
     tier_label: str
     source_name: str
@@ -332,6 +331,7 @@ class TierResult(BaseModel):
 
 class BenchmarkQuery(BaseModel):
     """Main entry point query for the tier waterfall benchmark."""
+
     product_name: str = Field(..., min_length=2, max_length=500)
     query_type: Literal["make_model", "specifications"] = "make_model"
     query_mode: Literal["product", "service"] = "product"
@@ -348,6 +348,7 @@ class BenchmarkQuery(BaseModel):
 
 class BenchmarkResponse(BaseModel):
     """Full benchmark result with tier waterfall trace."""
+
     search_id: str
     query: str
     query_mode: str
@@ -364,11 +365,13 @@ class BenchmarkResponse(BaseModel):
 
 class DepartmentUploadRequest(BaseModel):
     """Request metadata for department purchase history upload."""
+
     department: str = Field(..., min_length=2, max_length=200)
 
 
 class DepartmentLPPRecord(BaseModel):
     """Single record from a department purchase history upload."""
+
     item_description: str
     unit_price: float
     quantity_purchased: int
@@ -380,6 +383,7 @@ class DepartmentLPPRecord(BaseModel):
 
 class NonStandardEstimateResponse(BaseModel):
     """Response from the Tier 4 non-standard item estimator."""
+
     method_used: str
     estimated_price: float | None = None
     price_range_low: float | None = None

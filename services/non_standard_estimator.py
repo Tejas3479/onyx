@@ -71,6 +71,7 @@ async def estimate_non_standard_item(
     # Strategy 1: Gemini Search Grounding (Statutory AI Estimator)
     try:
         from services.gemini_grounding import estimate_non_standard_price_with_gemini
+
         gemini_est = await estimate_non_standard_price_with_gemini(query, specs)
         if gemini_est:
             return gemini_est
@@ -121,14 +122,16 @@ async def _find_similar_items(
                 score = min(100, score + spec_keys_overlap * 5)
 
             if score >= SIMILARITY_THRESHOLD:
-                similar_items.append({
-                    "item_description": record.item_description,
-                    "unit_price": record.unit_price,
-                    "specs": record.specs,
-                    "match_score": score / 100.0,
-                    "source": f"Dept Record ({record.department})",
-                    "purchase_date": record.purchase_date.isoformat(),
-                })
+                similar_items.append(
+                    {
+                        "item_description": record.item_description,
+                        "unit_price": record.unit_price,
+                        "specs": record.specs,
+                        "match_score": score / 100.0,
+                        "source": f"Dept Record ({record.department})",
+                        "purchase_date": record.purchase_date.isoformat(),
+                    }
+                )
     except Exception as e:
         logger.warning("Failed to search department records: %s", e)
 
@@ -142,14 +145,16 @@ async def _find_similar_items(
             if key_score >= SIMILARITY_THRESHOLD:
                 for cr in cache_results:
                     if cr.get("price") is not None:
-                        similar_items.append({
-                            "item_description": cr.get("product_name", cache_key),
-                            "unit_price": cr["price"],
-                            "specs": {},
-                            "match_score": key_score / 100.0,
-                            "source": cr.get("source_name", "Cache"),
-                            "purchase_date": None,
-                        })
+                        similar_items.append(
+                            {
+                                "item_description": cr.get("product_name", cache_key),
+                                "unit_price": cr["price"],
+                                "specs": {},
+                                "match_score": key_score / 100.0,
+                                "source": cr.get("source_name", "Cache"),
+                                "purchase_date": None,
+                            }
+                        )
     except Exception as e:
         logger.warning("Failed to search demo cache: %s", e)
 
@@ -216,7 +221,9 @@ def _extrapolate_from_similar(
         f"Weighted average: \u20b9{weighted_price:,.2f}"
     )
     if adjustment_factor != 1.0:
-        confidence_rationale += f", adjusted by {adjustment_factor:.2f}x for spec differences"
+        confidence_rationale += (
+            f", adjusted by {adjustment_factor:.2f}x for spec differences"
+        )
     confidence_rationale += (
         f". Range: \u20b9{range_low:,.2f} \u2013 \u20b9{range_high:,.2f}. "
         "Recommend verification by technical committee."
@@ -298,7 +305,10 @@ async def _check_international_sources(query: str) -> dict[str, Any] | None:
             "confidence": "LOW",
             "reliability": "LOW",
             "method_used": "import_cost_basis",
-            "comparable_items": [{"item": e.get("product_name", "Unknown"), "price": e["price"]} for e in extracted[:3]],
+            "comparable_items": [
+                {"item": e.get("product_name", "Unknown"), "price": e["price"]}
+                for e in extracted[:3]
+            ],
             "spec_match_score": None,
         }
 

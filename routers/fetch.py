@@ -71,9 +71,7 @@ async def fetch_endpoint(req: FetchRequest):
     latency_ms = int((time.monotonic() - start) * 1000)
     success = result.get("error") is None
 
-    logger.info(
-        f"Fetch request resolved in {latency_ms}ms with success={success}"
-    )
+    logger.info(f"Fetch request resolved in {latency_ms}ms with success={success}")
 
     return FetchResponse(
         success=success,
@@ -98,9 +96,7 @@ async def list_sessions():
 
 
 # DELETE /api/sessions/{session_id}
-@router.delete(
-    "/api/sessions/{session_id}", dependencies=[Depends(verify_api_key)]
-)
+@router.delete("/api/sessions/{session_id}", dependencies=[Depends(verify_api_key)])
 async def delete_session(session_id: str):
     if not await session_manager.get_session_meta(session_id):
         raise HTTPException(status_code=404, detail="Session not found")

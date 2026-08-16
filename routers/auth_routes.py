@@ -136,7 +136,7 @@ async def get_me(token: str = Depends(oauth2_scheme)):
     user = await get_current_user(token)
     if not user:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
-        
+
     return UserResponse(
         id=user.id,
         name=user.name,

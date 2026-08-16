@@ -21,9 +21,10 @@ def mock_redis(monkeypatch):
     fake_redis = FakeAsyncRedis(decode_responses=True)
     # Patch the single source and every module that imported the reference
     import services.session_manager
+
     monkeypatch.setattr(services.session_manager, "redis_client", fake_redis)
     monkeypatch.setattr(app, "redis_client", fake_redis)
     import routers.health
+
     monkeypatch.setattr(routers.health, "redis_client", fake_redis)
     yield fake_redis
-

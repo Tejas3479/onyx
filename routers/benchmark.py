@@ -105,7 +105,7 @@ async def run_benchmark(query: BenchmarkQuery):
                 service_location=query.service_location,
             )
             session.add(search_record)
-            
+
             for tr in all_tier_results:
                 pr = PriceResult(
                     search_id=search_id,
@@ -117,7 +117,7 @@ async def run_benchmark(query: BenchmarkQuery):
                     raw_content=tr.rationale,
                 )
                 session.add(pr)
-                
+
             await session.commit()
     except Exception as e:
         logger.warning(f"Failed to persist benchmark search: {e}")
@@ -140,6 +140,7 @@ async def run_benchmark(query: BenchmarkQuery):
 
 class NonStandardEstimateRequest(BaseModel):
     """Standalone request for Tier 4 estimation."""
+
     product_name: str
     specs: dict | None = None
     category: str | None = None

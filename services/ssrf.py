@@ -12,27 +12,40 @@ RESTRICTED_NETWORKS = [
     ipaddress.ip_network("172.16.0.0/12"),
     ipaddress.ip_network("192.168.0.0/16"),
     ipaddress.ip_network("127.0.0.0/8"),
-    ipaddress.ip_network("169.254.0.0/16"),       # AWS/Azure IMDS & Link-Local
-    ipaddress.ip_network("100.64.0.0/10"),        # CGNAT & Cloud Internal
-    ipaddress.ip_network("100.100.100.200/32"),   # Alibaba IMDS
-    ipaddress.ip_network("10.96.0.0/12"),         # Kubernetes Service CIDR
+    ipaddress.ip_network("169.254.0.0/16"),  # AWS/Azure IMDS & Link-Local
+    ipaddress.ip_network("100.64.0.0/10"),  # CGNAT & Cloud Internal
+    ipaddress.ip_network("100.100.100.200/32"),  # Alibaba IMDS
+    ipaddress.ip_network("10.96.0.0/12"),  # Kubernetes Service CIDR
     ipaddress.ip_network("0.0.0.0/8"),
     ipaddress.ip_network("::1/128"),
-    ipaddress.ip_network("fc00::/7"),             # IPv6 Unique Local
-    ipaddress.ip_network("fe80::/10")             # IPv6 Link-Local
+    ipaddress.ip_network("fc00::/7"),  # IPv6 Unique Local
+    ipaddress.ip_network("fe80::/10"),  # IPv6 Link-Local
 ]
 
 RESTRICTED_HOSTNAME_SUFFIXES = (
-    ".internal", ".local", ".localhost", ".cluster.local", ".localdomain"
+    ".internal",
+    ".local",
+    ".localhost",
+    ".cluster.local",
+    ".localdomain",
 )
 
 RESTRICTED_HOSTNAMES = {
-    "localhost", "metadata.google.internal", "metadata.gcp.internal"
+    "localhost",
+    "metadata.google.internal",
+    "metadata.gcp.internal",
 }
 
 
 def _is_ip_restricted(ip: ipaddress.IPv4Address | ipaddress.IPv6Address) -> bool:
-    if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_multicast or ip.is_reserved or ip.is_unspecified:
+    if (
+        ip.is_private
+        or ip.is_loopback
+        or ip.is_link_local
+        or ip.is_multicast
+        or ip.is_reserved
+        or ip.is_unspecified
+    ):
         return True
     return any(ip in net for net in RESTRICTED_NETWORKS)
 
@@ -54,7 +67,9 @@ async def is_ssrf_safe(url: str) -> bool:
         host_lower = host.lower().strip()
 
         # 2. Hostname / Domain Blocklist
-        if host_lower in RESTRICTED_HOSTNAMES or host_lower.endswith(RESTRICTED_HOSTNAME_SUFFIXES):
+        if host_lower in RESTRICTED_HOSTNAMES or host_lower.endswith(
+            RESTRICTED_HOSTNAME_SUFFIXES
+        ):
             return False
 
         # 3. Direct IP Address Check
@@ -66,7 +81,9 @@ async def is_ssrf_safe(url: str) -> bool:
 
         # 4. Async DNS Resolution Check
         loop = asyncio.get_running_loop()
-        addr_info = await loop.run_in_executor(None, socket.getaddrinfo, host_lower, None)
+        addr_info = await loop.run_in_executor(
+            None, socket.getaddrinfo, host_lower, None
+        )
         for _family, _type, _proto, _canonname, sockaddr in addr_info:
             ip_str = sockaddr[0]
             ip = ipaddress.ip_address(ip_str)

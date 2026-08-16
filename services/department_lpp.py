@@ -25,11 +25,36 @@ logger = logging.getLogger("onyx.department_lpp")
 MATCH_THRESHOLD = 70
 
 # Stopwords to remove when normalizing item keys for matching
-STOPWORDS = frozenset({
-    "the", "a", "an", "and", "or", "of", "for", "with", "in", "to",
-    "no", "nos", "set", "type", "model", "make", "brand", "item",
-    "unit", "units", "pcs", "pc", "ea", "each", "per", "qty",
-})
+STOPWORDS = frozenset(
+    {
+        "the",
+        "a",
+        "an",
+        "and",
+        "or",
+        "of",
+        "for",
+        "with",
+        "in",
+        "to",
+        "no",
+        "nos",
+        "set",
+        "type",
+        "model",
+        "make",
+        "brand",
+        "item",
+        "unit",
+        "units",
+        "pcs",
+        "pc",
+        "ea",
+        "each",
+        "per",
+        "qty",
+    }
+)
 
 # Required columns in uploaded CSV/Excel files
 REQUIRED_COLUMNS = {"item_description", "unit_price", "quantity", "purchase_date"}
@@ -81,7 +106,11 @@ def _normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
         col_lower = col.strip().lower().replace(" ", "_")
         if col_lower in COLUMN_ALIASES:
             rename_map[col] = COLUMN_ALIASES[col_lower]
-        elif col_lower in REQUIRED_COLUMNS or col_lower in {"vendor_name", "source_document", "specs"}:
+        elif col_lower in REQUIRED_COLUMNS or col_lower in {
+            "vendor_name",
+            "source_document",
+            "specs",
+        }:
             rename_map[col] = col_lower
     return df.rename(columns=rename_map)
 
@@ -115,12 +144,27 @@ async def parse_upload(
             except UnicodeDecodeError:
                 df = pd.read_csv(io.BytesIO(file_content), encoding="latin-1")
         else:
-            return {"records": [], "errors": ["Unsupported file format. Use CSV or Excel (.xlsx)."], "preview": [], "total_rows": 0}
+            return {
+                "records": [],
+                "errors": ["Unsupported file format. Use CSV or Excel (.xlsx)."],
+                "preview": [],
+                "total_rows": 0,
+            }
     except Exception as e:
-        return {"records": [], "errors": [f"Failed to read file: {e!s}"], "preview": [], "total_rows": 0}
+        return {
+            "records": [],
+            "errors": [f"Failed to read file: {e!s}"],
+            "preview": [],
+            "total_rows": 0,
+        }
 
     if df.empty:
-        return {"records": [], "errors": ["File is empty."], "preview": [], "total_rows": 0}
+        return {
+            "records": [],
+            "errors": ["File is empty."],
+            "preview": [],
+            "total_rows": 0,
+        }
 
     # Normalize column names
     df = _normalize_columns(df)
@@ -130,10 +174,12 @@ async def parse_upload(
     if missing:
         return {
             "records": [],
-            "errors": [(
-                f"Missing required columns: {', '.join(sorted(missing))}. "
-                f"Found columns: {', '.join(df.columns.tolist())}"
-            )],
+            "errors": [
+                (
+                    f"Missing required columns: {', '.join(sorted(missing))}. "
+                    f"Found columns: {', '.join(df.columns.tolist())}"
+                )
+            ],
             "preview": [],
             "total_rows": len(df),
         }
@@ -179,7 +225,11 @@ async def parse_upload(
                 date_str = str(pd_val).strip()
                 for fmt in ("%Y-%m-%d", "%d-%m-%Y", "%d/%m/%Y", "%m/%d/%Y", "%Y/%m/%d"):
                     try:
-                        purchase_dt = datetime.strptime(date_str, fmt).replace(tzinfo=timezone.utc).date()
+                        purchase_dt = (
+                            datetime.strptime(date_str, fmt)
+                            .replace(tzinfo=timezone.utc)
+                            .date()
+                        )
                         break
                     except ValueError:
                         continue
@@ -194,11 +244,15 @@ async def parse_upload(
         vendor_val = str(row.get("vendor_name", "")).strip()
         vendor = vendor_val if vendor_val and vendor_val != "nan" else None
         source_doc_val = str(row.get("source_document", "")).strip()
-        source_doc = source_doc_val if source_doc_val and source_doc_val != "nan" else None
+        source_doc = (
+            source_doc_val if source_doc_val and source_doc_val != "nan" else None
+        )
 
         # Build specs dict from any extra columns
         specs: dict[str, Any] = {}
-        extra_cols = set(df.columns) - REQUIRED_COLUMNS - {"vendor_name", "source_document"}
+        extra_cols = (
+            set(df.columns) - REQUIRED_COLUMNS - {"vendor_name", "source_document"}
+        )
         for col in extra_cols:
             val = row.get(col)
             if val is not None and str(val).strip() != "nan":
@@ -269,8 +323,12 @@ async def check_department_lpp(
     Returns None if no match found.
     """
     normalized_query = normalize_item_key(query)
-    logger.debug("Checking department LPP: query='%s', normalized='%s', dept=%s",
-                 query, normalized_query, department)
+    logger.debug(
+        "Checking department LPP: query='%s', normalized='%s', dept=%s",
+        query,
+        normalized_query,
+        department,
+    )
 
     async with async_session_maker() as session:
         # Build query
@@ -342,7 +400,9 @@ async def check_department_lpp(
         ),
         "is_demo_data": False,
         "confidence": "HIGH" if best_score >= 85 else "MEDIUM",
-        "reliability": "HIGH" if staleness == "recent" else ("MEDIUM" if staleness == "moderate" else "LOW"),
+        "reliability": "HIGH"
+        if staleness == "recent"
+        else ("MEDIUM" if staleness == "moderate" else "LOW"),
         "match_score": best_score,
         "purchase_date": best_match.purchase_date.isoformat(),
         "original_record": {
@@ -380,9 +440,12 @@ async def list_department_records(
             for r in records
         ]
         records = [r for r, score in scored if score >= 50]
-        records.sort(key=lambda r: fuzz.token_set_ratio(
-            normalized_search, r.normalized_item_key
-        ), reverse=True)
+        records.sort(
+            key=lambda r: fuzz.token_set_ratio(
+                normalized_search, r.normalized_item_key
+            ),
+            reverse=True,
+        )
 
     return {
         "records": [

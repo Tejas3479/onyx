@@ -8,6 +8,7 @@ import logging
 import os
 import re
 import typing
+
 import httpx
 
 logger = logging.getLogger("onyx.serpapi")
@@ -44,7 +45,11 @@ async def search_google_shopping_india(
             response = await client.get(SERPAPI_ENDPOINT, params=params)
 
             if response.status_code != 200:
-                logger.warning("SerpAPI request failed with status %d: %s", response.status_code, response.text[:200])
+                logger.warning(
+                    "SerpAPI request failed with status %d: %s",
+                    response.status_code,
+                    response.text[:200],
+                )
                 return []
 
             data = response.json()
@@ -68,21 +73,31 @@ async def search_google_shopping_india(
                 if not raw_price or raw_price <= 0:
                     continue
 
-                source_merchant = item.get("source") or item.get("merchant", {}).get("name") or "Google Shopping Merchant"
+                source_merchant = (
+                    item.get("source")
+                    or item.get("merchant", {}).get("name")
+                    or "Google Shopping Merchant"
+                )
                 link = item.get("link") or item.get("product_link")
 
-                results.append({
-                    "source_name": f"Google Shopping ({source_merchant})",
-                    "price": raw_price,
-                    "currency": "INR",
-                    "confidence": "HIGH",
-                    "reliability": "HIGH",
-                    "evidence_url": link,
-                    "title": item.get("title", query),
-                    "is_demo_data": False,
-                })
+                results.append(
+                    {
+                        "source_name": f"Google Shopping ({source_merchant})",
+                        "price": raw_price,
+                        "currency": "INR",
+                        "confidence": "HIGH",
+                        "reliability": "HIGH",
+                        "evidence_url": link,
+                        "title": item.get("title", query),
+                        "is_demo_data": False,
+                    }
+                )
 
-            logger.info("SerpAPI returned %d valid Google Shopping results for '%s'", len(results), query)
+            logger.info(
+                "SerpAPI returned %d valid Google Shopping results for '%s'",
+                len(results),
+                query,
+            )
             return results
 
     except httpx.TimeoutException:

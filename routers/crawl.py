@@ -136,9 +136,7 @@ async def create_batch_crawl(
     }
 
 
-@router.get(
-    "/api/crawl/batch/{batch_id}", dependencies=[Depends(verify_api_key)]
-)
+@router.get("/api/crawl/batch/{batch_id}", dependencies=[Depends(verify_api_key)])
 async def get_batch_crawl(batch_id: str):
     async with async_session_maker() as session:
         batch = await session.get(BatchJob, batch_id)

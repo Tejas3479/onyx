@@ -115,11 +115,12 @@ async def lifespan(app: FastAPI):
     # STARTUP
     try:
         await init_db()
-        
+
         # Seed reference data
         from services.data_seeder import seed_database
+
         await seed_database()
-        
+
         await playwright_mgr.initialize()
     except Exception as e:
         logger.warning(
@@ -160,9 +161,7 @@ app = FastAPI(**app_kwargs)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.getenv("CORS_ORIGINS", "http://localhost:8000").split(
-        ","
-    ),
+    allow_origins=os.getenv("CORS_ORIGINS", "http://localhost:8000").split(","),
     allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
     allow_headers=["*"],
     allow_credentials=False,
@@ -216,6 +215,7 @@ async def security_headers_middleware(request: Request, call_next):
 
     return response
 
+
 @app.middleware("http")
 async def resource_limits_middleware(request: Request, call_next):
     # Payload size limit check
@@ -223,9 +223,7 @@ async def resource_limits_middleware(request: Request, call_next):
     if content_length:
         try:
             if int(content_length) > MAX_BODY_SIZE_BYTES:
-                client_ip = (
-                    request.client.host if request.client else "127.0.0.1"
-                )
+                client_ip = request.client.host if request.client else "127.0.0.1"
                 logger.warning(
                     f"Rejected oversized payload ({content_length} bytes) from {client_ip}"
                 )
@@ -258,9 +256,7 @@ async def resource_limits_middleware(request: Request, call_next):
 
     is_limited, remaining, reset_sec = await rate_limiter.check(client_key)
     if is_limited:
-        logger.warning(
-            f"Rate limit exceeded for client: {client_key} on path {path}"
-        )
+        logger.warning(f"Rate limit exceeded for client: {client_key} on path {path}")
         return JSONResponse(
             status_code=429,
             content={"detail": "Too many requests. Rate limit exceeded."},
@@ -290,10 +286,12 @@ app.include_router(admin_router)
 app.include_router(auth_router)
 app.include_router(reports_router)
 
+
 # Flagship Root Route: National Statutory Portal Landing Page
 @app.get("/", response_class=FileResponse, include_in_schema=False)
 async def serve_root():
     return FileResponse("static/landing.html")
+
 
 @app.get("/benchmark", response_class=FileResponse, include_in_schema=False)
 async def serve_benchmark():

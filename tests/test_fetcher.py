@@ -1,6 +1,6 @@
 import os
 
-os.environ['AUTH_DISABLED'] = 'true'
+os.environ["AUTH_DISABLED"] = "true"
 
 from unittest.mock import MagicMock, patch
 
@@ -20,36 +20,49 @@ def setup_env():
     if "DISABLE_SSRF_CHECK" in os.environ:
         del os.environ["DISABLE_SSRF_CHECK"]
 
+
 @pytest.fixture
 async def async_client():
-    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as ac:
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://test"
+    ) as ac:
         yield ac
+
 
 @pytest.mark.asyncio
 async def test_structured_json_extraction_mocked(async_client):
     original_post = httpx.AsyncClient.post
-    
+
     mock_response = MagicMock()
     mock_response.status_code = 200
     mock_response.json.return_value = {
-        "choices": [{"message": {"content": '{"title": "Test Title", "links": ["http://test.com"]}'}}]
+        "choices": [
+            {
+                "message": {
+                    "content": '{"title": "Test Title", "links": ["http://test.com"]}'
+                }
+            }
+        ]
     }
-    
+
     async def fake_post(self, url, *args, **kwargs):
         if "api.openai.com" in str(url):
             return mock_response
         return await original_post(self, url, *args, **kwargs)
-        
+
     with patch("httpx.AsyncClient.post", new=fake_post):
         headers = {"x-api-key": "test-key"}
         payload = {
             "url": "https://example.com",
             "output_format": "structured",
-            "json_schema": {"type": "object", "properties": {"title": {"type": "string"}}},
+            "json_schema": {
+                "type": "object",
+                "properties": {"title": {"type": "string"}},
+            },
             "llm_provider": "openai",
-            "llm_api_key": "sk-test"
+            "llm_api_key": "sk-test",
         }
-        
+
         response = await async_client.post("/fetch", headers=headers, json=payload)
         print("RESPONSE STATUS:", response.status_code)
         data = response.json()

@@ -56,7 +56,9 @@ async def _fetch_source(source: dict[str, Any], query: str) -> dict[str, Any]:
             run_fetch(
                 url=url,
                 method="GET",
-                headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"},
+                headers={
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+                },
                 cookies={},
                 body=None,
                 json_body=None,
@@ -80,9 +82,16 @@ async def _fetch_source(source: dict[str, Any], query: str) -> dict[str, Any]:
 
         if result.get("error"):
             logger.warning(
-                "Fetch error from %s: %s", source_name, result.get("error_message", "unknown")
+                "Fetch error from %s: %s",
+                source_name,
+                result.get("error_message", "unknown"),
             )
-            return {"source": source_name, "url": url, "content": None, "error": result["error"]}
+            return {
+                "source": source_name,
+                "url": url,
+                "content": None,
+                "error": result["error"],
+            }
 
         content = result.get("content", "")
         logger.info("Fetched %d chars from %s", len(content), source_name)
@@ -96,7 +105,9 @@ async def _fetch_source(source: dict[str, Any], query: str) -> dict[str, Any]:
         return {"source": source_name, "url": url, "content": None, "error": str(e)}
 
 
-async def run_market_survey(query: str, specs: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+async def run_market_survey(
+    query: str, specs: dict[str, Any] | None = None
+) -> list[dict[str, Any]]:
     """Run a parallel market survey across all enabled Tier 3 sources.
 
     1. Fetches all sources in parallel
@@ -111,7 +122,9 @@ async def run_market_survey(query: str, specs: dict[str, Any] | None = None) -> 
         logger.warning("No market sources enabled")
         return []
 
-    logger.info("Starting market survey for '%s' across %d sources", query, len(sources))
+    logger.info(
+        "Starting market survey for '%s' across %d sources", query, len(sources)
+    )
 
     # ── Parallel fetch across standard sources + SerpAPI ──
     from services.serpapi_service import search_google_shopping_india
@@ -165,7 +178,10 @@ async def run_market_survey(query: str, specs: dict[str, Any] | None = None) -> 
 
     logger.info(
         "Market survey for '%s': %d results from %d sources, %d prices found",
-        query, len(all_results), len(sources), len(all_prices),
+        query,
+        len(all_results),
+        len(sources),
+        len(all_prices),
     )
 
     return all_results

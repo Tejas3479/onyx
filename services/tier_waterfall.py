@@ -32,7 +32,9 @@ async def _check_tier_0(query: str, category: str | None) -> dict | None:
     """Tier 0: Check DGS&D rate contracts / ministry-notified fixed rates."""
     from services.gem_rate_lookup import check_notified_rate
 
-    logger.debug("Tier 0: Checking notified rates for query=%s, category=%s", query, category)
+    logger.debug(
+        "Tier 0: Checking notified rates for query=%s, category=%s", query, category
+    )
     try:
         return await check_notified_rate(query, category)
     except Exception as e:
@@ -58,7 +60,9 @@ async def _check_tier_2(
     """Tier 2: Check department's own last purchase price."""
     from services.department_lpp import check_department_lpp
 
-    logger.debug("Tier 2: Checking department LPP for query=%s, dept=%s", query, department)
+    logger.debug(
+        "Tier 2: Checking department LPP for query=%s, dept=%s", query, department
+    )
     try:
         return await check_department_lpp(query, specs, department)
     except Exception as e:
@@ -169,7 +173,9 @@ async def get_price_benchmark(
             primary_result = result
             resolved_tier = 4
             all_results.append({**result, "tier": 4, "tier_label": TIER_LABELS[4]})
-            tier_trace["tier_4"] = f"Estimated via {result.get('method_used', 'heuristic')}"
+            tier_trace["tier_4"] = (
+                f"Estimated via {result.get('method_used', 'heuristic')}"
+            )
         else:
             tier_trace["tier_4"] = "Insufficient data for estimation"
             # Final fallback — no tier resolved
@@ -183,7 +189,9 @@ async def get_price_benchmark(
                 ),
                 "method_used": "insufficient_data",
             }
-            all_results.append({**primary_result, "tier": 4, "tier_label": TIER_LABELS[4]})
+            all_results.append(
+                {**primary_result, "tier": 4, "tier_label": TIER_LABELS[4]}
+            )
     else:
         tier_trace["tier_4"] = "Skipped: resolved at earlier tier"
 
@@ -208,7 +216,9 @@ async def get_price_benchmark(
 
     return {
         "resolved_tier": resolved_tier,
-        "tier_label": TIER_LABELS.get(resolved_tier, "Unknown") if resolved_tier is not None else "Unknown",
+        "tier_label": TIER_LABELS.get(resolved_tier, "Unknown")
+        if resolved_tier is not None
+        else "Unknown",
         "primary_result": primary_result,
         "all_results": all_results,
         "tier_trace": tier_trace,

@@ -20,6 +20,7 @@ class PlaywrightManager:
     """
     Manages Playwright browser instance, context pool, and anti-bot evasion settings.
     """
+
     def __init__(self):
         self.playwright = None
         self.browser: Browser | None = None
@@ -41,8 +42,8 @@ class PlaywrightManager:
                         "--disable-accelerated-2d-canvas",
                         "--no-first-run",
                         "--no-zygote",
-                        "--disable-gpu"
-                    ]
+                        "--disable-gpu",
+                    ],
                 )
 
     async def start(self):
@@ -62,17 +63,28 @@ class PlaywrightManager:
                 self.playwright = None
 
     @asynccontextmanager
-    async def acquire_context(self, proxy_url: str | None = None, user_headers: dict | None = None, stealth: bool = False):
+    async def acquire_context(
+        self,
+        proxy_url: str | None = None,
+        user_headers: dict | None = None,
+        stealth: bool = False,
+    ):
         await self.initialize()
 
         start_wait = time.monotonic()
         async with self._slots_lock:
             if self.slots_free <= 0:
-                logger.warning("Max Playwright instances reached. Waiting for available slot...")
+                logger.warning(
+                    "Max Playwright instances reached. Waiting for available slot..."
+                )
             while self.slots_free <= 0:
                 if time.monotonic() - start_wait > PLAYWRIGHT_SLOT_TIMEOUT:
-                    logger.error(f"Playwright slot acquisition timed out after {PLAYWRIGHT_SLOT_TIMEOUT}s.")
-                    raise TimeoutError(f"All Playwright browser slots are occupied. Acquisition timed out after {PLAYWRIGHT_SLOT_TIMEOUT}s.")
+                    logger.error(
+                        f"Playwright slot acquisition timed out after {PLAYWRIGHT_SLOT_TIMEOUT}s."
+                    )
+                    raise TimeoutError(
+                        f"All Playwright browser slots are occupied. Acquisition timed out after {PLAYWRIGHT_SLOT_TIMEOUT}s."
+                    )
                 await asyncio.sleep(0.1)
             self.slots_free -= 1
             _free = self.slots_free
@@ -82,28 +94,37 @@ class PlaywrightManager:
         try:
             if not self.browser:
                 raise RuntimeError("Playwright browser is not initialized.")
-            
+
             context_args: dict[str, Any] = {}
             if proxy_url:
                 context_args["proxy"] = {"server": proxy_url}
-            
+
             # Evasion: Use standard desktop browser User-Agent
-            context_args["user_agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-            
-            context_args.update({
-                "viewport": {"width": 1920 if stealth else 1280, "height": 1080 if stealth else 720},
-                "device_scale_factor": 1,
-                "is_mobile": False,
-                "has_touch": False,
-                "locale": "en-US",
-                "timezone_id": "America/New_York"
-            })
-            
+            context_args["user_agent"] = (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            )
+
+            context_args.update(
+                {
+                    "viewport": {
+                        "width": 1920 if stealth else 1280,
+                        "height": 1080 if stealth else 720,
+                    },
+                    "device_scale_factor": 1,
+                    "is_mobile": False,
+                    "has_touch": False,
+                    "locale": "en-US",
+                    "timezone_id": "America/New_York",
+                }
+            )
+
             context = await self.browser.new_context(**context_args)
-            
+
             # Evasion: Remove navigator.webdriver property to bypass simple bot checks
-            await context.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
-            
+            await context.add_init_script(
+                "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
+            )
+
             if stealth:
                 # Mock WebGL params
                 webgl_script = """
@@ -138,7 +159,7 @@ class PlaywrightManager:
 
             if user_headers:
                 await context.set_extra_http_headers(user_headers)
-                
+
             yield context
         finally:
             if context:
