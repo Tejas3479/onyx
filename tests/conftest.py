@@ -9,6 +9,7 @@ _test_db_path = pathlib.Path(test_db)
 if _test_db_path.exists():
     _test_db_path.unlink(missing_ok=True)
 os.environ["DATABASE_URL"] = f"sqlite+aiosqlite:///{test_db}"
+os.environ["JWT_SECRET_KEY"] = "test-jwt-secret-key-32-chars-long-abcdef"
 
 from fakeredis import FakeAsyncRedis
 

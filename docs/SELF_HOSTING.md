@@ -179,7 +179,7 @@ sudo systemctl start onyx-api onyx-worker
 | Variable | Default | Description |
 |---|---|---|
 | `API_KEYS` | *(required)* | Comma-separated API keys, e.g. `key1,key2` |
-| `JWT_SECRET_KEY` | `onyx-dev-secret...` | Secret key used for signing authentication JWT tokens |
+| `JWT_SECRET_KEY` | *(required)* | Secret key used for signing authentication JWT tokens (must be set in env) |
 | `JWT_EXPIRE_MINUTES` | `480` (8 hours) | Token validity duration |
 | `RATE_LIMIT_PER_MINUTE` | `60` | Max requests per minute per IP / API key (set to `0` to disable) |
 | `MAX_PLAYWRIGHT_INSTANCES` | `3` | Max concurrent headless browser instances |

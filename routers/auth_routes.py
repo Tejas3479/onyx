@@ -5,6 +5,7 @@ import os
 from datetime import datetime, timedelta, timezone
 
 import jwt
+from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from pwdlib import PasswordHash
@@ -14,14 +15,28 @@ from sqlalchemy import select
 from database import User, async_session_maker
 from models import TokenResponse, UserCreate, UserLogin, UserResponse
 
+# Load environment variables
+load_dotenv()
+
 logger = logging.getLogger("onyx.auth_routes")
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 # JWT configuration
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "onyx-dev-secret-change-in-production")
-ALGORITHM = "HS256"
+ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES", "480"))  # 8 hours
+
+
+def get_jwt_secret_key() -> str:
+    """Retrieve the JWT secret key from environment, failing fast if not configured."""
+    secret = os.getenv("JWT_SECRET_KEY")
+    if not secret or not secret.strip():
+        raise RuntimeError(
+            "JWT_SECRET_KEY environment variable is not set. "
+            "A secure secret key must be configured in environment or .env file."
+        )
+    return secret.strip()
+
 
 # Password hashing
 password_hash = PasswordHash((Argon2Hasher(),))
@@ -37,17 +52,17 @@ def _create_token(user_id: str, email: str) -> str:
         "email": email,
         "exp": expire,
     }
-    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    return jwt.encode(payload, get_jwt_secret_key(), algorithm=ALGORITHM)
 
 
 async def get_current_user(token: str) -> User | None:
     """Validate JWT token and return the user. Returns None if invalid."""
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, get_jwt_secret_key(), algorithms=[ALGORITHM])
         user_id = payload.get("sub")
         if not user_id:
             return None
-    except jwt.exceptions.PyJWTError:
+    except (jwt.exceptions.PyJWTError, RuntimeError):
         return None
 
     async with async_session_maker() as session:
@@ -101,7 +116,15 @@ async def login(req: UserLogin):
     if not user or not password_hash.verify(req.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
-    token = _create_token(user.id, user.email)
+    try:
+        token = _create_token(user.id, user.email)
+    except RuntimeError as e:
+        logger.error("Authentication configuration failure: %s", e)
+        raise HTTPException(
+            status_code=500,
+            detail="Authentication configuration error: JWT_SECRET_KEY is not configured.",
+        ) from e
+
     logger.info("User logged in: %s", user.email)
 
     return TokenResponse(access_token=token)
