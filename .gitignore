@@ -9,6 +9,8 @@ dist/
 build/
 *.so
 .eggs/
+.mypy_cache/
+.pytest_cache/
 
 # Virtual environments
 .venv/
@@ -20,6 +22,27 @@ ENV/
 .env
 .env.*
 !.env.example
+
+# Databases & Runtime SQLite
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+data/*.db
+data/*.sqlite
+data/*.sqlite3
+data/exports/
+data/uploads/
+data/reports/
+data/sessions.json
+data/test_onyx.db
+
+# Keep seed data tracked
+!data/demo_cache.json
+!data/gem_lpp_seed.json
+!data/notified_rates.json
 
 # HackForge analysis files
 .hackforge/
@@ -48,8 +71,5 @@ test-results/
 # Docker
 *.tar
 
-# Node (if any tooling added later)
+# Node
 node_modules/
-
-# Runtime Data Persistence
-data/
