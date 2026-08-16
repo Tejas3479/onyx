@@ -7,18 +7,34 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR /app
 
+# Install OS dependencies for WeasyPrint and Playwright
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        libpango-1.0-0 \
+        libpangocairo-1.0-0 \
+        libgdk-pixbuf2.0-0 \
+        shared-mime-info && \
+    playwright install-deps && \
+    rm -rf /var/lib/apt/lists/*
+
 # Install python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install OS dependencies for playwright
-RUN apt-get update && \
-    apt-get install -y libpango-1.0-0 libpangocairo-1.0-0 libgdk-pixbuf2.0-0 && \
-    playwright install-deps && \
-    rm -rf /var/lib/apt/lists/*
+# Create non-root user and setup directories with correct permissions
+RUN groupadd -g 10001 onyx && \
+    useradd -u 10001 -g onyx -m -s /bin/bash onyx && \
+    mkdir -p /app/data /app/data/exports && \
+    chown -R onyx:onyx /app
 
-# Copy the rest of the application
-COPY . .
+# Copy application code with non-root ownership
+COPY --chown=onyx:onyx . .
+
+# Ensure data directory permissions
+RUN mkdir -p /app/data /app/data/exports && \
+    chown -R onyx:onyx /app/data
+
+USER 10001
 
 EXPOSE 8000
 
