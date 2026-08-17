@@ -73,3 +73,6 @@ test-results/
 
 # Node
 node_modules/
+
+# Firecrawl temp
+.firecrawl/

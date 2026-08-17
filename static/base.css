@@ -93,26 +93,6 @@ body {
   left: 0;
 }
 
-/* ── Accessibility: font-size toggle ── */
-.font-size-toggle {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  background: rgba(255, 255, 255, 0.08);
-  color: #e2e8f0;
-  font-family: 'Outfit', sans-serif;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s;
-}
-.font-size-toggle:hover {
-  background: rgba(255, 255, 255, 0.16);
-}
 
 /* ── Button press feedback ── */
 button.pressed,

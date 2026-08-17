@@ -78,33 +78,6 @@
     });
   }
 
-  /* ── Accessibility: font-size toggle ── */
-  // Cycles a proportional zoom (100% / 112% / 125%) on the root element.
-  // Uses CSS `zoom` so it scales px-based styles too (equivalent to browser
-  // zoom), unlike a rem-only change.
-  const btnFont = document.getElementById('font-size-toggle');
-  if (btnFont) {
-    const sizes = [1, 1.125, 1.25];
-    const readScale = () => {
-      const raw = document.documentElement.dataset.fontScale;
-      const n = parseInt(raw || '0', 10);
-      return (isNaN(n) || n < 0 || n >= sizes.length) ? 0 : n;
-    };
-    let idx = readScale();
-
-    const apply = () => {
-      document.documentElement.style.zoom = String(sizes[idx]);
-      document.documentElement.dataset.fontScale = String(idx);
-      btnFont.setAttribute('aria-pressed', idx > 0 ? 'true' : 'false');
-      btnFont.textContent = 'A' + (idx > 0 ? '+' + (idx * 12.5) + '%' : '');
-    };
-
-    btnFont.addEventListener('click', () => {
-      idx = (idx + 1) % sizes.length;
-      apply();
-    });
-    apply();
-  }
 
   /* ── Button press feedback (safe: transform only) ── */
   document.addEventListener('mousedown', (e) => {
