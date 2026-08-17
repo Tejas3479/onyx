@@ -14,12 +14,14 @@
   - [POST /api/v1/benchmark](#post-apiv1benchmark)
   - [POST /api/v1/estimate/non-standard](#post-apiv1estimatenon-standard)
   - [POST /api/v1/department-lpp/upload](#post-apiv1department-lppupload)
-  - [GET /api/v1/department-lpp/records](#get-apiv1department-lpprecords)
-  - [DELETE /api/v1/department-lpp/records](#delete-apiv1department-lpprecords)
+  - [GET /api/v1/department-lpp](#get-apiv1department-lpp)
+  - [POST /api/v1/reports/generate](#post-apiv1reportsgenerate)
   - [POST /api/v1/reports/generate-from-query](#post-apiv1reportsgenerate-from-query)
 - [Authentication & User Management](#authentication--user-management)
   - [POST /auth/register](#post-authregister)
   - [POST /auth/login](#post-authlogin)
+  - [POST /auth/demo-login](#post-authdemo-login)
+  - [GET /auth/me](#get-authme)
 - [Core Scraping & Extraction](#core-scraping--extraction)
   - [POST /fetch](#post-fetch)
 - [Browser Session Management](#browser-session-management)
@@ -175,31 +177,47 @@ Upload internal department purchase history spreadsheets to enable Tier 2 matchi
 #### Response (`200 OK`)
 ```json
 {
-  "filename": "meity_purchase_orders_2024.xlsx",
-  "records_ingested": 142,
   "status": "success",
-  "department": "Ministry of Electronics & IT"
+  "message": "Uploaded 142 purchase records for Ministry of Electronics & IT",
+  "saved_count": 142,
+  "total_rows": 150,
+  "errors": [],
+  "preview": []
 }
 ```
 
 ---
 
-### GET /api/v1/department-lpp/records
+### GET /api/v1/department-lpp
 
 List historical department purchase records stored in the database.
 
 #### Query Parameters
 - `department` (optional): Filter by department name
-- `limit` (optional, default: 50): Number of records to return
+- `search` (optional): Fuzzy search by item description
+- `limit` (optional, default: 50, max: 200): Number of records to return
+- `offset` (optional, default: 0): Pagination offset
 
 ---
 
-### DELETE /api/v1/department-lpp/records
+### POST /api/v1/reports/generate
 
-Delete department purchase records.
+Generate a GFR-compliant price benchmark report from a previously persisted benchmark result.
 
-#### Query Parameters
-- `department` (optional): Delete records for a specific department only (if omitted, clears all records).
+#### Request Body (`application/json`)
+```json
+{
+  "search_id": "<search_id from POST /api/v1/benchmark>",
+  "output_format": "html",
+  "department_name": "Ministry of Electronics & IT",
+  "signatory_name": "R. Sharma"
+}
+```
+
+- `output_format` (optional, default: `"html"`): `"html"` or `"pdf"`
+
+#### Response
+- Returns `text/html` or `application/pdf` inline file download.
 
 ---
 
@@ -254,6 +272,53 @@ Authenticate user credentials and receive a JWT Bearer token.
 {
   "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "token_type": "bearer"
+}
+```
+
+---
+
+### POST /auth/demo-login
+
+One-click login for simulated officer profiles. Only available when `DEMO_MODE=true`; returns `403` otherwise.
+
+#### Request Body
+```json
+{
+  "name": "Shri R. K. Sharma",
+  "email": "r.sharma@mod.gov.in",
+  "department": "Ministry of Defence"
+}
+```
+
+Creates (or reuses) the simulated profile with an ephemeral, non-recoverable password — no client-visible credential is ever shipped.
+
+#### Response (`200 OK`)
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "bearer"
+}
+```
+
+---
+
+### GET /auth/me
+
+Returns the currently authenticated user's profile.
+
+#### Authentication
+Requires `Authorization: Bearer <jwt-token>` from `POST /auth/login`.
+
+#### Response (`200 OK`)
+```json
+{
+  "id": "e8f1c2a4-...",
+  "email": "r.sharma@gov.in",
+  "full_name": "R. Sharma",
+  "department": "Ministry of Electronics & IT",
+  "role": "officer",
+  "is_active": true,
+  "created_at": "2026-01-15T09:30:00Z"
 }
 ```
 

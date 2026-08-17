@@ -8,117 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/base.css">
   <style>
-    :root {
-      --bg: #f8fafc;
-      --card-bg: #ffffff;
-      --navy-900: #0f172a;
-      --navy-800: #1e293b;
-      --navy-700: #334155;
-      --text-dark: #0f172a;
-      --text-main: #334155;
-      --text-muted: #64748b;
-      --border: #e2e8f0;
-      --border-subtle: #f1f5f9;
-      
-      --primary: #1d4ed8;
-      --primary-hover: #1e40af;
-      --primary-light: #eff6ff;
-      
-      --success: #16a34a;
-      --success-bg: #dcfce7;
-      --danger: #dc2626;
-      --danger-bg: #fee2e2;
-      --warning: #d97706;
-      --warning-bg: #fef3c7;
-      
-      --radius-sm: 6px;
-      --radius-md: 10px;
-      --radius-lg: 14px;
-      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
-    }
-    
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: var(--bg);
-      color: var(--text-main);
-      line-height: 1.5;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-    
-    /* ── Top Navbar ── */
-    .navbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 14px 32px;
-      background-color: var(--navy-900);
-      color: #fff;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    
-    .nav-brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      text-decoration: none;
-      color: #fff;
-    }
-    .brand-logo {
-      font-family: 'Outfit', sans-serif;
-      font-size: 22px;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: #fff;
-    }
-    .brand-tag {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      font-weight: 600;
-      background: rgba(37, 99, 235, 0.25);
-      border: 1px solid rgba(96, 165, 250, 0.4);
-      color: #93c5fd;
-      padding: 2px 8px;
-      border-radius: 4px;
-      text-transform: uppercase;
-    }
-    
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .nav-link {
-      padding: 6px 14px;
-      font-size: 13.5px;
-      font-weight: 500;
-      color: #cbd5e1;
-      text-decoration: none;
-      border-radius: var(--radius-sm);
-      transition: all 0.15s ease;
-    }
-    .nav-link:hover {
-      color: #fff;
-      background: rgba(255, 255, 255, 0.08);
-    }
-    .nav-link.active {
-      color: #fff;
-      background: #2563eb;
-      font-weight: 600;
-    }
-    
     .system-status {
       display: flex;
       align-items: center;
@@ -141,73 +32,19 @@
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
     
     /* ── Main Container ── */
-    main {
-      flex: 1;
-      max-width: 1100px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 32px 24px 64px;
-    }
     
     .hero {
       text-align: center;
       margin-bottom: 28px;
     }
-    .hero-pre {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--primary);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 6px;
-    }
     .hero h1 {
-      font-family: 'Outfit', sans-serif;
       font-size: 34px;
-      font-weight: 700;
-      color: var(--navy-900);
-      letter-spacing: -0.02em;
-      margin-bottom: 8px;
     }
     .hero p {
-      font-size: 15px;
-      color: var(--text-muted);
       max-width: 680px;
-      margin: 0 auto;
-    }
-    
-    .card {
-      background: var(--card-bg);
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow-sm);
-      padding: 24px;
-      margin-bottom: 24px;
-    }
-    .card-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--navy-900);
-      margin-bottom: 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid var(--border-subtle);
-      padding-bottom: 10px;
     }
     
     /* Form */
-    .form-group {
-      margin-bottom: 16px;
-    }
-    .form-group label {
-      display: block;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--navy-700);
-      margin-bottom: 6px;
-    }
     .form-group input[type="text"] {
       width: 100%;
       padding: 11px 14px;
@@ -263,18 +100,7 @@
       padding: 12px 24px;
       font-size: 14px;
       font-weight: 600;
-      color: #fff;
-      background: var(--primary);
-      border: none;
-      border-radius: var(--radius-md);
-      cursor: pointer;
-      transition: background 0.15s;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
     }
-    .btn-primary:hover { background: var(--primary-hover); }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
     
     .template-link {
       color: var(--primary);
@@ -289,16 +115,6 @@
     .template-link:hover { text-decoration: underline; }
     
     /* Messages */
-    .message-box {
-      padding: 12px 16px;
-      border-radius: var(--radius-md);
-      font-size: 13.5px;
-      margin-bottom: 16px;
-      display: none;
-    }
-    .message-box.success { display: block; background: var(--success-bg); color: #166534; border: 1px solid #bbf7d0; }
-    .message-box.error { display: block; background: var(--danger-bg); color: #991b1b; border: 1px solid #fecaca; }
-    .message-box.warning { display: block; background: var(--warning-bg); color: #9a3412; border: 1px solid #fed7aa; }
     
     /* Table */
     .table-container {
@@ -331,19 +147,11 @@
     .age-recent { background: #dcfce7; color: #166534; }
     .age-moderate { background: #fef9c3; color: #854d0e; }
     .age-old { background: #fee2e2; color: #991b1b; }
-    
-    footer {
-      text-align: center;
-      padding: 24px;
-      color: var(--text-muted);
-      font-size: 13px;
-      border-top: 1px solid var(--border);
-      background: #fff;
-      margin-top: auto;
-    }
   </style>
 </head>
 <body>
+
+  <a class="skip-link" href="#main-content" id="skip-to-content">Skip to main content</a>
 
   <!-- Top Navbar -->
   <header class="navbar">
@@ -353,18 +161,28 @@
     </a>
     
     <nav class="nav-links">
-      <a href="/" class="nav-link">🎯 Price Benchmark</a>
-      <a href="/upload_history.html" class="nav-link active">📁 Dept PO Ingestion</a>
-      <a href="/index.html" class="nav-link">🌐 Market Crawlers & Engine</a>
+      <a href="/benchmark.html" class="nav-link">
+        <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+        Price Benchmark
+      </a>
+      <a href="/upload_history.html" class="nav-link active">
+        <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+        Dept PO Ingestion
+      </a>
+      <a href="/index.html" class="nav-link">
+        <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a15 15 0 0 1 0 18"/><path d="M12 3a15 15 0 0 0 0 18"/></svg>
+        Market Crawlers & Engine
+      </a>
     </nav>
     
     <div class="system-status">
       <div class="status-dot"></div>
       <span>Tier 2 Ingestion Online</span>
     </div>
+    <button type="button" class="font-size-toggle" id="font-size-toggle" aria-label="Increase text size (currently 100%)" aria-pressed="false" title="Adjust text size">A</button>
   </header>
 
-  <main>
+  <main class="max-w-lg" id="main-content">
     <section class="hero">
       <div class="hero-pre">GFR Rule 149(vii) Tier 2 Database</div>
       <h1>Department Purchase Order Ingestion</h1>
@@ -375,7 +193,7 @@
     <section class="card">
       <div class="card-title">
         <span>Ingest Purchase Order Batch</span>
-        <a href="#" class="template-link" id="downloadTemplate">📥 Download CSV Template</a>
+        <a href="#" class="template-link" id="downloadTemplate"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px;margin-right:4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg> Download CSV Template</a>
       </div>
 
       <div id="successMsg" class="message-box success"></div>
@@ -388,7 +206,9 @@
         </div>
 
         <div class="drop-zone" id="dropZone">
-          <div class="drop-zone-icon">📁</div>
+          <div class="drop-zone-icon">
+            <svg class="icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+          </div>
           <div class="drop-zone-text">Click to choose or drag & drop CSV / Excel file here</div>
           <div class="drop-zone-sub">Required columns: item_description, unit_price, quantity, purchase_date</div>
           <div class="file-name-display" id="fileName"></div>
@@ -396,7 +216,8 @@
         </div>
 
         <button type="submit" class="btn-primary" id="submitBtn" disabled>
-          <span>🚀</span> Ingest & Index PO Records
+          <svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+          Ingest & Index PO Records
         </button>
       </form>
     </section>
@@ -435,12 +256,15 @@
     </section>
   </main>
 
-  <footer>
+  <footer class="site-footer">
     <p>Onyx Statutory Procurement System | Fully Compliant with GFR 2017 Rule 149(vii)</p>
   </footer>
 
+  <script src="/app.js"></script>
+  <script src="/ui.js"></script>
   <script>
     const API_BASE = '/api/v1/department-lpp';
+
     const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('fileInput');
     const fileName = document.getElementById('fileName');
@@ -489,7 +313,7 @@
       if (!dept || !fileInput.files.length) return;
 
       submitBtn.disabled = true;
-      submitBtn.innerHTML = '<span>⏳</span> Processing & Validating...';
+      submitBtn.innerHTML = '<svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg> Processing & Validating...';
 
       const formData = new FormData();
       formData.append('file', fileInput.files[0]);
@@ -498,6 +322,7 @@
       try {
         const res = await fetch(`${API_BASE}/upload`, {
           method: 'POST',
+          headers: authHeaders(),
           body: formData,
         });
 
@@ -517,7 +342,7 @@
         showError('Network error: ' + err.message);
       } finally {
         submitBtn.disabled = false;
-        submitBtn.innerHTML = '<span>🚀</span> Ingest & Index PO Records';
+        submitBtn.innerHTML = '<svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg> Ingest & Index PO Records';
       }
     });
 
@@ -554,7 +379,9 @@
         if (search) params.set('search', search);
         params.set('limit', '50');
 
-        const res = await fetch(`${API_BASE}?${params}`);
+        const res = await fetch(`${API_BASE}?${params}`, {
+          headers: authHeaders(),
+        });
         const data = await res.json();
 
         const tbody = document.getElementById('existingBody');
@@ -611,12 +438,6 @@
       a.click();
       URL.revokeObjectURL(url);
     });
-
-    function esc(str) {
-      const div = document.createElement('div');
-      div.textContent = str ?? '';
-      return div.innerHTML;
-    }
 
     loadExistingRecords();
   </script>

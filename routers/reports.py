@@ -10,6 +10,7 @@ from sqlalchemy import select
 from database import PriceResult, PriceSearch, async_session_maker
 from models import ReportFromQueryRequest, ReportRequest
 from routers.auth_routes import require_current_user
+from services.price_extractor import compute_statistics
 from services.report_generator import generate_report_html, save_report
 from services.tier_waterfall import get_price_benchmark
 
@@ -52,6 +53,9 @@ async def generate_report(req: ReportRequest, user=Depends(require_current_user)
     if not primary and all_results:
         primary = all_results[0]
 
+    priced = [r.price for r in results_db if r.price is not None]
+    statistics = compute_statistics(priced)
+
     html = generate_report_html(
         search_id=req.search_id,
         query=search.query,
@@ -63,7 +67,7 @@ async def generate_report(req: ReportRequest, user=Depends(require_current_user)
         tier_trace=search.tier_skip_reasons
         if isinstance(search.tier_skip_reasons, dict)
         else {},
-        statistics={},  # Skip for now
+        statistics=statistics,
         department_name=req.department_name,
         signatory_name=req.signatory_name,
     )

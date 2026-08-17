@@ -17,6 +17,15 @@ logger = logging.getLogger("onyx.benchmark")
 router = APIRouter(prefix="/api/v1", tags=["benchmark"])
 
 
+def _evidence_url(result: dict) -> str | None:
+    """Resolve the evidence link from either key used across services.
+
+    Live market extraction (price_extractor, demo_cache) emits ``source_url``,
+    while gem_rate_lookup / serpapi / gemini_grounding emit ``evidence_url``.
+    """
+    return result.get("evidence_url") or result.get("source_url")
+
+
 @router.post("/benchmark", response_model=BenchmarkResponse)
 async def run_benchmark(query: BenchmarkQuery, user=Depends(require_current_user)):
     """
@@ -57,7 +66,7 @@ async def run_benchmark(query: BenchmarkQuery, user=Depends(require_current_user
         currency=primary.get("currency", "INR"),
         confidence=primary.get("confidence", "LOW"),
         reliability=primary.get("reliability", "MEDIUM"),
-        evidence_url=primary.get("evidence_url"),
+        evidence_url=_evidence_url(primary),
         rationale=primary.get("rationale", ""),
         is_demo_data=primary.get("is_demo_data", False),
     )
@@ -75,7 +84,7 @@ async def run_benchmark(query: BenchmarkQuery, user=Depends(require_current_user
                 currency=r.get("currency", "INR"),
                 confidence=r.get("confidence", "LOW"),
                 reliability=r.get("reliability", "MEDIUM"),
-                evidence_url=r.get("evidence_url"),
+                evidence_url=_evidence_url(r),
                 rationale=r.get("rationale", ""),
                 is_demo_data=r.get("is_demo_data", False),
             )

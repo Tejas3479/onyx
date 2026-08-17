@@ -39,9 +39,11 @@ onyx/
 ├── docker-compose.yml  # Local stack
 ├── verify.py           # Integrity check script
 ├── static/
-│   ├── index.html      # Dashboard HTML
-│   ├── style.css       # Dashboard styles
-│   └── benchmark.html  # Benchmark UI
+│   ├── base.css         # Shared design foundation (tokens, nav, cards, tables)
+│   ├── index.html       # Dashboard HTML
+│   ├── landing.html     # Landing page
+│   ├── benchmark.html   # Benchmark UI
+│   └── upload_history.html # Procurement record upload
 └── docs/
     ├── API.md          # Full API reference
     └── SELF_HOSTING.md # Deployment guide

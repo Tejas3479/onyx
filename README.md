@@ -126,11 +126,12 @@ See [docs/API.md](docs/API.md) for full request/response schemas and examples.
 | `POST` | `/api/v1/benchmark` | Execute 5-tier GFR waterfall price reasonability check |
 | `POST` | `/api/v1/estimate/non-standard` | Dedicated Tier 4 estimator for custom/uncommon items |
 | `POST` | `/api/v1/department-lpp/upload` | Upload Department LPP records (CSV / XLSX) |
-| `GET` | `/api/v1/department-lpp/records` | Query uploaded department purchase history |
-| `DELETE` | `/api/v1/department-lpp/records` | Clear department purchase records |
+| `GET` | `/api/v1/department-lpp` | Query uploaded department purchase history |
+| `POST` | `/api/v1/reports/generate` | Generate report for a persisted benchmark result |
 | `POST` | `/api/v1/reports/generate-from-query` | Generate official GFR HTML/PDF Reasonability Report |
 | `POST` | `/auth/register` | Register procurement officer account |
 | `POST` | `/auth/login` | Login and receive JWT access token |
+| `GET` | `/auth/me` | Fetch the authenticated officer's profile |
 
 ### Scraping & Browser Automation Endpoints
 

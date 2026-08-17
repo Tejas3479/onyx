@@ -159,6 +159,14 @@ class UserLogin(BaseModel):
     password: str
 
 
+class DemoLoginRequest(BaseModel):
+    """One-click simulated officer profile, only honored while DEMO_MODE=true."""
+
+    name: str = Field(..., min_length=2, max_length=100)
+    email: str = Field(..., max_length=200)
+    department: str | None = Field(None, max_length=200)
+
+
 class UserResponse(BaseModel):
     id: str
     name: str

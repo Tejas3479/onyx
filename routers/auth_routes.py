@@ -17,7 +17,7 @@ from pwdlib.hashers.argon2 import Argon2Hasher
 from sqlalchemy import select
 
 from database import User, async_session_maker
-from models import TokenResponse, UserCreate, UserLogin, UserResponse
+from models import DemoLoginRequest, TokenResponse, UserCreate, UserLogin, UserResponse
 
 # Load environment variables
 load_dotenv()
@@ -152,6 +152,59 @@ async def login(req: UserLogin):
 
     logger.info("User logged in: %s", user.email)
 
+    return TokenResponse(access_token=token)
+
+
+@router.post("/demo-login", response_model=TokenResponse)
+async def demo_login(req: DemoLoginRequest):
+    """One-click simulated officer login for demo/demo-gated deployments.
+
+    Only active while DEMO_MODE=true. Creates or reuses the simulated profile
+    (with an ephemeral, non-recoverable password) and returns a valid token.
+    """
+    if os.getenv("DEMO_MODE", "false").lower() not in ("1", "true", "yes"):
+        raise HTTPException(
+            status_code=403,
+            detail="Demo login is only available when DEMO_MODE=true",
+        )
+
+    # Non-recoverable random password — the profile can only ever be used
+    # through this endpoint, never with a client-visible credential.
+    ephemeral_password = os.urandom(24).hex()
+
+    async with async_session_maker() as session:
+        stmt = select(User).where(User.email == req.email)
+        result = await session.execute(stmt)
+        user = result.scalars().first()
+
+        if not user:
+            user = User(
+                name=req.name,
+                email=req.email,
+                hashed_password=password_hash.hash(ephemeral_password),
+                department=req.department,
+            )
+            session.add(user)
+            await session.commit()
+            await session.refresh(user)
+            logger.info("Demo profile created: %s (%s)", user.name, user.email)
+        else:
+            # Reuse the existing profile; rotate its password so it can never
+            # be logged into with a known/shared credential.
+            user.hashed_password = password_hash.hash(ephemeral_password)
+            session.add(user)
+            await session.commit()
+
+    try:
+        token = _create_token(user.id, user.email)
+    except RuntimeError as e:
+        logger.error("Authentication configuration failure: %s", e)
+        raise HTTPException(
+            status_code=500,
+            detail="Authentication configuration error: JWT_SECRET_KEY is not configured.",
+        ) from e
+
+    logger.info("Demo login for simulated officer: %s", user.email)
     return TokenResponse(access_token=token)
 
 

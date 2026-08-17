@@ -5,6 +5,7 @@ is optional (falls back to HTML-only if WeasyPrint is unavailable).
 """
 
 import logging
+import re
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -88,8 +89,11 @@ def save_report(
         query: The product/service name shown on the certificate (avoids
             leaking the raw search_id into official documents).
     """
+    # search_id may be a UUID or, from /reports/generate-from-query, a raw
+    # product name — sanitize it so it can't break the on-disk path.
+    safe_id = re.sub(r"[^a-zA-Z0-9_-]+", "_", search_id)[:40] or "report"
     filename = (
-        f"report_{search_id[:8]}_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}"
+        f"report_{safe_id[:8]}_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}"
     )
 
     if fmt == "pdf":
