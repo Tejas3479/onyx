@@ -55,6 +55,7 @@ async def seed_notified_rates() -> int:
                 if item.get("valid_until")
                 else None,
                 is_active=True,
+                is_demo_data=True,
             )
             session.add(record)
             count += 1
@@ -158,7 +159,7 @@ async def check_notified_rate(
             f"{best_match.valid_until.isoformat() if best_match.valid_until else 'ongoing'}. "
             f"Unit: {best_match.unit}. Match score: {best_score:.0f}%."
         ),
-        "is_demo_data": False,
+        "is_demo_data": best_match.is_demo_data,
         "confidence": "HIGH" if best_score >= 80 else "MEDIUM",
         "reliability": "HIGH",  # Government-notified rates are authoritative
     }

@@ -11,7 +11,7 @@ pip install onyx-client
 ## Usage
 
 ```python
-from crawlix_client import OnyxClient
+from onyx_client import OnyxClient
 
 client = OnyxClient(api_key="YOUR_API_KEY", base_url="http://localhost:8000")
 

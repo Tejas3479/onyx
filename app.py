@@ -17,7 +17,6 @@ from fastapi.staticfiles import StaticFiles
 from database import init_db
 from fetcher import (
     SensitiveDataFilter,
-    crawl_manager,
     playwright_mgr,
     session_manager,
 )
@@ -25,7 +24,6 @@ from routers import (
     admin_router,
     auth_router,
     benchmark_router,
-    crawl_router,
     department_lpp_router,
     fetch_router,
     health_router,
@@ -104,10 +102,6 @@ rate_limiter = RateLimiter()
 _cleanup_task: asyncio.Task | None = None
 _rate_limit_task: asyncio.Task | None = None
 
-from arq import create_pool
-
-from worker import get_redis_settings
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -126,13 +120,6 @@ async def lifespan(app: FastAPI):
         logger.warning(
             f"Playwright pre-initialization skipped on startup ({e}). Will initialize lazily when JS rendering is requested."
         )
-
-    try:
-        app.state.arq_pool = await create_pool(get_redis_settings())
-        crawl_manager.arq_pool = app.state.arq_pool
-        logger.info("Connected to ARQ Redis worker pool.")
-    except Exception as e:
-        logger.warning(f"ARQ pool connection skipped: {e}")
 
     _cleanup_task = asyncio.create_task(session_manager.cleanup_loop())
     _rate_limit_task = asyncio.create_task(rate_limiter.cleanup_loop())
@@ -281,7 +268,6 @@ app.include_router(health_router)
 app.include_router(benchmark_router)
 app.include_router(department_lpp_router)
 app.include_router(fetch_router)
-app.include_router(crawl_router)
 app.include_router(admin_router)
 app.include_router(auth_router)
 app.include_router(reports_router)

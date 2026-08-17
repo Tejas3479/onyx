@@ -22,12 +22,18 @@ async def health():
     try:
         await redis_client.ping()
     except Exception as e:
-        redis_status = f"error: {e!s}"
+        redis_status = f"offline (local memory mode: {e!s})"
+
+    active_sessions = 0
+    try:
+        active_sessions = await session_manager.count_sessions()
+    except Exception:
+        active_sessions = 0
 
     return {
-        "status": "ok" if db_status == "ok" and redis_status == "ok" else "degraded",
+        "status": "ok" if db_status == "ok" else "degraded",
         "database": db_status,
         "redis": redis_status,
-        "active_sessions": await session_manager.count_sessions(),
+        "active_sessions": active_sessions,
         "playwright_slots_free": playwright_mgr.slots_free,
     }

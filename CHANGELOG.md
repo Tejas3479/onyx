@@ -5,6 +5,23 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [Unreleased]
+
+### Removed
+- **Crawlix multi-page crawl pipeline** — removed `routers/crawl.py`, `services/crawl_manager.py`, `worker.py` (ARQ background worker), the `CrawlJob`/`BatchJob`/`Destination`/`ScheduledCrawl` tables, `arq`/`croniter`/`pinecone-client`/`weaviate-client`/`supabase` dependencies, the Docker `worker` service, and the dead front-end bundles. The single-URL anti-bot fetch engine (`/fetch`) that powers Tier 3 market survey is retained. Migration `9bdeb31f1488` drops the crawl tables.
+- **Crawlix branding** — remaining "Crawlix" references scrubbed from UI and docs.
+
+### Fixed
+- JWT secret handling: missing/whitespace `JWT_SECRET_KEY` now fails fast instead of silently falling back to an insecure default.
+
+### Security
+- JWT enforcement on benchmark, report, and department-LPP endpoints. When `AUTH_DISABLED=true` (dev/demo) requests pass through anonymously; otherwise a valid Bearer JWT is mandatory (`routers/auth_routes.py:require_current_user`).
+- Benchmark results now persist the real authenticated user id instead of a hardcoded `anonymous`.
+- Department LPP uploads record the signed-in officer's email.
+- Officer identity on the UI certificate is taken from the real signed-in JWT profile; the hardcoded officer-cycling list was removed.
+
+---
+
 ## [2.0.0] — 2026-08-14
 
 ### Major Release — GFR Rule 149(vii) Price Reasonability Engine

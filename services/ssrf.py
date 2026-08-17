@@ -37,7 +37,17 @@ RESTRICTED_HOSTNAMES = {
 }
 
 
+NAT64_PREFIX = ipaddress.ip_network("64:ff9b::/96")
+
+
 def _is_ip_restricted(ip: ipaddress.IPv4Address | ipaddress.IPv6Address) -> bool:
+    # NAT64 well-known prefix (64:ff9b::/96) embeds a public IPv4 in its last
+    # 32 bits. Extract it and re-check so private/loopback IPv4s cannot sneak
+    # through NAT64 encoding.
+    if ip.version == 6 and ip in NAT64_PREFIX:
+        embedded_v4 = ipaddress.ip_address(int(ip) & 0xFFFFFFFF)
+        return _is_ip_restricted(embedded_v4)
+
     if (
         ip.is_private
         or ip.is_loopback

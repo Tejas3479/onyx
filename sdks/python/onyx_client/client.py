@@ -26,29 +26,6 @@ class OnyxClient:
         self._check_response(response)
         return response.json()
 
-    # --- Crawl Endpoints ---
-    def start_crawl(self, url: str, **kwargs) -> dict[str, Any]:
-        payload = {"url": url}
-        payload.update(kwargs)
-        response = self.client.post("/api/crawl", json=payload)
-        self._check_response(response)
-        return response.json()
-
-    def get_crawl(self, crawl_id: str) -> dict[str, Any]:
-        response = self.client.get(f"/api/crawl/{crawl_id}")
-        self._check_response(response)
-        return response.json()
-
-    def list_crawls(self) -> list[dict[str, Any]]:
-        response = self.client.get("/api/crawl")
-        self._check_response(response)
-        return response.json()
-
-    def delete_crawl(self, crawl_id: str) -> dict[str, Any]:
-        response = self.client.delete(f"/api/crawl/{crawl_id}")
-        self._check_response(response)
-        return response.json()
-
     # --- Price Benchmarking & Reports Endpoints ---
     def benchmark(
         self,
@@ -106,28 +83,6 @@ class AsyncOnyxClient:
         payload = {"url": url}
         payload.update(kwargs)
         response = await self.client.post("/fetch", json=payload)
-        self._check_response(response)
-        return response.json()
-
-    async def start_crawl(self, url: str, **kwargs) -> dict[str, Any]:
-        payload = {"url": url}
-        payload.update(kwargs)
-        response = await self.client.post("/api/crawl", json=payload)
-        self._check_response(response)
-        return response.json()
-
-    async def get_crawl(self, crawl_id: str) -> dict[str, Any]:
-        response = await self.client.get(f"/api/crawl/{crawl_id}")
-        self._check_response(response)
-        return response.json()
-
-    async def list_crawls(self) -> list[dict[str, Any]]:
-        response = await self.client.get("/api/crawl")
-        self._check_response(response)
-        return response.json()
-
-    async def delete_crawl(self, crawl_id: str) -> dict[str, Any]:
-        response = await self.client.delete(f"/api/crawl/{crawl_id}")
         self._check_response(response)
         return response.json()
 

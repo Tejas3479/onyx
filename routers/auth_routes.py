@@ -7,7 +7,11 @@ from datetime import datetime, timedelta, timezone
 import jwt
 from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import (
+    HTTPAuthorizationCredentials,
+    HTTPBearer,
+    OAuth2PasswordBearer,
+)
 from pwdlib import PasswordHash
 from pwdlib.hashers.argon2 import Argon2Hasher
 from sqlalchemy import select
@@ -68,6 +72,27 @@ async def get_current_user(token: str) -> User | None:
     async with async_session_maker() as session:
         user = await session.get(User, user_id)
         return user
+
+
+bearer_security = HTTPBearer(auto_error=False)
+
+
+async def require_current_user(
+    creds: HTTPAuthorizationCredentials | None = Depends(bearer_security),
+) -> User | None:
+    """Require a valid JWT unless AUTH_DISABLED=true.
+
+    In demo/dev mode (AUTH_DISABLED=true) requests are allowed without a
+    token so the UI works offline. Otherwise a valid Bearer JWT is mandatory.
+    """
+    if os.getenv("AUTH_DISABLED") == "true":
+        return None
+    if not creds or not creds.credentials:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    user = await get_current_user(creds.credentials)
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    return user
 
 
 @router.post("/register", response_model=UserResponse)

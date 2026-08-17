@@ -736,8 +736,10 @@
 
             <div class="auth-form-group">
               <label for="auth-password">Password / Token</label>
-              <input type="password" id="auth-password" value="••••••••••••" required>
+              <input type="password" id="auth-password" required placeholder="Enter your password">
             </div>
+
+            <div id="auth-status" style="display:none;font-size:12.5px;margin-bottom:10px;line-height:1.4;"></div>
 
             <button type="submit" class="btn-auth-submit" id="btnAuthSubmit">
               Sign In & Launch Dashboard
@@ -763,26 +765,100 @@
       document.getElementById('btnAuthSubmit').textContent = tab === 'register' ? 'Register Officer & Launch' : 'Sign In & Launch Dashboard';
     }
 
-    function loginDemoOfficer(name, dept, role, email) {
-      const officerData = { name, dept, role, email };
-      localStorage.setItem('onyx_officer', JSON.stringify(officerData));
-      window.location.href = '/benchmark.html';
+    async function loginDemoOfficer(name, dept, role, email) {
+      const status = document.getElementById('auth-status');
+      if (status) {
+        status.textContent = 'Signing in as ' + name + '…';
+        status.style.display = 'block';
+        status.style.color = '#15803d';
+      }
+      const password = 'Onyx@SIH2026';
+      try {
+        const regRes = await fetch('/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password, department: dept })
+        });
+        // 409 = already registered, that's fine.
+        const loginRes = await fetch('/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const loginBody = await loginRes.json().catch(() => ({}));
+        if (!loginRes.ok) {
+          throw new Error(loginBody.detail || 'Login failed');
+        }
+        localStorage.setItem('onyx_token', loginBody.access_token);
+        const officerData = { name, dept, role, email };
+        localStorage.setItem('onyx_officer', JSON.stringify(officerData));
+        window.location.href = '/benchmark.html';
+      } catch (err) {
+        if (status) {
+          status.textContent = '⚠️ ' + err.message;
+          status.style.color = '#b91c1c';
+        }
+      }
     }
 
-    function handleAuthSubmit(e) {
+    function setStatus(msg, isError) {
+      const el = document.getElementById('auth-status');
+      if (!el) return;
+      el.textContent = msg;
+      el.style.display = 'block';
+      el.style.color = isError ? '#b91c1c' : '#15803d';
+    }
+
+    async function handleAuthSubmit(e) {
       e.preventDefault();
       const email = document.getElementById('auth-email').value;
       const dept = document.getElementById('auth-dept').value;
+      const password = document.getElementById('auth-password').value;
+      const btn = document.getElementById('btnAuthSubmit');
+      const isRegister = activeTab === 'register';
       const name = document.getElementById('auth-name').value || email.split('@')[0].replace('.', ' ').toUpperCase();
-      
-      const officerData = {
-        name: name,
-        dept: dept,
-        role: 'Procurement Officer',
-        email: email
-      };
-      localStorage.setItem('onyx_officer', JSON.stringify(officerData));
-      window.location.href = '/benchmark.html';
+
+      btn.disabled = true;
+      btn.textContent = isRegister ? 'Registering…' : 'Signing in…';
+      setStatus('', false);
+
+      try {
+        if (isRegister) {
+          const regRes = await fetch('/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, password, department: dept })
+          });
+          const regBody = await regRes.json().catch(() => ({}));
+          if (!regRes.ok) {
+            throw new Error(regBody.detail || 'Registration failed');
+          }
+        }
+
+        const res = await fetch('/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(body.detail || 'Login failed');
+        }
+
+        localStorage.setItem('onyx_token', body.access_token);
+        const officerData = {
+          name: name,
+          dept: dept,
+          role: 'Procurement Officer',
+          email: email
+        };
+        localStorage.setItem('onyx_officer', JSON.stringify(officerData));
+        window.location.href = '/benchmark.html';
+      } catch (err) {
+        setStatus('⚠️ ' + err.message + (isRegister ? '' : ' — if you have not registered yet, use New Registration first.'), true);
+        btn.disabled = false;
+        btn.textContent = isRegister ? 'Register Officer & Launch' : 'Sign In & Launch Dashboard';
+      }
     }
   </script>
 </body>

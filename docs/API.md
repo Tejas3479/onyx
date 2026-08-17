@@ -3,6 +3,7 @@
 **Base URL:** `http://localhost:8000`  
 **Authentication:** 
 - **Procurement & Protected Endpoints:** Header `x-api-key: <your-key>` or `Authorization: Bearer <jwt-token>`
+- **Benchmark / Reports / Department-LPP:** require `Authorization: Bearer <jwt-token>` from `POST /auth/login` unless `AUTH_DISABLED=true` (dev/demo mode)
 - **Health Check (`/api/health`):** No authentication required
 
 ---
@@ -21,24 +22,10 @@
   - [POST /auth/login](#post-authlogin)
 - [Core Scraping & Extraction](#core-scraping--extraction)
   - [POST /fetch](#post-fetch)
-- [Crawling & Batch Processing](#crawling--batch-processing)
-  - [POST /api/crawl](#post-apicrawl)
-  - [GET /api/crawl](#get-apicrawl)
-  - [GET /api/crawl/{id}](#get-apicrawlid)
-  - [DELETE /api/crawl/{id}](#delete-apicrawlid)
-  - [POST /api/crawl/batch](#post-apicrawlbatch)
-  - [GET /api/crawl/batch/{id}](#get-apicrawlbatchid)
-  - [GET /api/crawl/batch/{id}/download](#get-apicrawlbatchiddownload)
 - [Browser Session Management](#browser-session-management)
   - [GET /api/sessions](#get-apisessions)
   - [DELETE /api/sessions/{id}](#delete-apisessionsid)
 - [Admin & Configuration](#admin--configuration)
-  - [POST /api/destinations](#post-apidestinations)
-  - [GET /api/destinations](#get-apidestinations)
-  - [DELETE /api/destinations/{id}](#delete-apidestinationsid)
-  - [POST /api/schedule](#post-apischedule)
-  - [GET /api/schedule](#get-apischedule)
-  - [DELETE /api/schedule/{id}](#delete-apischeduleid)
   - [POST /api/proxies](#post-apiproxies)
   - [GET /api/proxies](#get-apiproxies)
   - [DELETE /api/proxies/{id}](#delete-apiproxiesid)
@@ -127,7 +114,8 @@ Executes the full 5-tier GFR Rule 149(vii) waterfall price reasonability check.
     "count": 2
   },
   "sources_checked": 2,
-  "results_found": 2
+  "results_found": 2,
+  "any_demo_data": true
 }
 ```
 
@@ -313,31 +301,6 @@ Fetch a single URL. Supports both lightweight HTTP (`curl-cffi`) and full JS ren
 
 ---
 
-# Crawling & Batch Processing
-
-### POST /api/crawl
-Start an asynchronous recursive site crawl.
-
-### GET /api/crawl
-List all recent crawl jobs.
-
-### GET /api/crawl/{id}
-Poll crawl job status & retrieved pages.
-
-### DELETE /api/crawl/{id}
-Delete a crawl job and its results.
-
-### POST /api/crawl/batch
-Start a batch crawl job via file upload.
-
-### GET /api/crawl/batch/{id}
-Poll batch crawl status & progress.
-
-### GET /api/crawl/batch/{id}/download
-Download batch results in CSV/JSON format.
-
----
-
 # Browser Session Management
 
 ### GET /api/sessions
@@ -349,12 +312,6 @@ Destroy a browser session and release cookies.
 ---
 
 # Admin & Configuration
-
-### POST /api/destinations
-Register a vector DB destination (Pinecone / Weaviate / Supabase).
-
-### POST /api/schedule
-Create a recurring cron crawl schedule.
 
 ### POST /api/proxies
 Register a proxy server.

@@ -4,11 +4,12 @@ import logging
 import uuid
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from database import PriceResult, PriceSearch, async_session_maker
 from models import BenchmarkQuery, BenchmarkResponse, TierResult
+from routers.auth_routes import require_current_user
 from services.tier_waterfall import get_price_benchmark
 
 logger = logging.getLogger("onyx.benchmark")
@@ -17,7 +18,7 @@ router = APIRouter(prefix="/api/v1", tags=["benchmark"])
 
 
 @router.post("/benchmark", response_model=BenchmarkResponse)
-async def run_benchmark(query: BenchmarkQuery):
+async def run_benchmark(query: BenchmarkQuery, user=Depends(require_current_user)):
     """
     Execute a GFR Rule 149(vii) tier waterfall price benchmark.
 
@@ -86,7 +87,7 @@ async def run_benchmark(query: BenchmarkQuery):
         async with async_session_maker() as session:
             search_record = PriceSearch(
                 id=search_id,
-                user_id="anonymous",
+                user_id=(user.id if user else "anonymous"),
                 query=query.product_name,
                 query_type=query.query_type,
                 category=query.category,
@@ -135,6 +136,10 @@ async def run_benchmark(query: BenchmarkQuery):
         statistics=result["statistics"],
         sources_checked=len(result["tier_trace"]),
         results_found=len(result["all_results"]),
+        any_demo_data=(
+            primary_tier_result.is_demo_data
+            or any(tr.is_demo_data for tr in all_tier_results)
+        ),
     )
 
 
@@ -147,7 +152,9 @@ class NonStandardEstimateRequest(BaseModel):
 
 
 @router.post("/estimate/non-standard")
-async def estimate_non_standard(req: NonStandardEstimateRequest):
+async def estimate_non_standard(
+    req: NonStandardEstimateRequest, user=Depends(require_current_user)
+):
     """Standalone Tier 4 endpoint — estimate price for non-standard items."""
     from services.tier_waterfall import _run_tier_4
 

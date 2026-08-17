@@ -3,12 +3,13 @@
 import logging
 import typing
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse, HTMLResponse
 from sqlalchemy import select
 
 from database import PriceResult, PriceSearch, async_session_maker
 from models import ReportFromQueryRequest, ReportRequest
+from routers.auth_routes import require_current_user
 from services.report_generator import generate_report_html, save_report
 from services.tier_waterfall import get_price_benchmark
 
@@ -18,7 +19,7 @@ router = APIRouter(prefix="/api/v1", tags=["reports"])
 
 
 @router.post("/reports/generate")
-async def generate_report(req: ReportRequest):
+async def generate_report(req: ReportRequest, user=Depends(require_current_user)):
     """Generate a GFR-compliant price benchmark report from DB by search_id."""
     async with async_session_maker() as session:
         search = await session.get(PriceSearch, req.search_id)
@@ -68,7 +69,7 @@ async def generate_report(req: ReportRequest):
     )
 
     if req.output_format == "pdf":
-        file_path = save_report(html, req.search_id, fmt="pdf")
+        file_path = save_report(html, req.search_id, fmt="pdf", query=search.query)
         if file_path.endswith(".pdf"):
             return FileResponse(
                 file_path,
@@ -83,7 +84,7 @@ async def generate_report(req: ReportRequest):
                 filename=f"benchmark_report_{req.search_id[:8]}.html",
             )
 
-    file_path = save_report(html, req.search_id, fmt="html")
+    file_path = save_report(html, req.search_id, fmt="html", query=search.query)
     return FileResponse(
         file_path,
         media_type="text/html",
@@ -99,6 +100,7 @@ async def generate_report_from_query(
     department_name: str | None = None,
     signatory_name: str | None = None,
     output_format: str = "html",
+    user=Depends(require_current_user),
 ):
     """Generate a report by running a fresh benchmark and rendering the template.
 
@@ -139,7 +141,7 @@ async def generate_report_from_query(
     )
 
     if fmt == "pdf":
-        file_path = save_report(html, p_name, fmt="pdf")
+        file_path = save_report(html, p_name, fmt="pdf", query=p_name)
         if file_path.endswith(".pdf"):
             return FileResponse(
                 file_path,
@@ -153,7 +155,7 @@ async def generate_report_from_query(
                 filename=f"benchmark_report_{p_name[:20].replace(' ', '_')}.html",
             )
 
-    file_path = save_report(html, p_name, fmt="html")
+    file_path = save_report(html, p_name, fmt="html", query=p_name)
     return FileResponse(
         file_path,
         media_type="text/html",

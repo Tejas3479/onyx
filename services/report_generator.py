@@ -77,6 +77,7 @@ def save_report(
     html_content: str,
     search_id: str,
     fmt: str = "html",
+    query: str = "",
 ) -> str:
     """Save report to disk. Returns the file path.
 
@@ -84,6 +85,8 @@ def save_report(
         html_content: Rendered HTML string
         search_id: Search ID for filename
         fmt: 'html' or 'pdf'
+        query: The product/service name shown on the certificate (avoids
+            leaking the raw search_id into official documents).
     """
     filename = (
         f"report_{search_id[:8]}_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}"
@@ -202,7 +205,7 @@ def save_report(
                 ],
                 [
                     Paragraph(
-                        f"<b>Product/Service:</b> {html_lib.escape(search_id)}",
+                        f"<b>Product/Service:</b> {html_lib.escape(query or search_id)}",
                         body_style,
                     ),
                     Paragraph("<b>Authority:</b> GFR 2017 Rule 149(vii)", body_style),

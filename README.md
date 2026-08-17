@@ -137,7 +137,6 @@ See [docs/API.md](docs/API.md) for full request/response schemas and examples.
 | Method | Endpoint | Description |
 |---|---|---|
 | `POST` | `/fetch` | Direct fetch with TLS impersonation or Playwright JS rendering |
-| `POST` | `/api/crawl` | Initiate asynchronous recursive crawler |
 | `GET` | `/api/sessions` | Inspect active persistent browser sessions |
 | `GET` | `/api/health` | System health check (No auth required) |
 

@@ -1,13 +1,8 @@
 import json
-import os
 from typing import Literal
 from urllib.parse import urlparse
 
 from pydantic import BaseModel, Field, HttpUrl, field_validator
-
-# CONFIG & LIMIT CONSTANTS
-MAX_SERVER_CRAWL_PAGES = int(os.getenv("MAX_CRAWL_PAGES", "100"))
-MAX_SERVER_CRAWL_DEPTH = int(os.getenv("MAX_CRAWL_DEPTH", "10"))
 
 # ALLOWED LLM MODELS ALLOWLIST
 ALLOWED_LLM_MODELS = {
@@ -142,59 +137,6 @@ class FetchResponse(BaseModel):
     error_message: str | None = None
     screenshot: str | None = None
     timing: dict | None = None
-
-
-class CrawlRequest(BaseModel):
-    url: HttpUrl
-    max_pages: int = Field(10, ge=1, le=100)
-    max_depth: int = Field(3, ge=1, le=10)
-    render_js: bool = False
-    output_format: Literal["html", "markdown", "structured"] = "markdown"
-    strip_links: bool = False
-    css_selector: str | None = Field(None, max_length=500)
-    limit_domain: bool = True
-    actions: list[ActionConfig] | None = Field(None, max_length=20)
-    extraction_prompt: str | None = Field(None, max_length=5000)
-    stealth: bool = False
-    webhook_url: HttpUrl | None = None
-    destinations: list[str] | None = None
-
-    @field_validator("url")
-    @classmethod
-    def validate_url_scheme(cls, v: HttpUrl) -> HttpUrl:
-        scheme = v.scheme.lower() if v.scheme else ""
-        if scheme not in ("http", "https"):
-            raise ValueError("Crawl target URL scheme must be http or https")
-        return v
-
-    @field_validator("max_pages")
-    @classmethod
-    def validate_max_pages(cls, v: int) -> int:
-        if v > MAX_SERVER_CRAWL_PAGES:
-            raise ValueError(
-                f"Requested max_pages ({v}) exceeds server limit of {MAX_SERVER_CRAWL_PAGES}"
-            )
-        return v
-
-    @field_validator("max_depth")
-    @classmethod
-    def validate_max_depth(cls, v: int) -> int:
-        if v > MAX_SERVER_CRAWL_DEPTH:
-            raise ValueError(
-                f"Requested max_depth ({v}) exceeds server limit of {MAX_SERVER_CRAWL_DEPTH}"
-            )
-        return v
-
-
-class DestinationCreate(BaseModel):
-    name: str
-    type: Literal["pinecone", "weaviate", "supabase"]
-    config: dict
-
-
-class ScheduleCreate(BaseModel):
-    cron_expression: str
-    payload: dict
 
 
 class ProxyCreate(BaseModel):
@@ -361,6 +303,7 @@ class BenchmarkResponse(BaseModel):
     statistics: dict = {}  # min, max, avg, median
     sources_checked: int = 0
     results_found: int = 0
+    any_demo_data: bool = False  # True if any result (primary or evidence) is demo data
 
 
 class DepartmentUploadRequest(BaseModel):

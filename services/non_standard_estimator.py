@@ -153,6 +153,7 @@ async def _find_similar_items(
                                 "match_score": key_score / 100.0,
                                 "source": cr.get("source_name", "Cache"),
                                 "purchase_date": None,
+                                "is_demo": True,
                             }
                         )
     except Exception as e:
@@ -215,6 +216,8 @@ def _extrapolate_from_similar(
 
     avg_score = sum(scores) / len(scores)
     method = "spec_similarity"
+    # Any comparable drawn from the demo cache means the estimate inherits the demo flag
+    used_demo = any(item.get("is_demo", False) for item in similar_items)
     confidence_rationale = (
         f"Estimated from {len(similar_items)} similar item(s) with "
         f"avg match score {avg_score:.0%}. "
@@ -237,7 +240,7 @@ def _extrapolate_from_similar(
         "currency": "INR",
         "evidence_url": None,
         "rationale": confidence_rationale,
-        "is_demo_data": False,
+        "is_demo_data": used_demo,
         "confidence": "MEDIUM" if avg_score >= 0.7 else "LOW",
         "reliability": "MEDIUM" if len(similar_items) >= 3 else "LOW",
         "method_used": method,

@@ -34,14 +34,17 @@ class SessionManager:
         return None
 
     async def count_sessions(self) -> int:
-        cursor = 0
-        count = 0
-        while True:
-            cursor, keys = await redis_client.scan(cursor, match="session:*", count=100)
-            count += len(keys)
-            if cursor == 0:
-                break
-        return count
+        try:
+            cursor = 0
+            count = 0
+            while True:
+                cursor, keys = await redis_client.scan(cursor, match="session:*", count=100)
+                count += len(keys)
+                if cursor == 0:
+                    break
+            return count
+        except Exception:
+            return len(self.local_sessions)
 
     async def get_or_create(self, session_id: str, engine: str) -> dict:
         async with self._lock:

@@ -488,28 +488,28 @@
         <div class="telem-icon">⚡</div>
         <div>
           <div class="telem-title">TLS Fingerprint Engine</div>
-          <div class="telem-val">Chrome 120 (macOS)</div>
+          <div class="telem-val" id="tlsStatusVal">Chrome 120 (macOS)</div>
         </div>
       </div>
       <div class="telemetry-card">
         <div class="telem-icon">🛡️</div>
         <div>
-          <div class="telem-title">SSRF Protection Shield</div>
-          <div class="telem-val" style="color:#86efac;">Active (LAN Blocked)</div>
+          <div class="telem-title">Database &amp; Shield</div>
+          <div class="telem-val" id="dbStatusVal" style="color:#86efac;">Active (SQLite / GFR DB)</div>
         </div>
       </div>
       <div class="telemetry-card">
         <div class="telem-icon">🖥️</div>
         <div>
           <div class="telem-title">Headless Browser Pool</div>
-          <div class="telem-val">3 Playwright Slots</div>
+          <div class="telem-val" id="browserSlotsVal">Playwright Ready</div>
         </div>
       </div>
       <div class="telemetry-card">
         <div class="telem-icon">🤖</div>
         <div>
-          <div class="telem-title">Anti-CAPTCHA Module</div>
-          <div class="telem-val">Standby</div>
+          <div class="telem-title">Active Scraping Sessions</div>
+          <div class="telem-val" id="activeSessionsVal">0 Concurrent</div>
         </div>
       </div>
     </section>
@@ -534,7 +534,7 @@
 
         <div class="diag-options">
           <label>
-            <input type="checkbox" id="chkJsRender" checked> Use Playwright JS Rendering
+            <input type="checkbox" id="chkJsRender"> Use Playwright JS Rendering
           </label>
           <label>
             <input type="checkbox" id="chkTlsSpoof" checked> Spoof Chrome 120 TLS JA4
@@ -547,10 +547,39 @@
   </main>
 
   <footer>
-    <p>Onyx Statutory Procurement System | Powered by Crawlix Anti-Bot Engine</p>
+    <p>Onyx Statutory Procurement System | Onyx Fetch &amp; Price-Intelligence Engine</p>
   </footer>
 
   <script>
+    async function updateLiveTelemetry() {
+      try {
+        const res = await fetch('/api/health');
+        if (res.ok) {
+          const data = await res.json();
+          const dbEl = document.getElementById('dbStatusVal');
+          if (dbEl) {
+            dbEl.textContent = data.database === 'ok' ? 'Active (Online)' : data.database;
+            dbEl.style.color = data.database === 'ok' ? '#86efac' : '#fca5a5';
+          }
+          const slotsEl = document.getElementById('browserSlotsVal');
+          if (slotsEl) {
+            slotsEl.textContent = `${data.playwright_slots_free ?? 3} Free Slots`;
+          }
+          const sessionsEl = document.getElementById('activeSessionsVal');
+          if (sessionsEl) {
+            sessionsEl.textContent = `${data.active_sessions ?? 0} Concurrent`;
+          }
+        }
+      } catch (e) {
+        console.debug('Telemetry poll error:', e);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      updateLiveTelemetry();
+      setInterval(updateLiveTelemetry, 10000);
+    });
+
     async function handleTestCrawl(e) {
       if (e) e.preventDefault();
       const urlInput = document.getElementById('targetUrl');
@@ -563,20 +592,25 @@
       btn.disabled = true;
       btn.innerHTML = '<span>⏳</span> Crawling...';
       consoleOut.style.display = 'block';
-      consoleOut.textContent = `[INFO] Initializing Crawlix engine for: ${url}\n[INFO] Fingerprint: Chrome 120 | TLS: Active | JS-Rendering: ${document.getElementById('chkJsRender').checked}\n[INFO] Connecting...`;
+      const jsRender = document.getElementById('chkJsRender').checked;
+      consoleOut.textContent = `[INFO] Initializing Onyx engine for: ${url}\n[INFO] Fingerprint: Chrome 120 | TLS: Active | JS-Rendering: ${jsRender}\n[INFO] Connecting...`;
 
       try {
         const payload = {
           url: url,
-          render_js: document.getElementById('chkJsRender').checked,
-          formats: ["markdown", "html"],
+          render_js: jsRender,
+          output_format: "markdown",
           impersonate: "chrome120",
-          wait_condition: "networkidle"
+          wait_until: "networkidle"
         };
 
-        const res = await fetch('/api/v1/scrape', {
+        const headers = { 'Content-Type': 'application/json' };
+        const token = localStorage.getItem('onyx_token');
+        if (token) headers['Authorization'] = 'Bearer ' + token;
+
+        const res = await fetch('/fetch', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: headers,
           body: JSON.stringify(payload)
         });
 
@@ -584,7 +618,8 @@
         if (!res.ok) {
           consoleOut.textContent += `\n[ERROR] Crawl failed (${res.status}): ${JSON.stringify(data, null, 2)}`;
         } else {
-          consoleOut.textContent += `\n[SUCCESS] HTTP ${data.status_code || 200} OK (Time: ${data.metrics?.duration_ms || 340}ms)\n\n--- Extracted Data Preview ---\n` + (data.markdown || data.content || JSON.stringify(data, null, 2)).slice(0, 800) + '...';
+          const contentPreview = typeof data.content === 'string' ? data.content : JSON.stringify(data.content || {}, null, 2);
+          consoleOut.textContent += `\n[SUCCESS] HTTP ${data.status_code || 200} OK (Latency: ${data.latency_ms || 0}ms, Retries: ${data.retries_used || 0})\n\n--- Extracted Data Preview ---\n` + (contentPreview ? contentPreview.slice(0, 1000) : '[Empty Content]') + '...';
         }
       } catch (err) {
         consoleOut.textContent += `\n[NETWORK ERROR] ${err.message}`;

@@ -44,56 +44,6 @@ async def get_session() -> AsyncSession:
         yield session
 
 
-class CrawlJob(SQLModel, table=True):  # type: ignore[call-arg]
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
-    url: str
-    status: str = Field(
-        default="pending"
-    )  # pending, running, completed, failed, interrupted
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    completed_at: datetime | None = None
-    results: list[dict[str, Any]] = Field(default=[], sa_column=Column(JSON))
-    stats: dict[str, Any] = Field(default={}, sa_column=Column(JSON))
-    error_message: str | None = None
-
-    # Configuration metadata
-    max_pages: int = 1
-    max_depth: int = 1
-    render_js: bool = False
-    output_format: str = "html"
-    webhook_url: str | None = None
-    destinations: list[str] = Field(default=[], sa_column=Column(JSON))
-
-
-class Destination(SQLModel, table=True):  # type: ignore[call-arg]
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
-    name: str
-    type: str  # pinecone, weaviate, supabase
-    config: dict[str, Any] = Field(default={}, sa_column=Column(JSON))
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-
-class ScheduledCrawl(SQLModel, table=True):  # type: ignore[call-arg]
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
-    cron_expression: str
-    payload: dict[str, Any] = Field(default={}, sa_column=Column(JSON))
-    next_run_at: datetime | None = None
-    status: str = Field(default="active")  # active, paused
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-
-class BatchJob(SQLModel, table=True):  # type: ignore[call-arg]
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
-    status: str = Field(default="pending")  # pending, processing, completed, failed
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    completed_at: datetime | None = None
-    total_urls: int = 0
-    processed_urls: int = 0
-    webhook_url: str | None = None
-    export_path: str | None = None
-    error_message: str | None = None
-
-
 class ApiKey(SQLModel, table=True):  # type: ignore[call-arg]
     key: str = Field(primary_key=True)
     name: str | None = None
@@ -125,6 +75,9 @@ class NotifiedRate(SQLModel, table=True):  # type: ignore[call-arg]
     valid_from: date
     valid_until: date | None = None
     is_active: bool = Field(default=True)
+    is_demo_data: bool = Field(
+        default=True
+    )  # seeded rates are demo until verified real
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 

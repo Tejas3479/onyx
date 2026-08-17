@@ -35,44 +35,6 @@ export class OnyxClient {
     }
   }
 
-  // --- Crawl API ---
-
-  async startCrawl(url: string, options: any = {}): Promise<any> {
-    try {
-      const response = await this.client.post('/api/crawl', { url, ...options });
-      return response.data;
-    } catch (error: any) {
-      this.handleError(error);
-    }
-  }
-
-  async getCrawl(crawlId: string): Promise<any> {
-    try {
-      const response = await this.client.get(`/api/crawl/${crawlId}`);
-      return response.data;
-    } catch (error: any) {
-      this.handleError(error);
-    }
-  }
-
-  async listCrawls(): Promise<any[]> {
-    try {
-      const response = await this.client.get('/api/crawl');
-      return response.data;
-    } catch (error: any) {
-      this.handleError(error);
-    }
-  }
-
-  async deleteCrawl(crawlId: string): Promise<any> {
-    try {
-      const response = await this.client.delete(`/api/crawl/${crawlId}`);
-      return response.data;
-    } catch (error: any) {
-      this.handleError(error);
-    }
-  }
-
   // --- Price Benchmarking & Reports ---
 
   async benchmark(

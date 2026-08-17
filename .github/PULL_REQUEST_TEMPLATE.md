@@ -19,7 +19,7 @@ Please describe the tests you ran to verify your changes:
 
 - [ ] Run `python verify.py` locally
 - [ ] Tested via Web Dashboard (`http://localhost:8000`)
-- [ ] Tested via cURL / REST API endpoint (`POST /fetch` or `POST /crawl`)
+- [ ] Tested via cURL / REST API endpoint (`POST /fetch` or `POST /api/v1/benchmark`)
 
 ## Checklist
 

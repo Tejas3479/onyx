@@ -3,8 +3,11 @@
 Parallel-fetches multiple e-commerce and government sources, extracts
 prices from the scraped content, and returns aggregated results.
 
-Uses the Crawlix fetch_engine under the hood, with demo cache fallback
+Uses the built-in Onyx fetch engine under the hood, with demo cache fallback
 for resilience during live demonstrations.
+
+DEMO_MODE=true: checks the demo cache FIRST (fuzzy-matched) and skips
+all live network fetches. Enables a fast, offline, deterministic demo.
 """
 
 import asyncio
@@ -14,6 +17,8 @@ import os
 from pathlib import Path
 from typing import Any
 from urllib.parse import quote_plus
+
+from rapidfuzz import fuzz
 
 from services.price_extractor import (
     extract_prices_from_content,
@@ -28,6 +33,12 @@ DEMO_CACHE_PATH = Path(os.getenv("DEMO_CACHE_PATH", "data/demo_cache.json"))
 
 # Fetch timeout per source (seconds)
 FETCH_TIMEOUT = 15
+
+# When true, Tier 3 serves results from the demo cache and never touches the network
+DEMO_MODE = os.getenv("DEMO_MODE", "false").lower() in ("1", "true", "yes")
+
+# Minimum fuzzy score for demo cache matching
+DEMO_CACHE_FUZZ_THRESHOLD = 65
 
 
 def _load_demo_cache() -> dict[str, Any]:
@@ -117,6 +128,17 @@ async def run_market_survey(
 
     Returns a list of price result dicts ready for the tier waterfall.
     """
+    # ── DEMO_MODE: serve from cache first, never touch the network ──
+    if DEMO_MODE:
+        cached = _check_demo_cache(query)
+        if cached:
+            logger.info(
+                "DEMO_MODE: serving %d cached result(s) for '%s'", len(cached), query
+            )
+            return cached
+        logger.warning("DEMO_MODE: no demo cache entry for '%s'", query)
+        return []
+
     sources = get_enabled_market_sources()
     if not sources:
         logger.warning("No market sources enabled")
@@ -190,7 +212,12 @@ async def run_market_survey(
 def _check_demo_cache(query: str) -> list[dict[str, Any]] | None:
     """Check demo cache for pre-populated results.
 
-    Matches query against cache keys using case-insensitive prefix matching.
+    Matches query against cache keys using:
+      1. Exact match
+      2. Prefix match (either direction)
+      3. Fuzzy token-set match (>= DEMO_CACHE_FUZZ_THRESHOLD)
+
+    Returns the best-matching key's results, or None if nothing matches.
     """
     cache = _load_demo_cache()
     if not cache:
@@ -204,7 +231,26 @@ def _check_demo_cache(query: str) -> list[dict[str, Any]] | None:
 
     # Prefix match
     for key, results in cache.items():
-        if query_lower.startswith(key) or key.startswith(query_lower):
+        key_lower = key.lower()
+        if query_lower.startswith(key_lower) or key_lower.startswith(query_lower):
             return results
+
+    # Fuzzy match — pick the highest-scoring key above threshold
+    best_key: str | None = None
+    best_score = 0.0
+    for key in cache:
+        score = fuzz.token_set_ratio(query_lower, key.lower())
+        if score > best_score:
+            best_score = score
+            best_key = key
+
+    if best_key is not None and best_score >= DEMO_CACHE_FUZZ_THRESHOLD:
+        logger.info(
+            "Demo cache fuzzy match: '%s' -> '%s' (score %.0f)",
+            query,
+            best_key,
+            best_score,
+        )
+        return cache[best_key]
 
     return None

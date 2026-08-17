@@ -151,20 +151,17 @@ async def get_price_benchmark(
     else:
         tier_trace["tier_2"] = "No department purchase history match"
 
-    # ── Tier 3: Market Survey (skip for service queries) ──
-    if query_mode == "product":
-        results = await _run_tier_3(query, specs)
-        if results:
-            if primary_result is None:
-                primary_result = results[0]
-                resolved_tier = 3
-            for r in results:
-                all_results.append({**r, "tier": 3, "tier_label": TIER_LABELS[3]})
-            tier_trace["tier_3"] = f"Found {len(results)} market result(s)"
-        else:
-            tier_trace["tier_3"] = "No market survey results found"
+    # ── Tier 3: Market Survey ──
+    results = await _run_tier_3(query, specs)
+    if results:
+        if primary_result is None:
+            primary_result = results[0]
+            resolved_tier = 3
+        for r in results:
+            all_results.append({**r, "tier": 3, "tier_label": TIER_LABELS[3]})
+        tier_trace["tier_3"] = f"Found {len(results)} market result(s)"
     else:
-        tier_trace["tier_3"] = "Skipped: service query (no product catalog search)"
+        tier_trace["tier_3"] = "No market survey results found"
 
     # ── Tier 4: Non-Standard Estimator ──
     if primary_result is None:

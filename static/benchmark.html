@@ -547,6 +547,40 @@
     .conf-MEDIUM { background: #fef9c3; color: #a16207; border: 1px solid #fef08a; }
     .conf-LOW { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
     
+    .demo-badge {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: #fef3c7;
+      color: #b45309;
+      border: 1.5px solid #f59e0b;
+    }
+    .real-badge {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: #dcfce7;
+      color: #15803d;
+      border: 1.5px solid #16a34a;
+    }
+    .demo-warning {
+      background: #fffbeb;
+      border: 1px solid #fcd34d;
+      border-left: 4px solid #f59e0b;
+      color: #92400e;
+      padding: 10px 14px;
+      border-radius: 0 6px 6px 0;
+      font-size: 12.5px;
+      margin-top: 12px;
+      line-height: 1.5;
+    }
+    
     .source-origin-badge {
       font-size: 11.5px;
       font-weight: 600;
@@ -849,7 +883,7 @@
     </nav>
     
     <div class="nav-right">
-      <div class="officer-badge" onclick="switchOfficerRole()" title="Click to cycle officer role">
+      <div class="officer-badge" onclick="switchOfficerRole()" title="Officer identity from signed-in profile">
         <span>👤</span>
         <span id="officer-name-display">Shri R. K. Sharma (MoD)</span>
       </div>
@@ -1043,6 +1077,13 @@
             <div class="source-origin-badge" id="res-source-badge">Source: DGS&D</div>
             <div class="source-origin-badge" id="res-mode-badge">Mode: Product</div>
             <div class="milestone-badge" id="res-milestone-badge">Stage: Admin Approval (A/A)</div>
+            <div id="res-demo-badge"></div>
+          </div>
+
+          <div class="demo-warning" id="demo-warning" style="display:none;">
+            ⚠️ <strong>DEMO DATA</strong> — This result is sourced from <strong>sample/demo records</strong> (seed
+            data or a pre-populated cache), not a live verified market capture. It is shown for
+            demonstration only and <strong>cannot be used to certify a price</strong> for a procurement file.
           </div>
 
           <div class="rationale-box" id="res-rationale">
@@ -1208,7 +1249,7 @@
             <div style="color:#6b7280;margin-top:2px;" id="cert-sign-role">[ Indenting Officer, MoD ]</div>
           </div>
           <div class="cert-sign-box">
-            <div><strong>Dr. V. K. Saraswat</strong></div>
+            <div><strong id="cert-sign-auth">Approving Authority</strong></div>
             <div style="color:#6b7280;margin-top:2px;">[ Competent Financial Authority ]</div>
           </div>
         </div>
@@ -1229,6 +1270,7 @@
     let currentQuery = '';
     let currentDept = 'Ministry of Defence';
     let currentOfficer = 'Shri R. K. Sharma (MoD)';
+    let currentRole = 'Indenting Officer';
     let currentMilestone = 'Stage 1: Administrative Approval (A/A)';
     let lastBenchmarkData = null;
     let tableData = [];
@@ -1244,12 +1286,35 @@
           if (data.name && data.dept) {
             currentOfficer = `${data.name} (${data.dept})`;
             currentDept = data.dept;
+            currentRole = data.role || currentRole;
             const deptInput = document.getElementById('dept-input');
             if (deptInput) deptInput.value = data.dept;
             const officerDisplay = document.getElementById('officer-name-display');
             if (officerDisplay) officerDisplay.textContent = `${data.name} (${data.dept.replace('Ministry of ', '').replace(' / NIC', '')})`;
           }
         } catch (e) {}
+      }
+      // Recover authenticated session if we have a stored JWT
+      const token = localStorage.getItem('onyx_token');
+      if (token) {
+        fetch('/auth/me', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        })
+          .then(r => { if (r.ok) return r.json(); throw new Error('not-authed'); })
+          .then(profile => {
+            const data = { name: profile.name || currentOfficer, dept: profile.department || currentDept, role: profile.role || currentRole, email: profile.email || '' };
+            localStorage.setItem('onyx_officer', JSON.stringify(data));
+            currentOfficer = `${data.name} (${data.dept})`;
+            currentDept = data.dept;
+            currentRole = data.role;
+            const deptInput = document.getElementById('dept-input');
+            if (deptInput) deptInput.value = data.dept;
+            const officerDisplay = document.getElementById('officer-name-display');
+            if (officerDisplay) officerDisplay.textContent = `${data.name} (${data.dept.replace('Ministry of ', '').replace(' / NIC', '')})`;
+          })
+          .catch(() => {
+            // Fall back to cached officer display; do not force logout on stale token
+          });
       }
     }
 
@@ -1272,19 +1337,39 @@
     };
 
     function switchOfficerRole() {
-      const roles = [
-        { name: "Shri R. K. Sharma", dept: "Ministry of Defence", role: "Indenting Officer" },
-        { name: "Ms. Priya Iyer", dept: "MeitY / NIC", role: "Director (Procurement)" },
-        { name: "Shri A. K. Verma", dept: "Indian Railways", role: "Chief Materials Manager" },
-        { name: "Dr. S. Mukherjee", dept: "Department of Expenditure", role: "CAG / Financial Advisor" }
-      ];
-      const curName = currentOfficer.split(' (')[0];
-      let idx = roles.findIndex(r => r.name === curName);
-      idx = (idx + 1) % roles.length;
-      const next = roles[idx];
-      
-      localStorage.setItem('onyx_officer', JSON.stringify(next));
-      loadOfficerSession();
+      const token = localStorage.getItem('onyx_token');
+      if (!token) {
+        alert('Sign in as a procurement officer to set the certificate identity.');
+        window.location.href = '/landing.html#auth';
+        return;
+      }
+      // Refresh the officer identity from the real JWT profile.
+      fetch('/auth/me', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      })
+        .then(r => { if (r.ok) return r.json(); throw new Error('not-authed'); })
+        .then(profile => {
+          const data = {
+            name: profile.name || 'Officer',
+            dept: profile.department || 'Ministry of Defence',
+            role: profile.role || 'Procurement Officer',
+            email: profile.email || ''
+          };
+          localStorage.setItem('onyx_officer', JSON.stringify(data));
+          currentOfficer = `${data.name} (${data.dept})`;
+          currentDept = data.dept;
+          currentRole = data.role;
+          const deptInput = document.getElementById('dept-input');
+          if (deptInput) deptInput.value = data.dept;
+          const officerDisplay = document.getElementById('officer-name-display');
+          if (officerDisplay) officerDisplay.textContent = `${data.name} (${data.dept.replace('Ministry of ', '').replace(' / NIC', '')})`;
+          alert(`Officer identity set from signed-in profile:\n\n${data.name}\n${data.role}\n${data.dept}`);
+        })
+        .catch(() => {
+          alert('Signed-in session is invalid or expired. Please sign in again.');
+          localStorage.removeItem('onyx_token');
+          window.location.href = '/landing.html#auth';
+        });
     }
 
     function setQueryMode(mode) {
@@ -1394,9 +1479,13 @@
           specs: null
         };
         
+        const headers = { 'Content-Type': 'application/json' };
+        const token = localStorage.getItem('onyx_token');
+        if (token) headers['Authorization'] = 'Bearer ' + token;
+        
         const res = await fetch('/api/v1/benchmark', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: headers,
           body: JSON.stringify(payload)
         });
         
@@ -1504,6 +1593,31 @@
       const mileBadge = document.getElementById('res-milestone-badge');
       if (mileBadge) mileBadge.textContent = `Milestone: ${currentMilestone}`;
 
+      const demoBadgeEl = document.getElementById('res-demo-badge');
+      const demoWarning = document.getElementById('demo-warning');
+      const isDemo = primary.is_demo_data === true || data.any_demo_data === true;
+      if (demoBadgeEl) {
+        demoBadgeEl.innerHTML = isDemo
+          ? '<span class="demo-badge">⚠ DEMO DATA</span>'
+          : '<span class="real-badge">✓ REAL SOURCE</span>';
+      }
+      if (demoWarning) demoWarning.style.display = isDemo ? 'block' : 'none';
+
+      // Disable certificate preview if primary result is demo data
+      const certBtn = document.getElementById('btn-open-cert');
+      if (certBtn) {
+        if (isDemo) {
+          certBtn.disabled = true;
+          certBtn.style.opacity = '0.5';
+          certBtn.style.cursor = 'not-allowed';
+          certBtn.title = 'Certificate unavailable: result is based on DEMO data';
+        } else {
+          certBtn.disabled = false;
+          certBtn.style.opacity = '';
+          certBtn.style.cursor = '';
+          certBtn.title = '';
+        }
+      }
       const rationaleBox = document.getElementById('res-rationale');
       if (rationaleBox) rationaleBox.textContent = primary.rationale || 'Price verified through GFR statutory precedence cascade.';
       
@@ -1608,12 +1722,16 @@
         else if (row.tier === 3) originBadge = '🔍 Market';
         else if (row.tier === 4) originBadge = '🤖 Estimator';
         
+        const rowDemoBadge = row.is_demo_data === true
+          ? ' <span class="demo-badge" style="font-size:10px;">DEMO</span>'
+          : ' <span class="real-badge" style="font-size:10px;">REAL</span>';
+        
         tr.innerHTML = `
           <td><span class="step-tag" style="background:#f1f5f9;padding:2px 6px;border-radius:4px;">Tier ${escapeHtml(row.tier)}</span></td>
           <td>
             <div class="source-cell">
               <strong>${escapeHtml(row.source_name || 'System Record')}</strong>
-              <span style="font-size:11px;color:#64748b;">${originBadge}</span>
+              <span style="font-size:11px;color:#64748b;">${originBadge}${rowDemoBadge}</span>
             </div>
           </td>
           <td style="font-family:'JetBrains Mono';font-weight:700;">${formatINR(row.price)}</td>
@@ -1637,17 +1755,41 @@
     const btnHtml = document.getElementById('btn-download-html');
     if (btnHtml) {
       btnHtml.addEventListener('click', () => {
-        const url = `/api/v1/reports/generate-from-query?product_name=${encodeURIComponent(currentQuery)}&department_name=${encodeURIComponent(currentDept)}&output_format=html`;
-        window.open(url, '_blank');
+        downloadReport('html');
       });
     }
 
     const btnPdf = document.getElementById('btn-download-pdf');
     if (btnPdf) {
       btnPdf.addEventListener('click', () => {
-        const url = `/api/v1/reports/generate-from-query?product_name=${encodeURIComponent(currentQuery)}&department_name=${encodeURIComponent(currentDept)}&output_format=pdf`;
-        window.open(url, '_blank');
+        downloadReport('pdf');
       });
+    }
+
+    async function downloadReport(fmt) {
+      const url = `/api/v1/reports/generate-from-query?product_name=${encodeURIComponent(currentQuery)}&department_name=${encodeURIComponent(currentDept)}&output_format=${fmt}`;
+      const headers = {};
+      const token = localStorage.getItem('onyx_token');
+      if (token) headers['Authorization'] = 'Bearer ' + token;
+      try {
+        const res = await fetch(url, { headers: headers });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.detail || `Server responded with status ${res.status}`);
+        }
+        const blob = await res.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        const safe = currentQuery.replace(/[^a-zA-Z0-9]+/g, '_').slice(0, 20);
+        a.download = `benchmark_report_${safe}.${fmt}`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(blobUrl);
+      } catch (err) {
+        alert('Report download failed: ' + err.message);
+      }
     }
 
     function openCertModal() {
@@ -1656,8 +1798,14 @@
       const d = lastBenchmarkData;
       const primary = d.primary_result || {};
       
+      const isDemo = primary.is_demo_data === true || d.any_demo_data === true;
+      if (isDemo) {
+        alert('Certificate unavailable: this result is based on DEMO data.\n\nA price reasonability certificate can only be issued from verified live market evidence (real sources with capture timestamps). Run the benchmark against live sources or upload department purchase records to get a certifiable result.');
+        return;
+      }
+      
       const cId = document.getElementById('cert-id');
-      if (cId) cId.textContent = `ONX-2026-${Math.floor(10000 + Math.random() * 90000)}`;
+      if (cId) cId.textContent = d.search_id ? `ONX-${d.search_id.slice(0, 8).toUpperCase()}` : 'ONX-PENDING';
       const cDate = document.getElementById('cert-date');
       if (cDate) cDate.textContent = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
       const cItem = document.getElementById('cert-item');
@@ -1671,7 +1819,9 @@
       const cSignOfficer = document.getElementById('cert-sign-officer');
       if (cSignOfficer) cSignOfficer.textContent = currentOfficer.split(' (')[0];
       const cSignRole = document.getElementById('cert-sign-role');
-      if (cSignRole) cSignRole.textContent = `[ Indenting Officer, ${currentDept} ]`;
+      if (cSignRole) cSignRole.textContent = `[ ${currentRole}, ${currentDept} ]`;
+      const cSignAuth = document.getElementById('cert-sign-auth');
+      if (cSignAuth) cSignAuth.textContent = 'Approving Authority (to be signed after verification)';
 
       const cPrice = document.getElementById('cert-price');
       if (cPrice) cPrice.textContent = formatINR(primary.price);

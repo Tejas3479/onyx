@@ -21,9 +21,6 @@ playwright install chromium
 $env:DISABLE_SSRF_CHECK = "true"
 $env:API_KEYS = "devkey"
 uvicorn app:app --reload
-
-# (In a separate terminal) Start Redis and the background worker:
-arq worker.WorkerSettings
 ```
 
 ---
@@ -35,8 +32,7 @@ onyx/
 ├── app.py              # FastAPI lifespan and server setup
 ├── database.py         # SQLAlchemy models (Postgres/SQLite)
 ├── models.py           # Pydantic validation schemas
-├── worker.py           # ARQ background worker for crawls
-├── routers/            # API endpoints (/fetch, /api/crawl, etc.)
+├── routers/            # API endpoints (/fetch, /auth, /api/v1/benchmark)
 ├── services/           # Core fetch engine logic
 ├── requirements.txt    # Python dependencies
 ├── Dockerfile          # Container build
@@ -45,7 +41,7 @@ onyx/
 ├── static/
 │   ├── index.html      # Dashboard HTML
 │   ├── style.css       # Dashboard styles
-│   └── app.js          # Dashboard logic
+│   └── benchmark.html  # Benchmark UI
 └── docs/
     ├── API.md          # Full API reference
     └── SELF_HOSTING.md # Deployment guide

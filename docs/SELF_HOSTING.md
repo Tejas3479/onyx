@@ -62,7 +62,7 @@ curl http://localhost:8000/api/health
 Access the web interfaces:
 - **Price Benchmark Console:** `http://localhost:8000/benchmark.html`
 - **Department LPP Upload:** `http://localhost:8000/upload_history.html`
-- **Scraper / Crawler Dashboard:** `http://localhost:8000/`
+- **Scraper / Dashboard:** `http://localhost:8000/`
 - **API Swagger Docs:** `http://localhost:8000/docs`
 
 ---
@@ -149,27 +149,9 @@ Restart=on-failure
 WantedBy=multi-user.target
 EOF
 
-# Run Background Worker with systemd (optional, for batch crawls)
-sudo tee /etc/systemd/system/onyx-worker.service << EOF
-[Unit]
-Description=Onyx Background Worker
-After=network.target redis-server.service
-
-[Service]
-Type=simple
-User=$USER
-WorkingDirectory=$PWD
-Environment=API_KEYS=your-secret-key
-ExecStart=$PWD/.venv/bin/arq worker.WorkerSettings
-Restart=on-failure
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
 sudo systemctl daemon-reload
-sudo systemctl enable onyx-api onyx-worker
-sudo systemctl start onyx-api onyx-worker
+sudo systemctl enable onyx-api
+sudo systemctl start onyx-api
 ```
 
 ---

@@ -2,8 +2,9 @@
 
 import logging
 
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 
+from routers.auth_routes import require_current_user
 from services.department_lpp import (
     list_department_records,
     parse_upload,
@@ -22,6 +23,7 @@ MAX_UPLOAD_SIZE = 10 * 1024 * 1024
 async def upload_purchase_history(
     file: UploadFile = File(...),
     department: str = Form(...),
+    user=Depends(require_current_user),
 ):
     """
     Upload a CSV or Excel file of department purchase history.
@@ -60,7 +62,7 @@ async def upload_purchase_history(
         file_content=content,
         filename=file.filename,
         department=department.strip(),
-        uploaded_by=None,  # TODO: get from auth when login is implemented
+        uploaded_by=(user.email if user else None),
     )
 
     if result["errors"] and not result["records"]:
@@ -98,6 +100,7 @@ async def get_department_records(
     search: str | None = None,
     limit: int = 50,
     offset: int = 0,
+    user=Depends(require_current_user),
 ):
     """
     List department purchase records with optional filtering.
