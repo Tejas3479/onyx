@@ -12,6 +12,49 @@
   // `html.js` so no-JS users always see content.
   document.documentElement.classList.add('js');
 
+  /* ── Dark mode controller (shared across all pages) ── */
+  function updateThemeUI(dark) {
+    document.querySelectorAll('#themeToggle, .btn-theme-toggle').forEach((btn) => {
+      const sun = btn.querySelector('.icon-sun');
+      const moon = btn.querySelector('.icon-moon');
+      if (sun && moon) {
+        sun.style.display = dark ? 'block' : 'none';
+        moon.style.display = dark ? 'none' : 'block';
+      }
+    });
+  }
+
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle('dark', dark);
+    updateThemeUI(dark);
+    try {
+      localStorage.setItem('theme', dark ? 'dark' : 'light');
+    } catch (e) {}
+  }
+
+  // Initialize theme from localStorage or system preference
+  let isDark = false;
+  try {
+    const saved = localStorage.getItem('theme');
+    isDark = saved ? saved === 'dark' : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  } catch (e) {
+    isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+  applyTheme(isDark);
+
+  document.addEventListener('DOMContentLoaded', () => {
+    updateThemeUI(document.documentElement.classList.contains('dark'));
+  });
+
+  document.addEventListener('click', (e) => {
+    const toggle = e.target.closest('#themeToggle, .btn-theme-toggle');
+    if (toggle) {
+      e.preventDefault();
+      const currentDark = document.documentElement.classList.contains('dark');
+      applyTheme(!currentDark);
+    }
+  });
+
   /* ── Scroll reveal ── */
   // Elements with class "reveal" fade up as they enter the viewport.
   // Gate: only animate when JS is on (html.js) and motion is not reduced.

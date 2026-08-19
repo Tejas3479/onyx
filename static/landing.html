@@ -2071,28 +2071,6 @@
       a.click();
       URL.revokeObjectURL(url);
     });
-
-    /* ── Dark mode toggle ── */
-    const themeToggle = document.getElementById('themeToggle');
-    const sunIcon = themeToggle?.querySelector('.icon-sun');
-    const moonIcon = themeToggle?.querySelector('.icon-moon');
-
-    function applyTheme(dark) {
-      document.documentElement.classList.toggle('dark', dark);
-      if (sunIcon && moonIcon) {
-        sunIcon.style.display = dark ? 'block' : 'none';
-        moonIcon.style.display = dark ? 'none' : 'block';
-      }
-      localStorage.setItem('theme', dark ? 'dark' : 'light');
-    }
-
-    const savedTheme = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    applyTheme(savedTheme ? savedTheme === 'dark' : prefersDark);
-
-    themeToggle?.addEventListener('click', () => {
-      applyTheme(!document.documentElement.classList.contains('dark'));
-    });
   </script>
 </body>
 </html>

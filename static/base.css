@@ -467,25 +467,134 @@ html.dark .skeleton {
   background-size: 200% 100%;
 }
 html.dark body { background-color: var(--bg); color: var(--text-main); }
-html.dark .card { background: var(--card-bg); border-color: var(--border); }
+html.dark .card,
+html.dark .search-card,
+html.dark .stat-card,
+html.dark .waterfall-stepper-card,
+html.dark .primary-card,
+html.dark .activity-card,
+html.dark .profile-card,
+html.dark .duty-card {
+  background: var(--card-bg);
+  border-color: var(--border);
+  color: var(--text-main);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+html.dark .stat-val,
+html.dark .card-title,
+html.dark .price-value,
+html.dark h1, html.dark h2, html.dark h3, html.dark h4 {
+  color: var(--navy-900);
+}
+html.dark .stat-sub,
+html.dark .hero p,
+html.dark .price-range,
+html.dark .info-key {
+  color: var(--text-muted);
+}
 html.dark .form-group input,
 html.dark .form-group select,
-html.dark .form-group textarea { background: var(--surface); border-color: var(--border); color: var(--text-main); }
+html.dark .form-group textarea,
+html.dark .search-input,
+html.dark .filter-item input,
+html.dark .filter-item select,
+html.dark .filter-field input,
+html.dark .filter-bar select {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text-main);
+}
 html.dark .form-group input:focus,
 html.dark .form-group select:focus,
-html.dark .form-group textarea:focus { border-color: var(--primary); }
-html.dark .navbar { background: #050505; }
+html.dark .form-group textarea:focus,
+html.dark .search-input:focus,
+html.dark .filter-item input:focus,
+html.dark .filter-item select:focus,
+html.dark .filter-field input:focus,
+html.dark .filter-bar select:focus {
+  border-color: var(--primary);
+  background: var(--surface-raised);
+}
+html.dark .mode-switcher {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+}
+html.dark .mode-btn {
+  color: var(--text-muted);
+}
+html.dark .mode-btn.active {
+  background: var(--card-bg);
+  color: var(--navy-900);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+html.dark .preset-chip {
+  background: var(--card-bg);
+  border-color: var(--border);
+  color: var(--text-main);
+}
+html.dark .preset-chip:hover {
+  background: var(--surface-raised);
+  border-color: var(--primary);
+}
+html.dark .step-node {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text-main);
+}
+html.dark .step-name {
+  color: var(--navy-900);
+}
+html.dark .step-status {
+  color: var(--text-muted);
+}
+html.dark .navbar { background: #050505; border-bottom: 1px solid var(--border); }
 html.dark .nav-link { color: #a3a3a3; }
 html.dark .nav-link:hover { color: #fff; background: rgba(255,255,255,0.08); }
 html.dark .nav-link.active { background: var(--primary); color: #fff; }
+html.dark .officer-badge {
+  background: var(--surface-raised);
+  border-color: var(--border);
+  color: var(--text-main);
+}
+html.dark .btn-signout {
+  background: var(--surface-raised);
+  border-color: var(--border);
+  color: var(--text-muted);
+}
+html.dark .btn-signout:hover {
+  color: #ef4444;
+  border-color: #ef4444;
+}
+html.dark .btn-theme-toggle {
+  background: var(--surface-raised);
+  border-color: var(--border);
+  color: var(--text-main);
+}
+html.dark .btn-theme-toggle:hover {
+  background: var(--border);
+  color: #fff;
+}
 html.dark .drop-zone { background: var(--surface); border-color: var(--border); }
 html.dark .drop-zone:hover, html.dark .drop-zone.dragover { background: var(--primary-light); border-color: var(--primary); }
-html.dark table th { background: var(--surface); }
-html.dark tbody tr:hover { background: var(--surface); }
-html.dark .modal-card { background: var(--card-bg); border-color: var(--border); }
-html.dark .modal-header { background: var(--card-bg); }
-html.dark .modal-footer { background: var(--card-bg); }
-html.dark .site-footer { background: var(--card-bg); border-color: var(--border); }
+html.dark table th { background: var(--surface); color: var(--text-muted); border-color: var(--border); }
+html.dark table td { border-color: var(--border); color: var(--text-main); }
+html.dark tbody tr:hover { background: var(--surface-raised); }
+html.dark .rationale-box {
+  background: var(--surface-raised);
+  border-color: var(--border);
+  color: var(--text-main);
+}
+html.dark .duty-box {
+  background: var(--surface);
+  border-color: var(--border);
+}
+html.dark .duty-box .lbl { color: var(--text-muted); }
+html.dark .modal-backdrop { background: rgba(0, 0, 0, 0.75); }
+html.dark .modal-card { background: var(--card-bg); border-color: var(--border); color: var(--text-main); }
+html.dark .modal-header { background: var(--surface-raised); border-color: var(--border); color: var(--navy-900); }
+html.dark .modal-body { color: var(--text-main); }
+html.dark .modal-footer { background: var(--surface-raised); border-color: var(--border); }
+html.dark .site-footer { background: var(--card-bg); border-color: var(--border); color: var(--text-muted); }
 
 /* ── Shared icon sizing ── */
 .icon {
