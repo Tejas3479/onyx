@@ -1182,7 +1182,7 @@
             </div>
             <div class="pillar-name">Ingest</div>
             <div class="pillar-desc">Upload department CSV/Excel purchase history. Fuzzy token matching + 6%/yr inflation adjustment feeds Tier 2 LPP automatically.</div>
-            <a href="/upload_history.html" class="pillar-link">Download template <svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg></a>
+            <a href="#" class="pillar-link" id="downloadTemplate">Download template <svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg></a>
           </div>
           <div class="pillar-card reveal">
             <div class="pillar-icon">
@@ -2039,6 +2039,23 @@
         btn.textContent = isRegister ? 'Register Officer & Launch' : 'Sign In & Launch Dashboard';
       }
     }
+
+    /* Download CSV template directly (mirrors upload_history.html) */
+    document.getElementById('downloadTemplate')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      const csv = 'item_description,unit_price,quantity,purchase_date,vendor_name,source_document\n'
+        + '"Cisco Catalyst 9300 48-Port Switch",185000,2,2024-06-15,"TechnoSys Solutions","PO/2024/NET-042"\n'
+        + '"HP ProBook 450 G10 Laptop",72500,10,2024-08-20,"CompuAge Infocom","PO/2024/IT-087"\n'
+        + '"A4 Paper 75gsm (500 sheets)",245,100,2024-09-01,"National Stationers","PO/2024/STN-015"\n'
+        + '"Executive Office Chair (Mesh Back)",8200,15,2024-05-10,"Godrej Interio","PO/2024/FUR-008"\n';
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'purchase_history_template.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
 
     /* ── Dark mode toggle ── */
     const themeToggle = document.getElementById('themeToggle');
