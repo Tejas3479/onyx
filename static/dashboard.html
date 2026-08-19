@@ -371,12 +371,18 @@
 
   <main class="max-w-md" id="main-content">
     <section class="hero">
-      <div class="hero-pre">GFR Rule 149(vii) Audit Trail</div>
+      <div class="hero-guides" aria-hidden="true"></div>
+      <span class="hero-anno fade-up" style="left:-20px;top:50px;" aria-hidden="true">[ LOGS ]</span>
+      <span class="hero-anno fade-up" style="right:-30px;top:90px;" aria-hidden="true">[ AUDIT ]</span>
+      <div class="hero-inner fade-up fade-up-delay-1">
+        <div class="hero-pre">GFR Rule 149(vii) Audit Trail</div>
       <h1>Benchmark Run History</h1>
       <p>Every price reasonability check executed against the statutory tier waterfall, with the resolving tier, benchmarked price, and confidence. Search, filter by tier or data origin, and export the trail as CSV for the procurement file. Click any row to inspect the full tier trace and evidence.</p>
-    </section>
+    
+      </div>
+     
 
-    <section class="stat-row" id="statRow">
+    <section class="stat-row fade-up fade-up-delay-2" id="statRow">
       <div class="stat-card">
         <div class="stat-title">Total Runs</div>
         <div class="stat-val" id="statTotal">—</div>
@@ -423,7 +429,7 @@
       </button>
     </section>
 
-    <section class="tbl-card">
+    <section class="tbl-card fade-up fade-up-delay-3">
       <div class="tbl-header">
         <h2>Audit Trail — Benchmark Runs</h2>
         <button class="btn-view" onclick="loadRuns()" id="btnRefresh" style="padding:6px 16px;">⟳ Refresh</button>

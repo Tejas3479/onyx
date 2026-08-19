@@ -197,6 +197,11 @@ button.pressed,
   }
 }
 
+/* ── Scroll reveal (via IntersectionObserver in ui.js) ── */
+html.js .reveal { opacity: 0; transform: translateY(16px); }
+html.js .reveal.revealed { opacity: 1; transform: none; }
+.reveal { transition: opacity 0.55s ease, transform 0.55s ease; }
+
 /* Stagger helper: siblings with .fade-up-delay-N animate in sequence */
 .fade-up-delay-1 { animation-delay: 0.06s; }
 .fade-up-delay-2 { animation-delay: 0.12s; }
@@ -959,3 +964,36 @@ tbody tr:hover { background: #f8fafc; }
     justify-content: flex-end;
   }
 }
+
+/* Premium Hero Upgrades */
+.hero-inner { position: relative; max-width: 1000px; margin: 0 auto; z-index: 2; }
+.hero-guides {
+  position: absolute;
+  inset: 0;
+  margin: 0 auto;
+  width: min(1080px, 100%);
+  pointer-events: none;
+  border-left: 1px solid var(--border-faint);
+  border-right: 1px solid var(--border-faint);
+  z-index: 0;
+}
+@media (max-width: 700px) { .hero-guides { border: none; } }
+
+.hero-anno {
+  position: absolute;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--alpha-12);
+  text-transform: uppercase;
+  pointer-events: none;
+  white-space: nowrap;
+  animation: anno-float 7s ease-in-out infinite;
+  z-index: 1;
+}
+@keyframes anno-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+@media (max-width: 1100px) { .hero-anno { display: none; } }
