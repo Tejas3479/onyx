@@ -34,7 +34,7 @@ def _demo_snapshot_content(req: FetchRequest) -> str:
     lines = [
         f"# Demo Snapshot — {netloc}",
         "",
-        f"> **DEMO MODE:** live crawl disabled in this build. Showing cached marketplace snapshot from the demo dataset.",
+        "> **DEMO MODE:** live crawl disabled in this build. Showing cached marketplace snapshot from the demo dataset.",
         "",
     ]
 

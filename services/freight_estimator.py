@@ -5,8 +5,6 @@ transparent freight adder bucketed by delivery region — the estimate is always
 flagged as a demo simulation and never passed off as a real freight quote.
 """
 
-import re
-
 METRO_KEYWORDS = (
     "delhi",
     "ncr",

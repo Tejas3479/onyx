@@ -1,4 +1,4 @@
-from services.freight_estimator import estimate_freight, _region_for
+from services.freight_estimator import _region_for, estimate_freight
 
 
 def test_metro_city_low_freight():

@@ -333,7 +333,7 @@ def _check_compliance(
     for rec in records:
         clusters.setdefault(rec.normalized_item_key, []).append(rec)
 
-    for key, group in clusters.items():
+    for group in clusters.values():
         if len(group) < 3:
             continue
         prices = sorted(r.unit_price for r in group)

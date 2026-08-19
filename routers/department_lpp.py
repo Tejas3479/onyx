@@ -149,12 +149,15 @@ async def get_department_records(
         offset=offset,
     )
 
-    if user is not None and getattr(user, "role", "user") != "admin":
-        if not user.department:
-            result["records"] = [
-                r for r in result["records"] if r.get("department") is None
-            ]
-            result["total"] = len(result["records"])
+    if (
+        user is not None
+        and getattr(user, "role", "user") != "admin"
+        and not user.department
+    ):
+        result["records"] = [
+            r for r in result["records"] if r.get("department") is None
+        ]
+        result["total"] = len(result["records"])
 
     result["base_products"] = count_base_products(result["records"])
 

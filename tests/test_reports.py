@@ -147,8 +147,7 @@ async def test_generate_report_includes_compliance_story(mock_redis):
         assert needle in body, f"report missing: {needle}"
 
 
-@pytest.mark.asyncio
-async def test_pdf_certificate_renders_compliance_story(mock_redis):
+def test_pdf_certificate_renders_compliance_story():
     """The ReportLab fallback certificate (Windows, no WeasyPrint) must render
     the compliance story without crashing, so the downloaded PDF artifact is
     compliance-complete too."""
