@@ -635,6 +635,8 @@ html.dark .site-footer { background: var(--card-bg); border-color: var(--border)
   gap: 12px;
   text-decoration: none;
   color: #fff;
+  flex: 1;
+  justify-content: flex-start;
 }
 .brand-logo {
   font-family: 'Outfit', sans-serif;
@@ -662,6 +664,8 @@ html.dark .site-footer { background: var(--card-bg); border-color: var(--border)
   display: flex;
   align-items: center;
   gap: 8px;
+  flex: none;
+  justify-content: center;
 }
 .nav-link {
   padding: 6px 14px;
@@ -685,8 +689,9 @@ html.dark .site-footer { background: var(--card-bg); border-color: var(--border)
 .nav-right {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 10px;
-  margin-left: auto;
+  flex: 1;
   flex-shrink: 0;
 }
 
