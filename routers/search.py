@@ -25,13 +25,15 @@ def _score(query: str, candidate: str) -> int:
         return 0
     q = query.lower().strip()
     c = candidate.lower().strip()
-    return max(
-        fuzz.ratio(q, c),
-        fuzz.token_set_ratio(q, c),
-        fuzz.partial_ratio(q, c),
-        # Substring containment — "cisco" should match "Cisco Catalyst 9300"
-        95 if q in c else 0,
-        85 if any(tok in c for tok in q.split() if len(tok) >= 3) else 0,
+    return int(
+        max(
+            fuzz.ratio(q, c),
+            fuzz.token_set_ratio(q, c),
+            fuzz.partial_ratio(q, c),
+            # Substring containment — "cisco" should match "Cisco Catalyst 9300"
+            95 if q in c else 0,
+            85 if any(tok in c for tok in q.split() if len(tok) >= 3) else 0,
+        )
     )
 
 

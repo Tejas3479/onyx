@@ -12,7 +12,7 @@ from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
-from sqlalchemy import select
+from sqlalchemy import asc, desc, select
 
 from database import BenchmarkAuditLog, DelegationRecord, async_session_maker
 from routers.auth_routes import require_current_user
@@ -118,7 +118,7 @@ async def list_delegations(
         result = await session.execute(
             select(DelegationRecord)
             .where(DelegationRecord.search_id == search_id)
-            .order_by(DelegationRecord.created_at.desc())
+            .order_by(desc(DelegationRecord.created_at))
         )
         rows = result.scalars().all()
         return [
@@ -188,7 +188,7 @@ async def get_audit(
         result = await session.execute(
             select(BenchmarkAuditLog)
             .where(BenchmarkAuditLog.search_id == search_id)
-            .order_by(BenchmarkAuditLog.created_at.asc())
+            .order_by(asc(BenchmarkAuditLog.created_at))
         )
         rows = result.scalars().all()
         return [

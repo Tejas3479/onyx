@@ -3,7 +3,7 @@
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select
+from sqlalchemy import desc, select
 
 from database import PriceResult, PriceSearch, User, async_session_maker
 from routers.auth_routes import require_current_user
@@ -28,7 +28,7 @@ async def list_price_history(
     async with async_session_maker() as session:
         stmt = (
             select(PriceSearch)
-            .order_by(PriceSearch.completed_at.desc().nulls_last())
+            .order_by(desc(PriceSearch.completed_at).nulls_last())
             .offset(offset)
             .limit(limit)
         )
@@ -48,7 +48,7 @@ async def list_price_history(
             result_stmt = (
                 select(PriceResult)
                 .where(PriceResult.search_id == search.id)
-                .order_by(PriceResult.extracted_at.desc())
+                .order_by(desc(PriceResult.extracted_at))
                 .limit(5)
             )
             results = (await session.execute(result_stmt)).scalars().all()
@@ -100,7 +100,7 @@ async def get_price_history_detail(
         result_stmt = (
             select(PriceResult)
             .where(PriceResult.search_id == search_id)
-            .order_by(PriceResult.extracted_at.desc())
+            .order_by(desc(PriceResult.extracted_at))
         )
         results = (await session.execute(result_stmt)).scalars().all()
 

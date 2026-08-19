@@ -131,7 +131,7 @@ def _normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
 async def parse_upload(
     file_content: bytes,
     filename: str,
-    department: str,
+    department: str | None,
     uploaded_by: str | None = None,
 ) -> dict[str, Any]:
     """

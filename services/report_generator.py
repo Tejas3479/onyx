@@ -482,14 +482,14 @@ def save_report(
                             body_style,
                         )
                     )
-                for e in audit_log:
+                for entry in audit_log:
                     story.append(
                         Paragraph(
-                            f"{html_lib.escape(str(e.get('action', '')))} - "
-                            f"{html_lib.escape(str(e.get('actor_name') or '—'))}"
+                            f"{html_lib.escape(str(entry.get('action', '')))} - "
+                            f"{html_lib.escape(str(entry.get('actor_name') or '—'))}"
                             + (
-                                f" ({html_lib.escape(str(e.get('note', '')))})"
-                                if e.get("note")
+                                f" ({html_lib.escape(str(entry.get('note', '')))})"
+                                if entry.get("note")
                                 else ""
                             ),
                             body_style,

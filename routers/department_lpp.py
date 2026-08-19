@@ -23,7 +23,7 @@ MAX_UPLOAD_SIZE = 10 * 1024 * 1024
 @router.post("/upload")
 async def upload_purchase_history(
     file: UploadFile = File(...),
-    department: str = Form(...),
+    department: str | None = Form(...),
     user=Depends(require_current_user),
 ):
     """
@@ -41,11 +41,11 @@ async def upload_purchase_history(
     """
     # Non-admins can only upload for their own department.
     if user is not None and getattr(user, "role", "user") != "admin":
-        if user.department and department.strip() != user.department:
+        if user.department and (department or "").strip() != user.department:
             raise HTTPException(
                 status_code=403,
                 detail=(
-                    f"Cannot upload for '{department.strip()}' — you are "
+                    f"Cannot upload for '{(department or '').strip()}' — you are "
                     f"scoped to '{user.department}'."
                 ),
             )

@@ -5,7 +5,7 @@ import typing
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse, HTMLResponse
-from sqlalchemy import select
+from sqlalchemy import asc, desc, select
 
 from database import (
     BenchmarkAuditLog,
@@ -43,14 +43,14 @@ async def generate_report(req: ReportRequest, user=Depends(require_current_user)
             await session.execute(
                 select(DelegationRecord)
                 .where(DelegationRecord.search_id == req.search_id)
-                .order_by(DelegationRecord.created_at.desc())
+                .order_by(desc(DelegationRecord.created_at))
             )
         ).scalars().all()
         audit_log = (
             await session.execute(
                 select(BenchmarkAuditLog)
                 .where(BenchmarkAuditLog.search_id == req.search_id)
-                .order_by(BenchmarkAuditLog.created_at.asc())
+                .order_by(asc(BenchmarkAuditLog.created_at))
             )
         ).scalars().all()
 
