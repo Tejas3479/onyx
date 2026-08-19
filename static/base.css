@@ -650,8 +650,15 @@ html.dark .site-footer { background: var(--card-bg); border-color: var(--border)
   letter-spacing: -0.03em;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   color: #fff;
+}
+.brand-logo-img {
+  width: 28px;
+  height: 28px;
+  mix-blend-mode: screen;
+  object-fit: cover;
+  border-radius: 4px;
 }
 .brand-tag {
   font-family: 'JetBrains Mono', monospace;
