@@ -998,13 +998,9 @@
     </nav>
     
     <div class="nav-right">
-      <div class="officer-badge" onclick="switchOfficerRole()" title="Officer identity from signed-in profile">
-        <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <span id="officer-name-display">Shri R. K. Sharma (MoD)</span>
-      </div>
-      <a href="/profile.html" class="officer-badge" title="View my officer profile" style="cursor:pointer;">
-        <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        My Profile
+      <a href="/profile.html" class="system-status" style="display:flex;align-items:center;gap:6px;font-size:12px;color:#86efac;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.25);padding:4px 10px;border-radius:20px;text-decoration:none;cursor:pointer;" title="View my officer profile">
+        <div class="status-dot" style="width:7px;height:7px;background:#22c55e;border-radius:50%;box-shadow:0 0 8px #22c55e;animation:pulse 2s infinite;"></div>
+        <span id="officer-name-display">My Profile</span>
       </a>
       <a href="/" class="btn-signout" title="Sign Out & Return to Landing Page">
         <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
