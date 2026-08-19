@@ -38,6 +38,51 @@ async def init_db():
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
 
+    # Lightweight additive migrations for pre-existing SQLite databases
+    # (create_all only adds tables, never new columns on existing ones).
+    if "sqlite" in DATABASE_URL:
+        db_path = DATABASE_URL.split(":///")[-1]
+        if db_path and not db_path.startswith(":memory:"):
+            await _sqlite_ensure_column(
+                "pricesearch", "any_demo_data", "BOOLEAN NOT NULL DEFAULT 0"
+            )
+            for col, ddl in (
+                ("estimated_value", "REAL"),
+                ("delivery_location", "VARCHAR(200)"),
+                ("specs", "TEXT"),
+                ("statistics", "TEXT"),
+                ("procurement_threshold", "TEXT"),
+                ("base_product", "TEXT"),
+                ("freight", "TEXT"),
+            ):
+                await _sqlite_ensure_column("pricesearch", col, ddl)
+            await _sqlite_ensure_column(
+                "departmentpurchaserecord",
+                "is_demo_data",
+                "BOOLEAN NOT NULL DEFAULT 0",
+            )
+
+
+async def _sqlite_ensure_column(table: str, column: str, ddl: str) -> None:
+    """Add a column to an existing SQLite table if it is missing."""
+    import aiosqlite
+
+    try:
+        async with aiosqlite.connect(
+            DATABASE_URL.split(":///")[-1]
+        ) as conn:
+            cursor = await conn.execute(f"PRAGMA table_info({table})")
+            rows = await cursor.fetchall()
+            if column not in {r[1] for r in rows}:
+                await conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {ddl}")
+                await conn.commit()
+    except Exception as e:  # pragma: no cover - defensive
+        import logging
+
+        logging.getLogger("onyx.database").warning(
+            "Could not ensure column %s.%s: %s", table, column, e
+        )
+
 
 async def get_session() -> AsyncSession:
     async with async_session_maker() as session:
@@ -113,6 +158,7 @@ class DepartmentPurchaseRecord(SQLModel, table=True):  # type: ignore[call-arg]
     source_document: str | None = None  # filename of uploaded PO/invoice
     uploaded_by: str | None = None  # user_id
     uploaded_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    is_demo_data: bool = Field(default=False)  # True for pre-seeded sample records
 
 
 class NonStandardEstimate(SQLModel, table=True):  # type: ignore[call-arg]
@@ -127,6 +173,34 @@ class NonStandardEstimate(SQLModel, table=True):  # type: ignore[call-arg]
     price_range_high: float | None = None
     confidence_rationale: str  # human-readable explanation
     spec_match_score: float | None = None  # 0.0–1.0
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class DelegationRecord(SQLModel, table=True):  # type: ignore[call-arg]
+    """Cross-officer delegation of a benchmark for review/approval (Q15)."""
+
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
+    search_id: str  # FK to PriceSearch
+    delegated_by_name: str | None = None
+    delegated_by_email: str | None = None
+    delegate_to_name: str
+    delegate_to_email: str | None = None
+    note: str | None = None
+    status: str = "open"  # open | completed
+    decision: str | None = None  # approved | rejected
+    decision_note: str | None = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    completed_at: datetime | None = None
+
+
+class BenchmarkAuditLog(SQLModel, table=True):  # type: ignore[call-arg]
+    """Append-only action trail per benchmark run."""
+
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
+    search_id: str  # FK to PriceSearch
+    action: str
+    actor_name: str | None = None
+    note: str | None = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -166,6 +240,21 @@ class PriceSearch(SQLModel, table=True):  # type: ignore[call-arg]
     service_duration: str | None = None
     service_scope: str | None = None
     service_location: str | None = None  # location for service queries
+
+    # True when the resolved benchmark used any demo/seeded source data.
+    any_demo_data: bool = Field(default=False)
+
+    # Compliance snapshot persisted at run time (Round-5+). Stored as JSON so
+    # past runs keep their full reasonability story in reports + dashboard.
+    estimated_value: float | None = None  # GFR threshold input (₹)
+    delivery_location: str | None = None  # freight/landed-cost input
+    specs: dict[str, Any] | None = Field(default=None, sa_column=Column(JSON))
+    statistics: dict[str, Any] | None = Field(default=None, sa_column=Column(JSON))
+    procurement_threshold: dict[str, Any] | None = Field(
+        default=None, sa_column=Column(JSON)
+    )
+    base_product: dict[str, Any] | None = Field(default=None, sa_column=Column(JSON))
+    freight: dict[str, Any] | None = Field(default=None, sa_column=Column(JSON))
 
 
 class PriceResult(SQLModel, table=True):  # type: ignore[call-arg]

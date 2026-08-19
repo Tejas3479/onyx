@@ -8,18 +8,23 @@ falling back to market survey.
 """
 
 import io
+import json
 import logging
 import uuid
 from datetime import date, datetime, timezone
+from pathlib import Path
 from typing import Any
 
 import pandas as pd
 from rapidfuzz import fuzz
-from sqlalchemy import select
+from sqlalchemy import delete, select
 
 from database import DepartmentPurchaseRecord, async_session_maker
 
 logger = logging.getLogger("onyx.department_lpp")
+
+# Seed data path for pre-seeded department purchase records
+DEPARTMENT_LPP_SEED_PATH = Path("data/department_lpp_seed.json")
 
 # Minimum fuzzy match score (0-100) to consider a record a match
 MATCH_THRESHOLD = 70
@@ -66,15 +71,23 @@ COLUMN_ALIASES = {
     "product": "item_description",
     "product_name": "item_description",
     "item_name": "item_description",
+    "nomenclature_of_stores": "item_description",
+    "material_description": "item_description",
+    "article_description": "item_description",
+    "store_item": "item_description",
     "price": "unit_price",
     "rate": "unit_price",
     "amount": "unit_price",
     "cost": "unit_price",
+    "po_amount": "unit_price",
+    "gross_value": "unit_price",
     "qty": "quantity",
     "quantity_purchased": "quantity",
+    "no_of_units": "quantity",
     "date": "purchase_date",
     "po_date": "purchase_date",
     "order_date": "purchase_date",
+    "bill_date": "purchase_date",
     "vendor": "vendor_name",
     "supplier": "vendor_name",
     "seller": "vendor_name",
@@ -286,12 +299,112 @@ async def parse_upload(
         for r in records[:10]
     ]
 
+    compliance_warnings = _check_compliance(records)
+
     return {
         "records": records,
         "errors": errors,
         "preview": preview,
         "total_rows": len(df),
+        "compliance_warnings": compliance_warnings,
     }
+
+
+# Reasonableness band width — ±25% of cluster median (Rule 149(vii) standard)
+COMPLIANCE_BAND_PCT = 0.25
+
+
+def _check_compliance(
+    records: list[DepartmentPurchaseRecord],
+) -> list[dict[str, Any]]:
+    """Flag uploaded records whose unit price falls outside ±25% of their
+    item-cluster median.
+
+    Clusters records by normalized item key so that variant titles of the
+    same product ("A4 Paper 75GSM", "JK Copier A4", "75 GSM A4 Paper Rim")
+    are compared against each other. Only clusters with >= 3 quotes are
+    assessed — a valid competitive pool, mirroring the L1 rule.
+    """
+    warnings: list[dict[str, Any]] = []
+    if not records:
+        return warnings
+
+    clusters: dict[str, list[DepartmentPurchaseRecord]] = {}
+    for rec in records:
+        clusters.setdefault(rec.normalized_item_key, []).append(rec)
+
+    for key, group in clusters.items():
+        if len(group) < 3:
+            continue
+        prices = sorted(r.unit_price for r in group)
+        n = len(prices)
+        median = (
+            prices[n // 2] if n % 2 else (prices[n // 2 - 1] + prices[n // 2]) / 2
+        )
+        band_low = median * (1 - COMPLIANCE_BAND_PCT)
+        band_high = median * (1 + COMPLIANCE_BAND_PCT)
+        for rec in group:
+            if rec.unit_price < band_low or rec.unit_price > band_high:
+                pct = (rec.unit_price - median) / median * 100
+                warnings.append(
+                    {
+                        "item_description": rec.item_description,
+                        "unit_price": rec.unit_price,
+                        "median": round(median, 2),
+                        "deviation_pct": round(pct, 1),
+                        "direction": "above" if pct > 0 else "below",
+                        "action": (
+                            "Outside ±25% reasonableness band — review pricing "
+                            "evidence before approval (GFR Rule 149(vii))"
+                        ),
+                    }
+                )
+    return warnings
+
+
+async def seed_department_records() -> int:
+    """Load pre-seeded department purchase records from JSON into the database.
+
+    Replaces any previously seeded (is_demo_data=True) records so the
+    expanded sample set always loads. Real uploaded records are preserved.
+    """
+    if not DEPARTMENT_LPP_SEED_PATH.exists():
+        logger.warning("Dept LPP seed file not found: %s", DEPARTMENT_LPP_SEED_PATH)
+        return 0
+
+    with open(DEPARTMENT_LPP_SEED_PATH, encoding="utf-8") as f:  # noqa: ASYNC230
+        data = json.load(f)
+
+    count = 0
+    async with async_session_maker() as session:
+        await session.execute(
+            delete(DepartmentPurchaseRecord).where(
+                DepartmentPurchaseRecord.is_demo_data == True
+            )
+        )
+
+        for item in data:
+            record = DepartmentPurchaseRecord(
+                id=str(uuid.uuid4()),
+                department=item["department"],
+                item_description=item["item_description"],
+                normalized_item_key=normalize_item_key(item["item_description"]),
+                specs=item.get("specs", {}),
+                unit_price=float(item["unit_price"]),
+                quantity_purchased=int(item["quantity_purchased"]),
+                purchase_date=date.fromisoformat(item["purchase_date"]),
+                vendor_name=item.get("vendor_name"),
+                source_document=item.get("source_document"),
+                uploaded_by="__seed__",
+                uploaded_at=datetime.now(timezone.utc),
+                is_demo_data=True,
+            )
+            session.add(record)
+            count += 1
+        await session.commit()
+
+    logger.info("Seeded %d department purchase records", count)
+    return count
 
 
 async def save_records(records: list[DepartmentPurchaseRecord]) -> int:
@@ -393,12 +506,16 @@ async def check_department_lpp(
         "price": best_match.unit_price,
         "currency": "INR",
         "evidence_url": None,
+        "evidence_reference": (
+            f"{best_match.department} · {best_match.vendor_name or 'Internal PO'} · "
+            f"{best_match.purchase_date.isoformat()}"
+        ),
         "rationale": (
             f"Matched '{best_match.item_description}' (score: {best_score:.0f}%). "
             f"Vendor: {best_match.vendor_name or 'N/A'}. Qty: {best_match.quantity_purchased}. "
             f"{staleness_note}"
         ),
-        "is_demo_data": False,
+        "is_demo_data": best_match.is_demo_data,
         "confidence": "HIGH" if best_score >= 85 else "MEDIUM",
         "reliability": "HIGH"
         if staleness == "recent"

@@ -41,6 +41,17 @@ async def verify_api_key(
             if key_record:
                 return
 
+    # Accept a valid officer JWT so authenticated browser sessions can use
+    # the fetch/admin endpoints without embedding an API key in client JS.
+    if bearer and bearer.credentials:
+        try:
+            from routers.auth_routes import get_current_user
+
+            if await get_current_user(bearer.credentials):
+                return
+        except Exception:
+            pass
+
     # If no token provided or invalid token, check if auth is disabled
     if not VALID_KEYS:
         async with async_session_maker() as session:

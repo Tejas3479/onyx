@@ -24,10 +24,13 @@ from routers import (
     admin_router,
     auth_router,
     benchmark_router,
+    delegation_router,
     department_lpp_router,
     fetch_router,
     health_router,
+    price_history_router,
     reports_router,
+    search_router,
 )
 from services.session_manager import redis_client
 
@@ -181,13 +184,20 @@ async def security_headers_middleware(request: Request, call_next):
     )
 
     # Content Security Policy — allows only the exact CDN origins the dashboard uses
+    # Plus any deploy origin(s) the operator allows for API calls via CSP_CONNECT_SRC.
+    connect_extra = os.getenv("CSP_CONNECT_SRC", "")
+    connect_src = "connect-src 'self'" + (
+        " " + " ".join(x.strip() for x in connect_extra.split(",") if x.strip())
+        if connect_extra
+        else ""
+    )
     response.headers["Content-Security-Policy"] = (
         "default-src 'self'; "
         "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; "
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; "
         "font-src 'self' https://fonts.gstatic.com; "
         "img-src 'self' data:; "
-        "connect-src 'self'; "
+        f"{connect_src}; "
         "frame-src 'self'; "
         "frame-ancestors 'self'; "
         "base-uri 'self'; "
@@ -271,6 +281,9 @@ app.include_router(fetch_router)
 app.include_router(admin_router)
 app.include_router(auth_router)
 app.include_router(reports_router)
+app.include_router(search_router)
+app.include_router(price_history_router)
+app.include_router(delegation_router)
 
 
 # Flagship Root Route: National Statutory Portal Landing Page

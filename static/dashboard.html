@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Onyx — Benchmark Run History</title>
+  <meta name="description" content="Audit trail of all GFR Rule 149(vii) price reasonability benchmark runs with resolved tier, price, and evidence.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/base.css">
+  <style>
+    .hero {
+      margin-bottom: 24px;
+    }
+    .hero h1 { font-size: 30px; margin-bottom: 6px; }
+    .hero p { max-width: 760px; }
+
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      padding: 16px 18px;
+    }
+    .stat-title {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+    }
+    .stat-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--navy-900);
+    }
+    .stat-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+    .tbl-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .tbl-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .tbl-header h2 { font-size: 16px; color: var(--navy-900); margin: 0; }
+    .tbl-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    thead th {
+      text-align: left;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      padding: 10px 20px;
+      background: var(--border-subtle);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    tbody td {
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      vertical-align: middle;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: var(--primary-light); }
+    td.mono { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; }
+    .query-cell { font-weight: 600; color: var(--navy-900); max-width: 320px; }
+
+    .tier-badge {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+    .tier-0 { background: #dcfce7; color: #166534; }
+    .tier-1 { background: #dbeafe; color: #1e40af; }
+    .tier-2 { background: #fef3c7; color: #92400e; }
+    .tier-3 { background: #fce7f3; color: #9d174d; }
+    .tier-4 { background: #e2e8f0; color: #334155; }
+
+    .demo-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 20px;
+      background: #fef2f2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+    }
+    .real-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 20px;
+      background: #f0fdf4;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+
+    .conf-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
+    .conf-high { background: #22c55e; }
+    .conf-medium { background: #f59e0b; }
+    .conf-low { background: #ef4444; }
+
+    .btn-view {
+      font-family: 'Outfit', sans-serif;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--primary);
+      background: var(--primary-light);
+      border: 1px solid var(--heat-100);
+      border-radius: var(--radius-sm);
+      padding: 5px 12px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-view:hover { background: var(--heat-8); }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--text-muted);
+    }
+    .empty-state .big { font-size: 40px; margin-bottom: 10px; }
+    .empty-state a { color: var(--primary); font-weight: 600; }
+
+    .loading-row td { text-align: center; padding: 40px; color: var(--text-muted); }
+
+    .pager {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 20px;
+      border-top: 1px solid var(--border-subtle);
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+    .pager button {
+      font-family: 'Outfit', sans-serif;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--primary);
+      background: none;
+      border: 1px solid var(--heat-100);
+      border-radius: var(--radius-sm);
+      padding: 5px 14px;
+      cursor: pointer;
+    }
+    .pager button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* Audit filter bar */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 18px;
+      padding: 14px 16px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+    }
+    .filter-field { position: relative; display: flex; align-items: center; }
+    .filter-field svg {
+      position: absolute;
+      left: 10px;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+    .filter-field input {
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      color: var(--navy-900);
+      background: var(--primary-light);
+      border: 1px solid var(--heat-100);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px 8px 32px;
+      width: 240px;
+      outline: none;
+    }
+    .filter-field input:focus { border-color: var(--primary); background: #fff; }
+    .filter-bar select {
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--navy-800);
+      background: var(--primary-light);
+      border: 1px solid var(--heat-100);
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+      cursor: pointer;
+      outline: none;
+    }
+    .filter-bar select:focus { border-color: var(--primary); }
+    .filter-count { font-size: 12.5px; color: var(--text-muted); white-space: nowrap; }
+    .btn-export {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Detail modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #fff;
+      border-radius: var(--radius-lg);
+      max-width: 860px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.35);
+    }
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-subtle);
+      position: sticky;
+      top: 0;
+      background: #fff;
+    }
+    .modal-head h3 { margin: 0; font-size: 18px; color: var(--navy-900); }
+    .modal-head .sub { font-size: 12.5px; color: var(--text-muted); margin-top: 4px; }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 22px;
+      color: var(--text-muted);
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px;
+    }
+    .modal-close:hover { color: var(--navy-900); }
+    .modal-body { padding: 20px 24px 24px; }
+
+    .trace-list { margin: 0 0 18px; padding: 0; list-style: none; }
+    .trace-list li {
+      display: flex;
+      gap: 12px;
+      padding: 9px 0;
+      border-bottom: 1px dashed var(--border);
+      font-size: 13px;
+    }
+    .trace-list li:last-child { border-bottom: none; }
+    .trace-key {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--primary);
+      min-width: 90px;
+      text-transform: uppercase;
+    }
+    .trace-val { color: var(--navy-700); line-height: 1.5; }
+
+    .detail-results { display: grid; gap: 12px; }
+    .dr-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      background: #fbfdff;
+    }
+    .dr-source { font-weight: 700; color: var(--navy-900); font-size: 14px; }
+    .dr-price { font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 700; color: var(--primary); }
+    .dr-extra { font-size: 12.5px; color: var(--text-muted); margin-top: 8px; line-height: 1.55; }
+    .dr-extra a { color: var(--primary); word-break: break-all; }
+
+    .footer-cta { text-align: center; margin-top: 26px; }
+  </style>
+</head>
+<body>
+
+  <a class="skip-link" href="#main-content" id="skip-to-content">Skip to main content</a>
+
+  <header class="navbar">
+    <a href="/" class="nav-brand">
+      <div class="brand-logo">◆ ONYX</div>
+      <div class="brand-tag">GFR 149(vii) Intelligence</div>
+    </a>
+
+    <nav class="nav-links">
+      <a href="/benchmark.html" class="nav-link">
+        <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+        Price Benchmark
+      </a>
+      <a href="/upload_history.html" class="nav-link">
+        <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+        Dept PO Ingestion
+      </a>
+      <a href="/dashboard.html" class="nav-link active">
+        <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Run History
+      </a>
+      <a href="/index.html" class="nav-link">
+        <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a15 15 0 0 1 0 18"/><path d="M12 3a15 15 0 0 0 0 18"/></svg>
+        Crawlers & Engine
+      </a>
+    </nav>
+
+    <div class="system-status" style="display:flex;align-items:center;gap:6px;font-size:12px;color:#86efac;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.25);padding:4px 10px;border-radius:20px;">
+      <div class="status-dot" style="width:7px;height:7px;background:#22c55e;border-radius:50%;box-shadow:0 0 8px #22c55e;animation:pulse 2s infinite;"></div>
+      <span>JWT Session Active</span>
+    </div>
+  </header>
+
+  <main class="max-w-md" id="main-content">
+    <section class="hero">
+      <div class="hero-pre">GFR Rule 149(vii) Audit Trail</div>
+      <h1>Benchmark Run History</h1>
+      <p>Every price reasonability check executed against the statutory tier waterfall, with the resolving tier, benchmarked price, and confidence. Search, filter by tier or data origin, and export the trail as CSV for the procurement file. Click any row to inspect the full tier trace and evidence.</p>
+    </section>
+
+    <section class="stat-row" id="statRow">
+      <div class="stat-card">
+        <div class="stat-title">Total Runs</div>
+        <div class="stat-val" id="statTotal">—</div>
+        <div class="stat-sub" id="statTotalSub">benchmarks executed</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Avg Benchmark Price</div>
+        <div class="stat-val" id="statAvgPrice">—</div>
+        <div class="stat-sub" id="statAvgSub">weighted across all tiers</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Demo-Sourced Runs</div>
+        <div class="stat-val" id="statDemo">—</div>
+        <div class="stat-sub" id="statDemoSub">watermarked on certificates</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Top Resolved Tier</div>
+        <div class="stat-val" id="statTopTier">—</div>
+        <div class="stat-sub" id="statTopTierSub">most frequent waterfall tier</div>
+      </div>
+    </section>
+
+    <section class="filter-bar" id="filterBar" aria-label="Audit trail filters">
+      <div class="filter-field">
+        <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input type="search" id="filterQuery" placeholder="Search item / query…" oninput="onFilterChange()" aria-label="Search audit trail by item or query">
+      </div>
+      <select id="filterTier" onchange="onFilterChange()" aria-label="Filter by resolved tier">
+        <option value="">All Tiers</option>
+        <option value="0">Tier 0 · Notified Rate</option>
+        <option value="1">Tier 1 · GeM LPP</option>
+        <option value="2">Tier 2 · Dept LPP</option>
+        <option value="3">Tier 3 · Market Survey</option>
+        <option value="4">Tier 4 · Non-Std Estimate</option>
+      </select>
+      <select id="filterData" onchange="onFilterChange()" aria-label="Filter by data origin">
+        <option value="">All Data</option>
+        <option value="demo">Demo-Sourced Only</option>
+        <option value="real">Real Source Only</option>
+      </select>
+      <button class="btn-view btn-export" onclick="exportCSV()" id="btnExport" type="button">
+        <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+        Export CSV
+      </button>
+    </section>
+
+    <section class="tbl-card">
+      <div class="tbl-header">
+        <h2>Audit Trail — Benchmark Runs</h2>
+        <button class="btn-view" onclick="loadRuns()" id="btnRefresh" style="padding:6px 16px;">⟳ Refresh</button>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Item / Query</th>
+              <th>Resolved Tier</th>
+              <th>Benchmark Price</th>
+              <th>Source</th>
+              <th>Confidence</th>
+              <th>Data</th>
+              <th>Date</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="runsBody">
+            <tr class="loading-row"><td colspan="8">Loading run history…</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pager">
+        <button id="btnPrev" onclick="pageRuns(-1)" disabled>← Prev</button>
+        <span id="pageInfo">Page 1</span>
+        <button id="btnNext" onclick="pageRuns(1)" disabled>Next →</button>
+      </div>
+    </section>
+
+    <p class="footer-cta" style="font-size:13px;color:var(--text-muted);">
+      New to benchmarking? <a href="/benchmark.html" style="color:var(--primary);font-weight:600;">Run your first benchmark →</a>
+    </p>
+  </main>
+
+  <footer class="site-footer">
+    <p>Onyx Statutory Procurement System | GFR 2017 Rule 149(vii) Price Reasonability Engine</p>
+  </footer>
+
+  <!-- Detail modal -->
+  <div class="modal-overlay" id="detailModal" onclick="if(event.target===this) closeDetail()">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+      <div class="modal-head">
+        <div>
+          <h3 id="detailTitle">Benchmark Detail</h3>
+          <div class="sub" id="detailSub"></div>
+        </div>
+        <button class="modal-close" onclick="closeDetail()" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body" id="detailBody"></div>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+  <script src="/ui.js"></script>
+  <script>
+    const PAGE_SIZE = 15;
+    let offset = 0;
+    let allRuns = [];
+
+    async function loadRuns() {
+      const body = document.getElementById('runsBody');
+      body.innerHTML = '<tr class="loading-row"><td colspan="8">Loading run history…</td></tr>';
+      try {
+        const res = await fetch('/api/v1/price-history?limit=100', {
+          headers: authHeaders()
+        });
+        if (res.status === 401 || res.status === 403) {
+          await ensureAuth();
+          const retry = await fetch('/api/v1/price-history?limit=100', {
+            headers: authHeaders()
+          });
+          if (!retry.ok) throw new Error('auth failed');
+          allRuns = (await retry.json()).items || [];
+        } else if (res.ok) {
+          allRuns = (await res.json()).items || [];
+        } else {
+          throw new Error('HTTP ' + res.status);
+        }
+      } catch (e) {
+        body.innerHTML = '<tr class="loading-row"><td colspan="8">Failed to load history: ' + esc(e.message) + '</td></tr>';
+        return;
+      }
+      renderStats();
+      offset = 0;
+      renderPage();
+    }
+
+    function renderStats() {
+      document.getElementById('statTotal').textContent = allRuns.length;
+      const priced = allRuns.filter(r => r.price != null);
+      if (priced.length) {
+        const avg = priced.reduce((s, r) => s + r.price, 0) / priced.length;
+        document.getElementById('statAvgPrice').textContent = formatINR(avg);
+      }
+      const demoCount = allRuns.filter(r => r.any_demo_data).length;
+      document.getElementById('statDemo').textContent = demoCount;
+      const tierCounts = {};
+      allRuns.forEach(r => { tierCounts[r.resolved_tier] = (tierCounts[r.resolved_tier] || 0) + 1; });
+      const top = Object.keys(tierCounts).sort((a, b) => tierCounts[b] - tierCounts[a])[0];
+      if (top !== undefined) {
+        const labels = ['Notified Rate', 'GeM LPP', 'Dept LPP', 'Market Survey', 'Non-Std Estimate'];
+        document.getElementById('statTopTier').textContent = 'T' + top;
+        document.getElementById('statTopTierSub').textContent = labels[Number(top)] || 'Unknown';
+      }
+    }
+
+    function getFilteredRuns() {
+      const q = (document.getElementById('filterQuery').value || '').toLowerCase().trim();
+      const tier = document.getElementById('filterTier').value;
+      const dataMode = document.getElementById('filterData').value;
+      return allRuns.filter(r => {
+        if (q && !String(r.query || '').toLowerCase().includes(q)) return false;
+        if (tier !== '' && String(r.resolved_tier) !== tier) return false;
+        if (dataMode === 'demo' && !r.any_demo_data) return false;
+        if (dataMode === 'real' && r.any_demo_data) return false;
+        return true;
+      });
+    }
+
+    function onFilterChange() {
+      offset = 0;
+      renderPage();
+    }
+
+    function renderPage() {
+      const body = document.getElementById('runsBody');
+      const filtered = getFilteredRuns();
+      const page = filtered.slice(offset, offset + PAGE_SIZE);
+
+      if (!page.length) {
+        const hasFilters = (document.getElementById('filterQuery').value || '') ||
+          document.getElementById('filterTier').value || document.getElementById('filterData').value;
+        body.innerHTML = '<tr class="loading-row"><td colspan="8"><div class="empty-state" style="padding:32px;"><div class="big">' +
+          (allRuns.length && hasFilters ? '🔍' : '📊') + '</div>' +
+          (allRuns.length ? 'No runs match the current filters.<br><a href="javascript:void(0)" onclick="clearFilters()">Clear filters →</a>'
+            : 'No benchmark runs yet.<br><a href="/benchmark.html">Run your first benchmark →</a>') +
+          '</div></td></tr>';
+      } else {
+        body.innerHTML = page.map(r => `
+          <tr>
+            <td class="query-cell">${esc(r.query)}</td>
+            <td><span class="tier-badge tier-${r.resolved_tier}">T${r.resolved_tier} · ${esc(r.tier_label)}</span></td>
+            <td class="mono" style="font-weight:700;">${r.price == null ? '—' : formatINR(r.price)}</td>
+            <td style="max-width:220px;">${esc(r.source_name || '—')}</td>
+            <td><span class="conf-dot conf-${(r.confidence || 'low').toLowerCase()}"></span>${esc(r.confidence || '—')}</td>
+            <td>${r.any_demo_data ? '<span class="demo-badge">DEMO</span>' : '<span class="real-badge">REAL</span>'}</td>
+            <td class="mono" style="white-space:nowrap;">${esc(shortDate(r.created_at))}</td>
+            <td><button class="btn-view" onclick="openDetail('${esc(r.search_id)}')">View</button></td>
+          </tr>`).join('');
+      }
+
+      document.getElementById('btnPrev').disabled = offset <= 0;
+      document.getElementById('btnNext').disabled = offset + PAGE_SIZE >= filtered.length;
+      document.getElementById('pageInfo').textContent = 'Page ' + (Math.floor(offset / PAGE_SIZE) + 1) + ' of ' + Math.max(1, Math.ceil(filtered.length / PAGE_SIZE)) + ' · ' + filtered.length + ' run' + (filtered.length === 1 ? '' : 's');
+    }
+
+    function clearFilters() {
+      document.getElementById('filterQuery').value = '';
+      document.getElementById('filterTier').value = '';
+      document.getElementById('filterData').value = '';
+      onFilterChange();
+    }
+
+    function exportCSV() {
+      const filtered = getFilteredRuns();
+      if (!filtered.length) {
+        alert('No rows to export for the current filters.');
+        return;
+      }
+      const cols = ['search_id', 'query', 'query_mode', 'resolved_tier', 'tier_label', 'price', 'currency', 'source_name', 'confidence', 'any_demo_data', 'created_at'];
+      const csvRows = [cols.join(',')];
+      filtered.forEach(r => {
+        csvRows.push(cols.map(c => {
+          let v = r[c];
+          if (v === null || v === undefined) v = '';
+          if (typeof v === 'string') v = '"' + v.replace(/"/g, '""') + '"';
+          return v;
+        }).join(','));
+      });
+      const blob = new Blob(['\ufeff' + csvRows.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'onyx_audit_trail_' + new Date().toISOString().slice(0, 10) + '.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function pageRuns(dir) {
+      offset += dir * PAGE_SIZE;
+      if (offset < 0) offset = 0;
+      renderPage();
+    }
+
+    function shortDate(iso) {
+      if (!iso) return '—';
+      try {
+        return new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+      } catch (e) {
+        return iso;
+      }
+    }
+
+    async function openDetail(id) {
+      const modal = document.getElementById('detailModal');
+      modal.classList.add('open');
+      document.getElementById('detailBody').innerHTML = '<p style="color:var(--text-muted);">Loading detail…</p>';
+      try {
+        const res = await fetch('/api/v1/price-history/' + encodeURIComponent(id), {
+          headers: authHeaders()
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const d = await res.json();
+        document.getElementById('detailTitle').textContent = d.query;
+        document.getElementById('detailSub').textContent =
+          (d.tier_label || 'T' + d.resolved_tier) + ' · ' + shortDate(d.created_at) +
+          (d.any_demo_data ? ' · <span style="color:#b91c1c;">includes demo-sourced data</span>' : '');
+
+        const trace = Object.entries(d.tier_trace || {}).map(([k, v]) =>
+          '<li><span class="trace-key">' + esc(k.replace('tier_', 'Tier ')) + '</span><span class="trace-val">' + esc(v) + '</span></li>'
+        ).join('');
+
+        const results = (d.results || []).map(r => `
+          <div class="dr-card">
+            <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+              <span class="dr-source">${esc(r.source_name)}</span>
+              <span class="dr-price">${r.price == null ? '—' : formatINR(r.price)}</span>
+            </div>
+            <div class="dr-extra">
+              ${r.confidence ? 'Confidence: <strong>' + esc(r.confidence) + '</strong> · ' : ''}
+              ${r.source_url ? '<a href="' + esc(r.source_url) + '" target="_blank" rel="noopener">View source evidence ↗</a><br>' : ''}
+              ${r.rationale ? esc(r.rationale) : ''}
+            </div>
+          </div>`).join('');
+
+        // Compliance blocks (persisted at run time)
+        const th = d.procurement_threshold;
+        const thresholdHtml = th ? `
+          <h4 style="margin:16px 0 10px;font-size:14px;color:var(--navy-900);">Procurement Threshold Compliance</h4>
+          <div style="border:1px solid ${th.compliant ? '#16a34a' : '#d97706'};border-left:4px solid ${th.compliant ? '#16a34a' : '#d97706'};background:${th.compliant ? '#f0fdf4' : '#fffbeb'};border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:4px;">
+            <strong>${th.compliant ? 'COMPLIANT ✓' : 'NON-COMPLIANT ⚠'}</strong> —
+            ${esc(th.mode_label || th.mode || '')} (${esc(th.rule || '')}) · ${th.quotes_obtained != null ? th.quotes_obtained + '/' + (th.min_quotes_required ?? th.min_quotes ?? 'N/A') + ' quote(s)' : ''}
+            ${th.reason ? '<div style="color:#57534e;margin-top:4px;">' + esc(th.reason) + '</div>' : ''}
+            ${th.guidance ? '<div style="color:#57534e;margin-top:4px;font-size:12px;">' + esc(th.guidance) + '</div>' : ''}
+          </div>` : '';
+
+        const st = d.statistics || {};
+        const statsHtml = (st.l1 != null || (st.band_low != null && st.band_high != null)) ? `
+          <h4 style="margin:16px 0 10px;font-size:14px;color:var(--navy-900);">L1 & Reasonableness Band</h4>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            ${st.l1 != null ? `<div style="flex:1;min-width:130px;border:1px solid #e2e8f0;border-radius:8px;padding:10px;background:#f8fafc;"><div style="font-size:11px;color:#64748b;text-transform:uppercase;">L1 Competitive Bid</div><div style="font-size:15px;font-weight:700;color:var(--navy-900);">${formatINR(st.l1)}</div>${st.l1_source ? '<div style="font-size:11px;color:#64748b;">' + esc(st.l1_source) + '</div>' : ''}</div>` : ''}
+            ${st.competitive_pool != null ? `<div style="flex:1;min-width:130px;border:1px solid #e2e8f0;border-radius:8px;padding:10px;background:#f8fafc;"><div style="font-size:11px;color:#64748b;text-transform:uppercase;">Competitive Pool</div><div style="font-size:15px;font-weight:700;color:var(--navy-900);">${st.competitive_pool}</div></div>` : ''}
+            ${st.band_low != null && st.band_high != null ? `<div style="flex:1.4;min-width:200px;border:1px solid #e2e8f0;border-radius:8px;padding:10px;background:#f8fafc;"><div style="font-size:11px;color:#64748b;text-transform:uppercase;">Reasonableness Band (±25%)</div><div style="font-size:13px;font-weight:600;color:var(--navy-900);">${formatINR(st.band_low)} – ${formatINR(st.band_high)}</div><div style="font-size:12px;color:${st.within_band ? '#15803d' : '#b91c1c'};font-weight:600;">${st.within_band ? 'Within band ✓' : 'OUTSIDE band ⚠'}</div></div>` : ''}
+          </div>` : '';
+
+        const specsHtml = (d.specs && Object.keys(d.specs).length) ? `
+          <h4 style="margin:16px 0 10px;font-size:14px;color:var(--navy-900);">Golden Parameters</h4>
+          <div style="border:1px solid #c7d2fe;background:#eef2ff;border-radius:8px;padding:10px 12px;font-size:12.5px;color:#3730a3;">
+            ${Object.entries(d.specs).map(([k, v]) => '<strong>' + esc(k) + ':</strong> ' + esc(v)).join(' · ')}
+          </div>` : '';
+
+        const bp = d.base_product;
+        const bpHtml = bp ? `
+          <h4 style="margin:16px 0 10px;font-size:14px;color:var(--navy-900);">Canonical Base Product</h4>
+          <div style="border:1px solid #c7d2fe;border-left:4px solid #4338ca;background:#f8fafc;border-radius:8px;padding:10px 12px;font-size:13px;">
+            <strong>${esc(bp.canonical_name || '')}</strong>
+            ${bp.match_score != null ? ' <span style="color:#64748b;">(identity match ' + bp.match_score + '%)</span>' : ''}
+            ${bp.prior_records > 0 ? '<div style="color:#475569;margin-top:4px;">Recognized from ' + bp.prior_records + ' prior purchase record(s)' + (bp.prior_median_price != null ? ' · prior median ' + formatINR(bp.prior_median_price) : '') + '</div>' : '<div style="color:#475569;margin-top:4px;">No prior purchase records — establishes the reference price.</div>'}
+          </div>` : '';
+
+        const f = d.freight;
+        const freightHtml = f ? `
+          <h4 style="margin:16px 0 10px;font-size:14px;color:var(--navy-900);">Landed Cost (Freight)</h4>
+          <div style="border:1px solid #86efac;border-left:4px solid #16a34a;background:#f0fdf4;border-radius:8px;padding:10px 12px;font-size:13px;color:#14532d;">
+            <strong>${esc(f.delivery_location)}</strong> · ${esc(f.region_label)} (${f.freight_pct}%)<br>
+            Goods ${formatINR(f.goods_value)} + Freight ${formatINR(f.freight_amount)} = <strong>Landed ${formatINR(f.landed_total)}</strong>
+          </div>` : '';
+
+        let delHtml = '';
+        let auditHtml = '';
+        if (d.search_id) {
+          const [dres, ares] = await Promise.all([
+            fetch('/api/v1/delegations?search_id=' + encodeURIComponent(d.search_id), { headers: authHeaders() }),
+            fetch('/api/v1/audit?search_id=' + encodeURIComponent(d.search_id), { headers: authHeaders() })
+          ]);
+          const dels = dres.ok ? await dres.json() : [];
+          const audit = ares.ok ? await ares.json() : [];
+          if (dels.length) {
+            delHtml = '<h4 style="margin:16px 0 10px;font-size:14px;color:var(--navy-900);">Delegations</h4>' +
+              dels.map(dl => '<div style="border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;margin-bottom:6px;font-size:12.5px;">' +
+                '<strong>' + esc(dl.delegate_to_name) + '</strong> · <span style="color:' + (dl.status === 'open' ? '#b45309' : '#15803d') + ';font-weight:600;">' + (dl.status === 'open' ? 'OPEN' : (dl.decision || '').toUpperCase()) + '</span>' +
+                (dl.note ? '<div style="color:#57534e;">' + esc(dl.note) + '</div>' : '') +
+                '<div style="color:#94a3b8;font-size:11px;">Delegated by ' + esc(dl.delegated_by_name || '—') + ' · ' + new Date(dl.created_at).toLocaleString() + '</div></div>').join('');
+          }
+          if (audit.length) {
+            auditHtml = '<h4 style="margin:16px 0 10px;font-size:14px;color:var(--navy-900);">Audit Trail</h4>' +
+              '<div style="font-family:monospace;font-size:12px;color:#475569;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px;">' +
+              audit.map(e => '<div><span style="color:#94a3b8;">' + new Date(e.created_at).toLocaleTimeString() + '</span> <span style="color:#4338ca;">' + esc(e.action) + '</span> ' + esc(e.actor_name || '—') + (e.note ? ' · ' + esc(e.note) : '') + '</div>').join('') +
+              '</div>';
+          }
+        }
+
+        document.getElementById('detailBody').innerHTML =
+          '<h4 style="margin:0 0 10px;font-size:14px;color:var(--navy-900);">Tier Waterfall Trace</h4>' +
+          (trace ? '<ul class="trace-list">' + trace + '</ul>' : '<p style="color:var(--text-muted);font-size:13px;">No tier trace recorded.</p>') +
+          thresholdHtml + statsHtml + specsHtml + bpHtml + freightHtml +
+          '<h4 style="margin:16px 0 10px;font-size:14px;color:var(--navy-900);">Resolved Results</h4>' +
+          (results ? '<div class="detail-results">' + results + '</div>' : '<p style="color:var(--text-muted);font-size:13px;">No results recorded.</p>') +
+          delHtml + auditHtml;
+      } catch (e) {
+        document.getElementById('detailBody').innerHTML = '<p style="color:#b91c1c;">Failed to load detail: ' + esc(e.message) + '</p>';
+      }
+    }
+
+    function closeDetail() {
+      document.getElementById('detailModal').classList.remove('open');
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeDetail();
+    });
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      await ensureAuth();
+      loadRuns();
+    });
+  </script>
+</body>
+</html>

@@ -3,56 +3,239 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Onyx — Market Crawlers & Anti-Bot Engine Health</title>
-  <meta name="description" content="Anti-bot crawling infrastructure and live marketplace monitors powering GFR 149(vii) Tier 3 Market Survey.">
+  <title>Onyx — Market Crawlers & Engine Health</title>
+  <meta name="description" content="Live marketplace feeds and engine telemetry powering the GFR Rule 149(vii) Tier 3 Market Survey.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/base.css">
   <style>
-    .system-status {
-      display: flex;
+    html { scroll-behavior: smooth; }
+    body { line-height: 1.6; overflow-x: hidden; }
+
+    /* ── Announcement strip (solid heat, honest engine state) ── */
+    .announce-bar {
+      background: var(--heat-100);
+      color: #fff;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 16px;
+      letter-spacing: 0.01em;
+      position: relative;
+      z-index: 101;
+    }
+    .announce-bar strong { font-weight: 800; }
+
+    /* ── Navbar (dark glass) ── */
+    .navbar {
+      background: rgba(10, 10, 10, 0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .navbar.scrolled { box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35); }
+
+    .btn-theme-toggle {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+      cursor: pointer;
+      display: inline-flex;
       align-items: center;
-      gap: 6px;
-      font-size: 12px;
+      justify-content: center;
+      transition: background 0.15s ease, transform 0.3s ease;
+    }
+    .btn-theme-toggle:hover { background: rgba(255, 255, 255, 0.14); }
+    .btn-theme-toggle svg { width: 19px; height: 19px; }
+
+    .nav-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
       color: #86efac;
       background: rgba(34, 197, 94, 0.12);
       border: 1px solid rgba(34, 197, 94, 0.25);
-      padding: 4px 10px;
-      border-radius: 20px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      white-space: nowrap;
     }
-    .status-dot {
+    .nav-status .status-dot {
       width: 7px;
       height: 7px;
       background: #22c55e;
       border-radius: 50%;
       box-shadow: 0 0 8px #22c55e;
-      animation: pulse 2s infinite;
+      animation: onyx-blink 1.8s steps(1) infinite;
     }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-    
-    /* ── Main Layout ── */
-    
-    .hero {
+    .nav-status.is-demo {
+      color: #fcd34d;
+      background: rgba(245, 158, 11, 0.12);
+      border-color: rgba(245, 158, 11, 0.28);
+    }
+    .nav-status.is-demo .status-dot { background: #f59e0b; box-shadow: 0 0 8px #f59e0b; }
+
+    /* ── Hero ── */
+    main { padding: 0; }
+    .hero-section {
+      position: relative;
+      padding: 88px 24px 48px;
       text-align: center;
-      margin-bottom: 28px;
+      max-width: 100%;
+      margin: 0 auto;
+      overflow: clip;
     }
-    .hero h1 {
-      font-size: 34px;
+    .hero-inner { position: relative; max-width: 1000px; margin: 0 auto; }
+    .hero-guides {
+      position: absolute;
+      inset: 0;
+      margin: 0 auto;
+      width: min(1080px, 100%);
+      pointer-events: none;
+      border-left: 1px solid var(--border-faint);
+      border-right: 1px solid var(--border-faint);
     }
-    .hero p {
-      max-width: 720px;
+    @media (max-width: 700px) { .hero-guides { border: none; } }
+
+    .hero-anno {
+      position: absolute;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      color: var(--alpha-12);
+      text-transform: uppercase;
+      pointer-events: none;
+      white-space: nowrap;
+      animation: anno-float 7s ease-in-out infinite;
     }
-    
-    /* ── Grid Layouts ── */
-    .sources-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 16px;
+    @keyframes anno-float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    @media (max-width: 1100px) { .hero-anno { display: none; } }
+
+    .hero-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--border-loud);
+      background: var(--card-bg);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--navy-700);
       margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
     }
-    
-    .source-card {
+    .hero-pill .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--heat-100);
+      box-shadow: 0 0 10px var(--heat-100);
+      animation: onyx-blink 1.6s steps(1) infinite;
+    }
+
+    .hero-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(38px, 5.6vw, 60px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.08;
+      color: var(--navy-900);
+      margin-bottom: 20px;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .hero-title span { color: var(--heat-100); }
+
+    .hero-desc {
+      font-size: 17px;
+      color: var(--text-muted);
+      max-width: 700px;
+      margin: 0 auto 30px;
+      line-height: 1.65;
+    }
+    .hero-desc strong { color: var(--navy-800); font-weight: 600; }
+
+    .hero-actions {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .btn-hero-primary {
+      padding: 13px 26px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      background: var(--heat-100);
+      border-radius: 10px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.15s ease, transform 0.15s ease;
+    }
+    .btn-hero-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-hero-primary:active { transform: scale(0.99); }
+    .btn-hero-secondary {
+      padding: 13px 24px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--navy-800);
+      background: var(--alpha-4);
+      border: none;
+      border-radius: 10px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.15s ease, transform 0.15s ease;
+    }
+    .btn-hero-secondary:hover { background: var(--alpha-6); }
+    .btn-hero-secondary:active { transform: scale(0.99); }
+
+    /* ── Section shells ── */
+    .section-shell {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 24px 56px;
+    }
+    .section-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+    .section-head .sub { font-size: 12.5px; color: var(--text-muted); }
+    @media (max-width: 700px) {
+      .section-head { flex-direction: column; align-items: flex-start; }
+    }
+
+    /* ── Feeds grid ── */
+    .feeds-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+    }
+    .feed-card {
       background: var(--card-bg);
       border-radius: var(--radius-lg);
       border: 1px solid var(--border);
@@ -61,153 +244,269 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      gap: 14px;
+      position: relative;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
     }
-    .source-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 12px;
-    }
-    .source-name {
-      font-family: 'Outfit', sans-serif;
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--navy-900);
-    }
-    .source-domain {
+    .feed-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border-loud); }
+    .feed-card.is-disabled { opacity: 0.55; }
+    .feed-card.is-disabled:hover { transform: none; }
+
+    .feed-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+    .feed-name { font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700; color: var(--navy-900); }
+    .feed-domain { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    .feed-status {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      color: var(--text-muted);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 999px;
+      white-space: nowrap;
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #a7f3d0;
     }
-    .source-meta {
-      font-size: 12px;
-      color: var(--text-muted);
+    .feed-status.is-keyed { background: var(--heat-8); color: var(--heat-100); border: 1px solid var(--heat-40); }
+    .feed-status.is-pending { background: #f8fafc; color: #64748b; border: 1px solid var(--border); }
+
+    .feed-desc { font-size: 12.5px; color: var(--navy-700); }
+    .feed-meta {
       display: flex;
       flex-direction: column;
       gap: 4px;
+      font-size: 12px;
+      color: var(--text-muted);
       border-top: 1px solid var(--border-subtle);
       padding-top: 10px;
-      margin-top: 10px;
     }
-    
-    /* Telemetry Cards */
-    .telemetry-row {
+    .feed-meta strong { color: var(--navy-800); font-weight: 600; }
+
+    .demo-feed-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: #92400e;
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 6px;
+      padding: 2px 6px;
+      margin-top: 8px;
+    }
+    html.dark .demo-feed-tag { background: rgba(245, 158, 11, 0.12); color: #fcd34d; border-color: rgba(245, 158, 11, 0.3); }
+
+    /* ── Telemetry panels (dark engine cards) ── */
+    .telemetry-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 14px;
-      margin-bottom: 28px;
     }
-    .telemetry-card {
-      background: #0f172a;
+    .telem-card {
+      background: #0a0a0a;
       color: #fff;
       border-radius: var(--radius-md);
-      padding: 16px 20px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 16px 18px;
       display: flex;
       align-items: center;
       gap: 14px;
     }
-    .telem-icon {
-      font-size: 28px;
+    .telem-icon { color: var(--heat-100); display: inline-flex; }
+    .telem-title { font-size: 11px; color: #a3a3a3; text-transform: uppercase; letter-spacing: 0.05em; }
+    .telem-val { font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 700; color: #fff; }
+    .telem-val.ok { color: #86efac; }
+    .telem-val.bad { color: #fca5a5; }
+
+    /* Seeded reference strip */
+    .ref-strip {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
     }
-    .telem-title {
-      font-size: 11px;
-      color: #94a3b8;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    .telem-val {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 15px;
-      font-weight: 700;
-      color: #38bdf8;
-    }
-    
-    /* Diagnostics Section */
-    .diagnostics-card {
+    .ref-item {
       background: var(--card-bg);
-      border-radius: var(--radius-lg);
       border: 1px solid var(--border);
-      box-shadow: var(--shadow-sm);
-      padding: 24px;
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
     }
-    .diagnostics-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--navy-900);
-      margin-bottom: 16px;
+    .ref-val { font-family: 'JetBrains Mono', monospace; font-size: 17px; font-weight: 700; color: var(--heat-100); }
+    .ref-lbl { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
+
+    /* ── Engine trace console ── */
+    .console-shell {
+      background: #0a0a0a;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-fc);
+    }
+    .console-head {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid var(--border-subtle);
-      padding-bottom: 10px;
-    }
-    
-    .diag-form-row {
-      display: flex;
       gap: 12px;
-      margin-bottom: 16px;
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      background: #111111;
     }
-    .diag-input {
-      flex: 1;
-      padding: 11px 14px;
-      font-size: 14px;
+    .console-title { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; color: #d4d4d4; }
+    .console-title .dot { color: var(--heat-100); }
+    .console-badge {
       font-family: 'JetBrains Mono', monospace;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      outline: none;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #fcd34d;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.28);
+      padding: 3px 9px;
+      border-radius: 999px;
+      white-space: nowrap;
     }
-    .diag-input:focus {
-      border-color: var(--primary);
+    .console-badge.is-live { color: #86efac; background: rgba(34, 197, 94, 0.12); border-color: rgba(34, 197, 94, 0.25); }
+
+    .console-body {
+      padding: 18px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      line-height: 1.75;
+      color: #a5f3fc;
+      min-height: 300px;
+      max-height: 460px;
+      overflow-y: auto;
     }
-    
-    .diag-options {
+    .console-line { display: flex; gap: 10px; opacity: 0; animation: line-in 0.18s ease forwards; }
+    @keyframes line-in { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
+    .console-line .t { color: #64748b; white-space: nowrap; }
+    .console-line .k { color: #fbbf24; white-space: nowrap; }
+    .console-line .v { color: #e5e7eb; word-break: break-word; }
+    .console-line.ok .v { color: #86efac; }
+    .console-line.ok .k { color: #4ade80; }
+    .console-line.warn .v { color: #fcd34d; }
+    .console-cursor {
+      display: inline-block;
+      width: 8px;
+      height: 15px;
+      background: var(--heat-100);
+      vertical-align: -2px;
+      animation: onyx-blink 1s steps(1) infinite;
+    }
+    .console-content {
+      margin: 10px 0;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      overflow: hidden;
+    }
+    .console-content-head {
       display: flex;
-      gap: 20px;
-      margin-bottom: 16px;
-      font-size: 13px;
-      color: var(--navy-700);
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      padding: 8px 12px;
+      font-size: 11px;
+      color: #a3a3a3;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
     }
-    .diag-options label {
+    .console-content-head .ok { color: #86efac; }
+    .console-pre {
+      margin: 0;
+      padding: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      color: #d4d4d4;
+      white-space: pre;
+      overflow-x: auto;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .console-pre .tbl-row-hdr { color: #fbbf24; font-weight: 700; }
+    .console-pre .tbl-col-sep { color: #3f3f46; }
+
+    .console-actions {
       display: flex;
       align-items: center;
-      gap: 6px;
-      cursor: pointer;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      background: #111111;
+      flex-wrap: wrap;
     }
-    
-    .btn-crawl {
-      padding: 11px 22px;
+    .console-url {
+      flex: 1;
+      min-width: 220px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #d4d4d4;
+      background: #0a0a0a;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 8px;
+      padding: 9px 12px;
+      outline: none;
+    }
+    .console-url:focus { border-color: var(--heat-100); }
+    .console-opts { display: flex; gap: 16px; font-size: 12px; color: #a3a3a3; align-items: center; }
+    .console-opts label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    .btn-console {
       font-family: 'Outfit', sans-serif;
-      font-size: 14px;
+      font-size: 13.5px;
       font-weight: 700;
       color: #fff;
-      background: var(--primary);
+      background: var(--heat-100);
       border: none;
-      border-radius: var(--radius-md);
+      border-radius: 9px;
+      padding: 10px 18px;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      transition: background 0.15s;
+      gap: 7px;
+      transition: background 0.15s ease;
     }
-    .btn-crawl:hover { background: var(--primary-hover); }
-    .btn-crawl:disabled { opacity: 0.5; cursor: not-allowed; }
-    
-    .console-output {
+    .btn-console:hover { background: var(--primary-hover); }
+    .btn-console:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-console.is-demo {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: #fcd34d;
+    }
+    .btn-console.is-demo:hover { background: rgba(255, 255, 255, 0.14); }
+
+    .demo-banner {
       display: none;
-      margin-top: 18px;
-      background: #090d16;
-      border-radius: var(--radius-md);
-      padding: 16px;
-      color: #a5f3fc;
-      font-family: 'JetBrains Mono', monospace;
+      align-items: flex-start;
+      gap: 8px;
+      margin: 0 16px 16px;
+      padding: 10px 14px;
       font-size: 12.5px;
-      max-height: 280px;
-      overflow-y: auto;
-      white-space: pre-wrap;
+      color: #92400e;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      border-radius: var(--radius-md);
     }
+    html.dark .demo-banner { color: #fcd34d; }
+
+    /* ── Footer ── */
+    .site-footer { border-top: 1px solid var(--border-faint); }
   </style>
 </head>
 <body>
+
+  <div class="announce-bar">
+    <strong>ENGINE STATUS:</strong> Demo build — Tier 3 feeds serve cached marketplace snapshots · live crawling activates with deployment keys
+  </div>
 
   <a class="skip-link" href="#main-content" id="skip-to-content">Skip to main content</a>
 
@@ -217,7 +516,7 @@
       <div class="brand-logo">◆ ONYX</div>
       <div class="brand-tag">GFR 149(vii) Intelligence</div>
     </a>
-    
+
     <nav class="nav-links">
       <a href="/benchmark.html" class="nav-link">
         <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
@@ -227,196 +526,167 @@
         <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
         Dept PO Ingestion
       </a>
+      <a href="/dashboard.html" class="nav-link">
+        <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Run History
+      </a>
       <a href="/index.html" class="nav-link active">
         <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a15 15 0 0 1 0 18"/><path d="M12 3a15 15 0 0 0 0 18"/></svg>
-        Market Crawlers & Engine
+        Engine
       </a>
+      <button class="btn-theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle theme">
+        <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none;"><circle cx="12" cy="12" r="5"/><path d="M12 1v2"/><path d="M12 21v2"/><path d="M4.22 4.22l1.42 1.42"/><path d="M18.36 18.36l1.42 1.42"/><path d="M1 12h2"/><path d="M21 12h2"/><path d="M4.22 19.78l1.42-1.42"/><path d="M18.36 5.64l1.42-1.42"/></svg>
+        <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
     </nav>
-    
-    <div class="system-status">
+
+    <div class="nav-status" id="navStatus">
       <div class="status-dot"></div>
-      <span>All 5 Feeds Active</span>
+      <span id="navStatusText">Engine Online</span>
     </div>
   </header>
 
   <main class="max-w-md" id="main-content">
-    <section class="hero">
-      <div class="hero-pre">GFR Rule 149(vii) Tier 3 Backbone</div>
-      <h1>Marketplace Crawlers & Engine Health</h1>
-      <p>Anti-bot crawling infrastructure powering public domain price discovery. Automatically bypasses Cloudflare, Akamai, and rate-limits across India's largest B2B and consumer portals.</p>
-    </section>
 
-    <!-- 5 Live Monitored Sources -->
-    <section class="sources-grid">
-      <!-- GeM Portal -->
-      <div class="source-card">
-        <div>
-          <div class="source-header">
-            <div>
-              <div class="source-name">GeM Portal</div>
-              <div class="source-domain">mkp.gem.gov.in</div>
-            </div>
-            <span class="badge-status status-active">● Active</span>
-          </div>
-          <p style="font-size:12.5px;color:var(--navy-700);">Government e-Marketplace public catalog and LPP registry extractor.</p>
-        </div>
-        <div class="source-meta">
-          <span><strong>Method:</strong> Catalog JSON & HTML Parser</span>
-          <span><strong>Protocol:</strong> HTTPS / TLS 1.3</span>
-          <span><strong>Priority:</strong> Tier 1 & Tier 3</span>
-        </div>
-      </div>
+    <!-- Hero -->
+    <section class="hero-section" id="engine-hero">
+      <div class="hero-guides" aria-hidden="true"></div>
+      <span class="hero-anno" style="left:-30px;top:130px;" aria-hidden="true">[ TIER 3 ]</span>
+      <span class="hero-anno" style="right:-40px;top:210px;" aria-hidden="true">[ TLS JA4 ]</span>
+      <span class="hero-anno" style="left:-10px;bottom:120px;" aria-hidden="true">[ HEADLESS ]</span>
+      <span class="hero-anno" style="right:-20px;bottom:210px;" aria-hidden="true">[ ₹ INR ]</span>
 
-      <!-- Amazon India -->
-      <div class="source-card">
-        <div>
-          <div class="source-header">
-            <div>
-              <div class="source-name">Amazon India</div>
-              <div class="source-domain">amazon.in</div>
-            </div>
-            <span class="badge-status status-active">● Active</span>
-          </div>
-          <p style="font-size:12.5px;color:var(--navy-700);">Consumer and business electronic equipment pricing feed.</p>
+      <div class="hero-inner">
+        <div class="hero-pill fade-up">
+          <span class="dot"></span>
+          GFR Rule 149(vii) · Tier 3 Market Survey Backbone
         </div>
-        <div class="source-meta">
-          <span><strong>Anti-Bot:</strong> Headless Chromium + JA4 Spoof</span>
-          <span><strong>Currency:</strong> INR (Tax Inclusive)</span>
-          <span><strong>Avg Latency:</strong> 1.2s</span>
-        </div>
-      </div>
 
-      <!-- IndiaMART -->
-      <div class="source-card">
-        <div>
-          <div class="source-header">
-            <div>
-              <div class="source-name">IndiaMART B2B</div>
-              <div class="source-domain">dir.indiamart.com</div>
-            </div>
-            <span class="badge-status status-active">● Active</span>
-          </div>
-          <p style="font-size:12.5px;color:var(--navy-700);">Wholesale B2B industrial rates and supplier price discovery.</p>
-        </div>
-        <div class="source-meta">
-          <span><strong>Anti-Bot:</strong> Request Header Fingerprinting</span>
-          <span><strong>Extraction:</strong> Unit & Bulk Multipliers</span>
-          <span><strong>Avg Latency:</strong> 0.8s</span>
-        </div>
-      </div>
+        <h1 class="hero-title fade-up fade-up-delay-1">
+          Marketplace crawlers & an engine that <span>never goes dark</span>
+        </h1>
 
-      <!-- Flipkart Wholesale -->
-      <div class="source-card">
-        <div>
-          <div class="source-header">
-            <div>
-              <div class="source-name">Flipkart</div>
-              <div class="source-domain">flipkart.com</div>
-            </div>
-            <span class="badge-status status-active">● Active</span>
-          </div>
-          <p style="font-size:12.5px;color:var(--navy-700);">Retail and office appliances pricing comparator.</p>
-        </div>
-        <div class="source-meta">
-          <span><strong>Method:</strong> Playwright Dynamic DOM</span>
-          <span><strong>Anti-Bot:</strong> User-Agent Randomization</span>
-          <span><strong>Avg Latency:</strong> 1.5s</span>
-        </div>
-      </div>
+        <p class="hero-desc fade-up fade-up-delay-2">
+          Five parallel feeds — GeM, Amazon, IndiaMART, Flipkart and Google Shopping —
+          behind <strong>TLS fingerprinting, headless rendering and stealth retrieval</strong>.
+          Every captured price is normalized, scored and audited into the GFR waterfall.
+        </p>
 
-      <!-- Google Shopping / SerpAPI -->
-      <div class="source-card">
-        <div>
-          <div class="source-header">
-            <div>
-              <div class="source-name">Google Shopping</div>
-              <div class="source-domain">shopping.google.com</div>
-            </div>
-            <span class="badge-status status-active">● Active</span>
-          </div>
-          <p style="font-size:12.5px;color:var(--navy-700);">Multi-vendor commercial price aggregator across Indian suppliers.</p>
-        </div>
-        <div class="source-meta">
-          <span><strong>Method:</strong> SerpAPI Grounded Feed</span>
-          <span><strong>Geo-Targeting:</strong> India (gl=in)</span>
-          <span><strong>Avg Latency:</strong> 0.6s</span>
+        <div class="hero-actions fade-up fade-up-delay-3">
+          <a href="/benchmark.html" class="btn-hero-primary">
+            <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            Run Reasonability Benchmark
+          </a>
+          <a href="#feeds" class="btn-hero-secondary">
+            <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+            Inspect the Feeds
+          </a>
         </div>
       </div>
     </section>
 
-    <!-- Anti-Bot Defense Telemetry -->
-    <section class="telemetry-row">
-      <div class="telemetry-card">
-        <div class="telem-icon">
-          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-        </div>
+    <!-- Live Feeds -->
+    <section class="section-shell reveal" id="feeds">
+      <div class="section-head">
         <div>
-          <div class="telem-title">TLS Fingerprint Engine</div>
-          <div class="telem-val" id="tlsStatusVal">Chrome 120 (macOS)</div>
+          <div class="section-head-title">Marketplace Feeds</div>
+          <p style="font-size:13.5px;color:var(--text-muted);margin-top:4px;">Configured Tier 3 sources in statutory priority order — status reflects the current engine mode.</p>
+        </div>
+        <span class="sub" id="feedsModeLabel">Mode: demo (cached snapshots)</span>
+      </div>
+
+      <div class="feeds-grid" id="feedsGrid"></div>
+    </section>
+
+    <!-- Engine Telemetry -->
+    <section class="section-shell reveal" id="telemetry">
+      <div class="section-head">
+        <div>
+          <div class="section-head-title">Engine Telemetry</div>
+          <p style="font-size:13.5px;color:var(--text-muted);margin-top:4px;">Live from <code style="font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--alpha-4);padding:1px 6px;border-radius:6px;">/api/health</code> — polled every 10s.</p>
         </div>
       </div>
-      <div class="telemetry-card">
-        <div class="telem-icon">
-          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+
+      <div class="telemetry-grid">
+        <div class="telem-card">
+          <span class="telem-icon">
+            <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+          </span>
+          <div>
+            <div class="telem-title">Database</div>
+            <div class="telem-val" id="dbStatusVal">…</div>
+          </div>
         </div>
-        <div>
-          <div class="telem-title">Database &amp; Shield</div>
-          <div class="telem-val" id="dbStatusVal" style="color:#86efac;">Active (SQLite / GFR DB)</div>
+        <div class="telem-card">
+          <span class="telem-icon">
+            <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18"/><path d="M12 3a9 9 0 0 0 0 18"/><path d="M3 12h18"/></svg>
+          </span>
+          <div>
+            <div class="telem-title">Rate-Limit Cache</div>
+            <div class="telem-val" id="redisStatusVal">…</div>
+          </div>
+        </div>
+        <div class="telem-card">
+          <span class="telem-icon">
+            <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </span>
+          <div>
+            <div class="telem-title">Headless Browser Pool</div>
+            <div class="telem-val" id="browserSlotsVal">…</div>
+          </div>
+        </div>
+        <div class="telem-card">
+          <span class="telem-icon">
+            <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="2"/><path d="M12 2v3"/><path d="M12 19v3"/><path d="M2 12h3"/><path d="M19 12h3"/><path d="M4.9 4.9l2.1 2.1"/><path d="M17 17l2.1 2.1"/><path d="M19.1 4.9L17 7"/><path d="M7 17l-2.1 2.1"/></svg>
+          </span>
+          <div>
+            <div class="telem-title">Active Sessions</div>
+            <div class="telem-val" id="activeSessionsVal">…</div>
+          </div>
         </div>
       </div>
-      <div class="telemetry-card">
-        <div class="telem-icon">
-          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
-        </div>
-        <div>
-          <div class="telem-title">Headless Browser Pool</div>
-          <div class="telem-val" id="browserSlotsVal">Playwright Ready</div>
-        </div>
-      </div>
-      <div class="telemetry-card">
-        <div class="telem-icon">
-          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="2"/><path d="M12 2v3"/><path d="M12 19v3"/><path d="M2 12h3"/><path d="M19 12h3"/><path d="M4.9 4.9l2.1 2.1"/><path d="M17 17l2.1 2.1"/><path d="M19.1 4.9L17 7"/><path d="M7 17l-2.1 2.1"/></svg>
-        </div>
-        <div>
-          <div class="telem-title">Active Scraping Sessions</div>
-          <div class="telem-val" id="activeSessionsVal">0 Concurrent</div>
-        </div>
+
+      <div class="ref-strip">
+        <div class="ref-item"><div class="ref-val" id="cntNotified">…</div><div class="ref-lbl">Notified Rates</div></div>
+        <div class="ref-item"><div class="ref-val" id="cntGemLpp">…</div><div class="ref-lbl">GeM LPP Entries</div></div>
+        <div class="ref-item"><div class="ref-val" id="cntDept">…</div><div class="ref-lbl">Dept Purchase Records</div></div>
+        <div class="ref-item"><div class="ref-val" id="cntCache">…</div><div class="ref-lbl">Demo Cache Keys</div></div>
+        <div class="ref-item"><div class="ref-val" id="cntRuns">…</div><div class="ref-lbl">Benchmark Runs</div></div>
+        <div class="ref-item"><div class="ref-val" id="cntResults">…</div><div class="ref-lbl">Price Results Stored</div></div>
       </div>
     </section>
 
-    <!-- Diagnostics / Developer Testing Console -->
-    <section class="diagnostics-card">
-      <div class="diagnostics-title">
-        <span>
-          <svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5h0a1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
-          Live Anti-Bot Scraper Test Console
-        </span>
-        <span style="font-size:12px;color:var(--text-muted);">Engine Diagnostics</span>
+    <!-- Engine Trace Console -->
+    <section class="section-shell reveal" id="console">
+      <div class="section-head">
+        <div>
+          <div class="section-head-title">Engine Trace Console</div>
+          <p style="font-size:13.5px;color:var(--text-muted);margin-top:4px;">Watch a retrieval + extraction pass unfold, step by step.</p>
+        </div>
       </div>
-      <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;">
-        Test raw crawler extraction and anti-bot bypass against any public e-commerce or government URL.
-      </p>
 
-      <form id="crawlerForm" onsubmit="handleTestCrawl(event)">
-        <div class="diag-form-row">
-          <input type="url" id="targetUrl" class="diag-input" placeholder="https://www.amazon.in/s?k=Cisco+Catalyst+9300" value="https://www.amazon.in/s?k=Cisco+Catalyst+9300" required>
-          <button type="submit" class="btn-crawl" id="btnTestCrawl">
-            <svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 9V3"/><path d="M12 21v-6"/><path d="M9 12H3"/><path d="M21 12h-6"/><path d="M7 7L4 4"/><path d="M20 20l-3-3"/><path d="M17 7l3-3"/><path d="M4 20l3-3"/></svg>
-            Run Test Crawl
-          </button>
+      <div class="demo-banner" id="demoModeBanner">
+        <svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:2px;"><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+        <span><strong>Demo build:</strong> live network crawling is disabled. The trace below replays a cached marketplace snapshot from the demo dataset — the same data the benchmark serves.</span>
+      </div>
+
+      <div class="console-shell">
+        <div class="console-head">
+          <div class="console-title"><span class="dot">●</span> onyx.engine — tier-3 retrieval & extraction</div>
+          <span class="console-badge" id="consoleBadge">DEMO SNAPSHOT</span>
         </div>
 
-        <div class="diag-options">
-          <label>
-            <input type="checkbox" id="chkJsRender"> Use Playwright JS Rendering
-          </label>
-          <label>
-            <input type="checkbox" id="chkTlsSpoof" checked> Spoof Chrome 120 TLS JA4
-          </label>
-        </div>
-      </form>
+        <div class="console-body" id="consoleBody" aria-live="polite"></div>
 
-      <div class="console-output" id="consoleOutput"></div>
+        <div class="console-actions">
+          <input type="url" id="targetUrl" class="console-url" value="https://mkp.gem.gov.in/search?q=Cisco+Catalyst+9300" placeholder="https://…">
+          <div class="console-opts">
+            <label><input type="checkbox" id="chkJsRender"> JS Render</label>
+            <label><input type="checkbox" id="chkTlsSpoof" checked> TLS Spoof</label>
+          </div>
+          <button type="button" class="btn-console is-demo" id="btnConsole">Replay Demo Trace</button>
+        </div>
+      </div>
     </section>
   </main>
 
@@ -427,59 +697,230 @@
   <script src="/app.js"></script>
   <script src="/ui.js"></script>
   <script>
+    let demoMode = false;
+
+    /* ── Honest feed registry (matches services/source_registry.py) ── */
+    const FEEDS = [
+      { name: 'GeM Portal', domain: 'mkp.gem.gov.in', desc: 'Government e-Marketplace public catalog & LPP registry extractor.', method: 'curl-cffi TLS impersonation · catalog HTML parser', tier: 'Tier 1 & 3', status: 'enabled' },
+      { name: 'Amazon India', domain: 'amazon.in', desc: 'Consumer and business electronics pricing feed.', method: 'Headless Chromium (Playwright) · stealth TLS', tier: 'Tier 3', status: 'enabled' },
+      { name: 'IndiaMART B2B', domain: 'dir.indiamart.com', desc: 'Wholesale B2B industrial rates and supplier discovery.', method: 'Request fingerprinting · markdown extraction', tier: 'Tier 3', status: 'enabled' },
+      { name: 'Flipkart', domain: 'flipkart.com', desc: 'Retail and office-appliance pricing comparator.', method: 'Playwright dynamic DOM render', tier: 'Tier 3', status: 'enabled' },
+      { name: 'Google Shopping', domain: 'shopping.google.com', desc: 'Multi-vendor commercial price aggregator across Indian suppliers.', method: 'SerpAPI grounded feed (key-gated)', tier: 'Tier 3', status: 'keyed' },
+      { name: 'CPPP Tenders', domain: 'etenders.gov.in', desc: 'Central Public Procurement Portal tender archive (planned).', method: 'Login-gated · disabled in registry', tier: 'Tier 1', status: 'pending' }
+    ];
+
+    function renderFeeds() {
+      const grid = document.getElementById('feedsGrid');
+      if (!grid) return;
+      grid.innerHTML = FEEDS.map(f => {
+        let statusBadge = '<span class="feed-status">Enabled</span>';
+        let tag = '';
+        if (f.status === 'keyed') {
+          statusBadge = '<span class="feed-status is-keyed">Key-Gated</span>';
+        } else if (f.status === 'pending') {
+          statusBadge = '<span class="feed-status is-pending">Pending</span>';
+        }
+        if (demoMode && f.status !== 'pending') {
+          tag = '<span class="demo-feed-tag">● Demo Feed · cached</span>';
+        }
+        return `
+          <article class="feed-card${f.status === 'pending' ? ' is-disabled' : ''}">
+            <div>
+              <div class="feed-top">
+                <div>
+                  <div class="feed-name">${escapeHtml(f.name)}</div>
+                  <div class="feed-domain">${escapeHtml(f.domain)}</div>
+                </div>
+                ${statusBadge}
+              </div>
+              <p class="feed-desc">${escapeHtml(f.desc)}</p>
+              ${tag}
+            </div>
+            <div class="feed-meta">
+              <span><strong>Method:</strong> ${escapeHtml(f.method)}</span>
+              <span><strong>Priority:</strong> ${escapeHtml(f.tier)}</span>
+            </div>
+          </article>`;
+      }).join('');
+    }
+
+    /* ── Telemetry from /api/health (real data) ── */
     async function updateLiveTelemetry() {
       try {
         const res = await fetch('/api/health');
-        if (res.ok) {
-          const data = await res.json();
-          const dbEl = document.getElementById('dbStatusVal');
-          if (dbEl) {
-            dbEl.textContent = data.database === 'ok' ? 'Active (Online)' : data.database;
-            dbEl.style.color = data.database === 'ok' ? '#86efac' : '#fca5a5';
-          }
-          const slotsEl = document.getElementById('browserSlotsVal');
-          if (slotsEl) {
-            slotsEl.textContent = `${data.playwright_slots_free ?? 3} Free Slots`;
-          }
-          const sessionsEl = document.getElementById('activeSessionsVal');
-          if (sessionsEl) {
-            sessionsEl.textContent = `${data.active_sessions ?? 0} Concurrent`;
-          }
+        if (!res.ok) return;
+        const data = await res.json();
+
+        const dbEl = document.getElementById('dbStatusVal');
+        if (dbEl) {
+          const ok = data.database === 'ok';
+          dbEl.textContent = ok ? 'Online' : 'Degraded';
+          dbEl.className = 'telem-val ' + (ok ? 'ok' : 'bad');
+        }
+        const redisEl = document.getElementById('redisStatusVal');
+        if (redisEl) {
+          const ok = typeof data.redis === 'string' && data.redis.startsWith('ok');
+          redisEl.textContent = ok ? 'Active' : 'Local Memory';
+          redisEl.className = 'telem-val ' + (ok ? 'ok' : 'bad');
+        }
+        const slotsEl = document.getElementById('browserSlotsVal');
+        if (slotsEl) slotsEl.textContent = `${data.playwright_slots_free ?? 0} / 3 free`;
+        const sessionsEl = document.getElementById('activeSessionsVal');
+        if (sessionsEl) sessionsEl.textContent = `${data.active_sessions ?? 0} concurrent`;
+
+        const s = data.seeded_data || {};
+        setText('cntNotified', (s.notified_rates ?? 0).toLocaleString('en-IN'));
+        setText('cntGemLpp', (s.gem_lpp_entries ?? 0).toLocaleString('en-IN'));
+        setText('cntDept', (s.department_purchase_records ?? 0).toLocaleString('en-IN'));
+        setText('cntCache', (s.demo_cache_keys ?? 0).toLocaleString('en-IN'));
+        const b = data.benchmarks || {};
+        setText('cntRuns', (b.total_runs ?? 0).toLocaleString('en-IN'));
+        setText('cntResults', (b.total_price_results ?? 0).toLocaleString('en-IN'));
+
+        // Engine mode gating
+        const statusEl = document.getElementById('navStatus');
+        const statusText = document.getElementById('navStatusText');
+        if (data.demo_mode === true) {
+          demoMode = true;
+          if (statusEl) statusEl.classList.add('is-demo');
+          if (statusText) statusText.textContent = 'Demo Mode · Cached Feeds';
+          setText('feedsModeLabel', 'Mode: demo (cached snapshots)');
+          gateConsole();
+          renderFeeds();
+        } else {
+          if (statusEl) statusEl.classList.remove('is-demo');
+          if (statusText) statusText.textContent = 'Engine Online';
+          setText('feedsModeLabel', 'Mode: live (network active)');
         }
       } catch (e) {
         console.debug('Telemetry poll error:', e);
       }
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
-      updateLiveTelemetry();
-      setInterval(updateLiveTelemetry, 10000);
-    });
+    function setText(id, text) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    }
 
-    async function handleTestCrawl(e) {
-      if (e) e.preventDefault();
+    /* ── Engine trace console ── */
+    const DEMO_TRACE = [
+      { type: 'info', k: 'onyx.engine', v: 'initializing fetch pool · slots: 3 · parallel threads: 3' },
+      { type: 'info', k: 'fingerprint', v: 'curl-cffi impersonate=chrome120 · TLS JA4: ACTIVE' },
+      { type: 'info', k: 'dispatch', v: 'GET https://mkp.gem.gov.in/search?q=Cisco+Catalyst+9300' },
+      { type: 'ok', k: 'response', v: 'HTTP 200 OK · 412ms · retries: 0' },
+      { type: 'info', k: 'parse', v: 'catalog HTML → price tokens: 3' },
+      { type: 'ok', k: 'extract', v: 'Cisco Catalyst 9300-48P-A · ₹2,88,000 (per unit)' },
+      { type: 'info', k: 'normalize', v: 'INR · tax-inclusive · unit quantity' },
+      { type: 'ok', k: 'tier-1 lpp', v: 'GeM Last Purchase Price match' },
+      { type: 'ok', k: 'verified', v: 'reliability: HIGH · confidence: HIGH' }
+    ];
+
+    function appendConsoleLine(type, k, v) {
+      const body = document.getElementById('consoleBody');
+      if (!body) return;
+      const line = document.createElement('div');
+      line.className = 'console-line' + (type === 'ok' ? ' ok' : type === 'warn' ? ' warn' : '');
+      const stamp = new Date().toISOString().slice(11, 23);
+      line.innerHTML = `<span class="t">[${stamp}]</span> <span class="k">${escapeHtml(k)}</span> <span class="v">${escapeHtml(v)}</span>`;
+      body.appendChild(line);
+      body.scrollTop = body.scrollHeight;
+    }
+
+    function addCursor() {
+      const body = document.getElementById('consoleBody');
+      if (body && !document.querySelector('#consoleBody .console-cursor')) {
+        const cur = document.createElement('span');
+        cur.className = 'console-cursor';
+        body.appendChild(cur);
+      }
+    }
+
+    function clearConsole() {
+      const body = document.getElementById('consoleBody');
+      if (body) body.innerHTML = '';
+    }
+
+    function appendContentBlock(preview, ok) {
+      const body = document.getElementById('consoleBody');
+      if (!body || !preview) return;
+      const block = document.createElement('div');
+      block.className = 'console-content';
+      const rows = preview.split('\n').length;
+      const chars = preview.length;
+      const head = document.createElement('div');
+      head.className = 'console-content-head';
+      head.innerHTML = `<span>extracted content</span><span class="${ok ? 'ok' : ''}">${rows} line${rows === 1 ? '' : 's'} · ${chars.toLocaleString()} chars</span>`;
+      const pre = document.createElement('pre');
+      pre.className = 'console-pre';
+      pre.textContent = preview;
+      block.appendChild(head);
+      block.appendChild(pre);
+      body.appendChild(block);
+      body.scrollTop = body.scrollHeight;
+    }
+
+    async function playDemoTrace() {
+      clearConsole();
+      const body = document.getElementById('consoleBody');
+      if (body) {
+        body.textContent = '';
+        const head = document.createElement('div');
+        head.className = 'console-line warn';
+        head.innerHTML = '<span class="t">[---]</span> <span class="k">demo replay</span> <span class="v">cached snapshot · deterministic · no network</span>';
+        body.appendChild(head);
+      }
+      for (const step of DEMO_TRACE) {
+        appendConsoleLine(step.type, step.k, step.v);
+        await new Promise(r => setTimeout(r, 420));
+      }
+      addCursor();
+    }
+
+    function gateConsole() {
+      const banner = document.getElementById('demoModeBanner');
+      if (banner) banner.style.display = 'flex';
+      const badge = document.getElementById('consoleBadge');
+      if (badge) {
+        badge.textContent = 'DEMO SNAPSHOT';
+        badge.classList.remove('is-live');
+      }
+      const btn = document.getElementById('btnConsole');
+      if (btn) {
+        btn.className = 'btn-console is-demo';
+        btn.disabled = false;
+        btn.innerHTML = '<svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg> Replay Demo Trace';
+      }
+    }
+
+    async function handleConsoleAction() {
+      if (demoMode) {
+        await playDemoTrace();
+        return;
+      }
+      // Live mode — real engine call
       const urlInput = document.getElementById('targetUrl');
       const url = urlInput ? urlInput.value.trim() : '';
       if (!url) return;
-
-      const btn = document.getElementById('btnTestCrawl');
-      const consoleOut = document.getElementById('consoleOutput');
-      
-      btn.disabled = true;
-      btn.innerHTML = '<svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg> Crawling...';
-      consoleOut.style.display = 'block';
-      const jsRender = document.getElementById('chkJsRender').checked;
-      consoleOut.textContent = `[INFO] Initializing Onyx engine for: ${url}\n[INFO] Fingerprint: Chrome 120 | TLS: Active | JS-Rendering: ${jsRender}\n[INFO] Connecting...`;
+      const btn = document.getElementById('btnConsole');
+      const body = document.getElementById('consoleBody');
+      const badge = document.getElementById('consoleBadge');
+      if (badge) { badge.textContent = 'LIVE FETCH'; badge.classList.add('is-live'); }
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg> Crawling…';
+      }
+      clearConsole();
+      appendConsoleLine('info', 'onyx.engine', `initializing live fetch → ${url}`);
+      appendConsoleLine('info', 'fingerprint', 'curl-cffi impersonate=chrome120 · TLS JA4: ACTIVE');
 
       try {
         const payload = {
           url: url,
-          render_js: jsRender,
-          output_format: "markdown",
-          impersonate: "chrome120",
-          wait_until: "networkidle"
+          render_js: document.getElementById('chkJsRender').checked,
+          output_format: 'markdown',
+          impersonate: 'chrome120',
+          wait_until: 'networkidle'
         };
-
         const headers = { 'Content-Type': 'application/json' };
         const token = localStorage.getItem('onyx_token');
         if (token) headers['Authorization'] = 'Bearer ' + token;
@@ -489,21 +930,55 @@
           headers: headers,
           body: JSON.stringify(payload)
         });
-
         const data = await res.json();
         if (!res.ok) {
-          consoleOut.textContent += `\n[ERROR] Crawl failed (${res.status}): ${JSON.stringify(data, null, 2)}`;
+          appendConsoleLine('warn', 'error', `crawl failed (${res.status}) — ${JSON.stringify(data).slice(0, 300)}`);
         } else {
-          const contentPreview = typeof data.content === 'string' ? data.content : JSON.stringify(data.content || {}, null, 2);
-          consoleOut.textContent += `\n[SUCCESS] HTTP ${data.status_code || 200} OK (Latency: ${data.latency_ms || 0}ms, Retries: ${data.retries_used || 0})\n\n--- Extracted Data Preview ---\n` + (contentPreview ? contentPreview.slice(0, 1000) : '[Empty Content]') + '...';
+          appendConsoleLine('ok', 'response', `HTTP ${data.status_code || 200} OK · ${data.latency_ms || 0}ms · retries: ${data.retries_used || 0}`);
+          let preview = typeof data.content === 'string' ? data.content : JSON.stringify(data.content || {}, null, 2);
+          preview = preview.replace(/!\[[^\]]*\]\([^)]*\)/g, '').replace(/<img[^>]*>/gi, '').replace(/\n{3,}/g, '\n\n').trim();
+          appendContentBlock(preview || '[empty content]', true);
         }
       } catch (err) {
-        consoleOut.textContent += `\n[NETWORK ERROR] ${err.message}`;
+        appendConsoleLine('warn', 'network', err.message);
       } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 9V3"/><path d="M12 21v-6"/><path d="M9 12H3"/><path d="M21 12h-6"/><path d="M7 7L4 4"/><path d="M20 20l-3-3"/><path d="M17 7l3-3"/><path d="M4 20l3-3"/></svg> Run Test Crawl';
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg> Run Engine Trace';
+        }
+        addCursor();
       }
     }
+
+    /* ── Dark mode toggle ── */
+    const themeToggle = document.getElementById('themeToggle');
+    const sunIcon = themeToggle?.querySelector('.icon-sun');
+    const moonIcon = themeToggle?.querySelector('.icon-moon');
+    function applyTheme(dark) {
+      document.documentElement.classList.toggle('dark', dark);
+      if (sunIcon && moonIcon) {
+        sunIcon.style.display = dark ? 'block' : 'none';
+        moonIcon.style.display = dark ? 'none' : 'block';
+      }
+      localStorage.setItem('theme', dark ? 'dark' : 'light');
+    }
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    applyTheme(savedTheme ? savedTheme === 'dark' : prefersDark);
+    themeToggle?.addEventListener('click', () => {
+      applyTheme(!document.documentElement.classList.contains('dark'));
+    });
+
+    /* ── Init ── */
+    window.addEventListener('DOMContentLoaded', () => {
+      ensureAuth();
+      renderFeeds();
+      updateLiveTelemetry();
+      setInterval(updateLiveTelemetry, 10000);
+
+      const btn = document.getElementById('btnConsole');
+      if (btn) btn.addEventListener('click', handleConsoleAction);
+    });
   </script>
 </body>
 </html>

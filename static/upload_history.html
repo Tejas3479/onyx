@@ -56,7 +56,7 @@
     }
     .form-group input[type="text"]:focus {
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1);
+      box-shadow: 0 0 0 3px var(--heat-12);
     }
     
     /* Drop Zone */
@@ -72,7 +72,7 @@
     }
     .drop-zone:hover, .drop-zone.dragover {
       border-color: var(--primary);
-      background: #eff6ff;
+      background: var(--heat-8);
     }
     .drop-zone-icon {
       font-size: 36px;
@@ -169,6 +169,10 @@
         <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
         Dept PO Ingestion
       </a>
+      <a href="/dashboard.html" class="nav-link">
+        <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Run History
+      </a>
       <a href="/index.html" class="nav-link">
         <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a15 15 0 0 1 0 18"/><path d="M12 3a15 15 0 0 0 0 18"/></svg>
         Market Crawlers & Engine
@@ -196,6 +200,7 @@
       </div>
 
       <div id="successMsg" class="message-box success"></div>
+      <div id="complianceMsg" class="message-box warning" style="display:none;"></div>
       <div id="errorMsg" class="message-box error"></div>
 
       <form id="uploadForm">
@@ -333,6 +338,7 @@
         }
 
         showSuccess(`Successfully ingested ${data.saved_count || 'all'} PO records for ${dept}.`);
+        showComplianceWarnings(data.compliance_warnings || []);
         loadExistingRecords();
 
         fileInput.value = '';
@@ -348,6 +354,21 @@
     function hideMessages() {
       document.getElementById('successMsg').style.display = 'none';
       document.getElementById('errorMsg').style.display = 'none';
+      document.getElementById('complianceMsg').style.display = 'none';
+    }
+
+    function showComplianceWarnings(warnings) {
+      const el = document.getElementById('complianceMsg');
+      if (!el) return;
+      if (!warnings || !warnings.length) {
+        el.style.display = 'none';
+        return;
+      }
+      const items = warnings.slice(0, 8).map(w =>
+        `<li><strong>${esc(w.item_description)}</strong> — ₹${Number(w.unit_price).toLocaleString('en-IN')} is ${w.deviation_pct}% ${esc(w.direction)} the cluster median (₹${Number(w.median).toLocaleString('en-IN')}). ${esc(w.action)}.</li>`
+      ).join('');
+      el.innerHTML = `<strong>${warnings.length} record(s) outside the ±25% reasonableness band:</strong><ul style="margin:8px 0 0 18px;padding:0;line-height:1.6;">${items}</ul>`;
+      el.style.display = 'block';
     }
 
     function showSuccess(msg) {
@@ -395,7 +416,7 @@
         }
 
         noRecords.style.display = 'none';
-        activeCount.textContent = `${data.records.length} records active`;
+        activeCount.textContent = `${data.records.length} records active · ${data.base_products ?? '—'} canonical base product(s)`;
 
         tbody.innerHTML = data.records.map(r => `
           <tr>
@@ -404,7 +425,7 @@
             <td>${esc(r.quantity)}</td>
             <td>${esc(r.purchase_date)}</td>
             <td>${calculateAgeBadge(r.purchase_date)}</td>
-            <td><span style="background:#eff6ff;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11.5px;font-weight:600;">${esc(r.department)}</span></td>
+            <td><span style="background:var(--heat-8);color:var(--heat-100);padding:2px 8px;border-radius:4px;font-size:11.5px;font-weight:600;">${esc(r.department)}</span></td>
             <td style="font-size:12px;color:#64748b;">${esc(r.vendor_name || '—')}</td>
           </tr>
         `).join('');
@@ -438,7 +459,10 @@
       URL.revokeObjectURL(url);
     });
 
-    loadExistingRecords();
+    (async function init() {
+      await ensureAuth();
+      loadExistingRecords();
+    })();
   </script>
 </body>
 </html>

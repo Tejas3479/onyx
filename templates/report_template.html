@@ -166,9 +166,43 @@
         .confidence-high { color: #0d6e3e; font-weight: bold; }
         .confidence-medium { color: #856404; font-weight: bold; }
         .confidence-low { color: #842029; font-weight: bold; }
+        .demo-banner {
+            background: #dc2626;
+            color: #ffffff;
+            text-align: center;
+            font-weight: bold;
+            font-size: 11pt;
+            padding: 6pt 8pt;
+            border-radius: 4pt;
+            margin-bottom: 14pt;
+            letter-spacing: 1pt;
+        }
+        .demo-watermark {
+            position: fixed;
+            top: 40%;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 64pt;
+            font-weight: bold;
+            color: rgba(220, 38, 38, 0.12);
+            transform: rotate(-30deg);
+            pointer-events: none;
+            z-index: 999;
+            line-height: 1.2;
+            letter-spacing: 4pt;
+        }
     </style>
 </head>
 <body>
+    {% if any_demo_data %}
+    <div class="demo-watermark">
+        DEMO MODE<br>NOT FOR OFFICIAL USE
+    </div>
+    <div class="demo-banner">
+        DEMONSTRATION BUILD — Benchmark sourced from simulated demo data. Not for official use.
+    </div>
+    {% endif %}
     <div class="header">
         <h1>Price Benchmark Report</h1>
         <div class="subtitle">
@@ -202,6 +236,14 @@
                 <span class="tier-badge">Tier {{ resolved_tier }}: {{ tier_label }}</span>
             </td>
         </tr>
+        {% if estimated_value is not none %}
+        <tr>
+            <td class="label">Estimated Purchase Value:</td>
+            <td>₹{{ "{:,.2f}".format(estimated_value) }}</td>
+            <td class="label">Delivery Location:</td>
+            <td>{{ delivery_location or "Not specified" }}</td>
+        </tr>
+        {% endif %}
     </table>
 
     <!-- Methodology -->
@@ -297,13 +339,162 @@
                 <div class="stat-label">Data Points</div>
             </div>
             {% endif %}
+            {% if statistics.get('l1') is not none %}
+            <div class="stat-item">
+                <div class="stat-value">₹{{ "{:,.2f}".format(statistics.l1) }}</div>
+                <div class="stat-label">L1 Competitive Bid</div>
+            </div>
+            {% endif %}
+            {% if statistics.get('competitive_pool') is not none %}
+            <div class="stat-item">
+                <div class="stat-value">{{ statistics.competitive_pool }}</div>
+                <div class="stat-label">Competitive Pool</div>
+            </div>
+            {% endif %}
         </div>
+        {% if statistics.get('band_low') is not none and statistics.get('band_high') is not none %}
+        <p style="margin-top:10pt;font-size:11pt">
+            <strong>Reasonableness Band (±25%):</strong>
+            ₹{{ "{:,.2f}".format(statistics.band_low) }} – ₹{{ "{:,.2f}".format(statistics.band_high) }}
+            {% if statistics.get('l1_source') %} · L1 Source: {{ statistics.l1_source }}{% endif %}
+            ·
+            {% if statistics.get('within_band') %}
+            <span style="color:#0d6e3e;font-weight:bold">PRIMARY WITHIN BAND ✓</span>
+            {% else %}
+            <span style="color:#842029;font-weight:bold">PRIMARY OUTSIDE BAND ⚠ — review required</span>
+            {% endif %}
+        </p>
+        {% endif %}
+        {% if statistics.get('pool_valid') == False %}
+        <p style="margin-top:6pt;font-size:10pt;color:#856404">
+            ⚠ Competitive pool has fewer than 3 independent quotes — L1 is not a
+            valid competitive-bid standard under GFR Rule 149(vii).
+        </p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Procurement Threshold Compliance -->
+    {% if procurement_threshold %}
+    <h2>5. Procurement Threshold Compliance</h2>
+    <table class="meta-table">
+        <tr>
+            <td class="label">Procurement Mode:</td>
+            <td>{{ procurement_threshold.get('mode_label', procurement_threshold.get('mode', 'N/A')) }}</td>
+            <td class="label">Statutory Rule:</td>
+            <td>{{ procurement_threshold.get('rule', 'N/A') }}</td>
+        </tr>
+        <tr>
+            <td class="label">Quotes Required:</td>
+            <td>{{ procurement_threshold.get('min_quotes_required', procurement_threshold.get('min_quotes', 'N/A')) }}</td>
+            <td class="label">Quotes Gathered:</td>
+            <td>{{ procurement_threshold.get('quotes_obtained', 'N/A') }}</td>
+        </tr>
+        <tr>
+            <td class="label">Compliance Status:</td>
+            <td colspan="3">
+                {% if procurement_threshold.get('compliant') %}
+                <span style="color:#0d6e3e;font-weight:bold">COMPLIANT ✓</span>
+                {% else %}
+                <span style="color:#842029;font-weight:bold">NON-COMPLIANT ⚠</span>
+                {% endif %}
+                {% if procurement_threshold.get('reason') %}
+                <span style="color:#555">— {{ procurement_threshold.reason }}</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% if procurement_threshold.get('guidance') %}
+        <tr>
+            <td class="label">Remedial Guidance:</td>
+            <td colspan="3">{{ procurement_threshold.guidance }}</td>
+        </tr>
+        {% endif %}
+    </table>
+    {% endif %}
+
+    <!-- Golden Parameters -->
+    {% if specs %}
+    <h2>6. Golden Parameters</h2>
+    <div class="methodology">
+        <p><strong>Benchmark configured against the following baseline specification:</strong></p>
+        <ul style="margin:6pt 0 0 16pt">
+            {% for key, value in specs.items() %}
+            <li><strong>{{ key }}:</strong> {{ value }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <!-- Canonical Base Product -->
+    {% if base_product %}
+    <h2>7. Canonical Base-Product Identity</h2>
+    <table class="meta-table">
+        {% if base_product.get('canonical_name') %}
+        <tr>
+            <td class="label">Canonical Product:</td>
+            <td>{{ base_product.canonical_name }}
+                {% if base_product.get('match_score') is not none %}
+                <span style="color:#666">(identity match {{ base_product.match_score }}%)</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endif %}
+        {% if base_product.get('prior_records') %}
+        <tr>
+            <td class="label">Prior Department Records:</td>
+            <td>{{ base_product.prior_records }}
+                {% if base_product.get('prior_departments') %}
+                · Departments: {{ base_product.prior_departments | join(', ') }}
+                {% endif %}
+            </td>
+        </tr>
+        {% if base_product.get('prior_median_price') is not none %}
+        <tr>
+            <td class="label">Prior Median Price:</td>
+            <td>₹{{ "{:,.2f}".format(base_product.prior_median_price) }}
+                {% if base_product.get('prior_min') is not none and base_product.get('prior_max') is not none %}
+                (range ₹{{ "{:,.2f}".format(base_product.prior_min) }} – ₹{{ "{:,.2f}".format(base_product.prior_max) }})
+                {% endif %}
+            </td>
+        </tr>
+        {% endif %}
+        {% elif base_product.get('prior_records') == 0 %}
+        <tr>
+            <td class="label">Canonical Product:</td>
+            <td>No prior department purchase records — this benchmark establishes the reference price.</td>
+        </tr>
+        {% endif %}
+    </table>
+    {% endif %}
+
+    <!-- Landed Cost / Freight -->
+    {% if freight %}
+    <h2>8. Landed Cost (Delivery Location)</h2>
+    <div class="stats-box">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-value">₹{{ "{:,.2f}".format(freight.goods_value) }}</div>
+                <div class="stat-label">Goods Value</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">₹{{ "{:,.2f}".format(freight.freight_amount) }}</div>
+                <div class="stat-label">Freight ({{ freight.freight_pct }}%)</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">₹{{ "{:,.2f}".format(freight.landed_total) }}</div>
+                <div class="stat-label">Landed Total</div>
+            </div>
+        </div>
+        <p style="margin-top:8pt;font-size:10pt;color:#666">
+            Delivery location <strong>{{ freight.delivery_location }}</strong> · {{ freight.region_label }}.
+            {{ freight.note }}
+        </p>
     </div>
     {% endif %}
 
     <!-- All Results -->
     {% if all_results %}
-    <h2>5. Detailed Results</h2>
+    <h2>9. Detailed Results</h2>
     <table class="results-table">
         <thead>
             <tr>
@@ -336,9 +527,51 @@
     </table>
     {% endif %}
 
+    <!-- Delegation & Audit Trail -->
+    {% if delegations or audit_log %}
+    <h2>10. Delegation &amp; Audit Trail</h2>
+    {% if delegations %}
+    <table class="results-table">
+        <thead>
+            <tr>
+                <th>Delegated To</th>
+                <th>Delegated By</th>
+                <th>Note</th>
+                <th>Status</th>
+                <th>Decision</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for d in delegations %}
+            <tr>
+                <td>{{ d.delegate_to_name }}
+                    {% if d.delegate_to_email %} &lt;{{ d.delegate_to_email }}&gt;{% endif %}</td>
+                <td>{{ d.delegated_by_name or "—" }}</td>
+                <td>{{ d.note or "Requested to review the benchmark price evidence" }}</td>
+                <td>{{ d.status | upper }}</td>
+                <td>
+                    {% if d.decision %}{{ d.decision | upper }}{% if d.decision_note %} — {{ d.decision_note }}{% endif %}{% else %}—{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+    {% if audit_log %}
+    <div class="tier-trace">
+        {% for e in audit_log %}
+        <div class="tier-step">
+            <span class="tier-name">{{ e.created_at | replace('T', ' ') | truncate(19, True, '') }}:</span>
+            <span>{{ e.action }} · {{ e.actor_name or '—' }}{% if e.note %} — {{ e.note }}{% endif %}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endif %}
+
     <!-- Certificate -->
     <div class="certificate">
-        <h2>6. Certificate</h2>
+        <h2>11. Certificate</h2>
         <p>
             This is to certify that the price benchmark for <strong>"{{ query }}"</strong>
             has been carried out using the Onyx automated benchmarking system.
@@ -354,6 +587,25 @@
             {% endif %}
             was obtained from <strong>{{ tier_label }}</strong> (Tier {{ resolved_tier }}).
         </p>
+        {% if statistics.get('l1') is not none and statistics.get('within_band') %}
+        <p>
+            L1 competitive bid of <strong>₹{{ "{:,.2f}".format(statistics.l1) }}</strong>
+            (pool of {{ statistics.competitive_pool }} source(s)) falls within the
+            reasonableness band of
+            ₹{{ "{:,.2f}".format(statistics.band_low) }} – ₹{{ "{:,.2f}".format(statistics.band_high) }}.
+        </p>
+        {% endif %}
+        {% if procurement_threshold %}
+        <p>
+            This purchase maps to <strong>{{ procurement_threshold.get('mode_label', procurement_threshold.get('mode')) }}</strong>
+            ({{ procurement_threshold.get('rule') }}) —
+            {% if procurement_threshold.get('compliant') %}
+            <strong>compliant</strong> ({{ procurement_threshold.get('quotes_obtained') }}/{{ procurement_threshold.get('min_quotes_required', procurement_threshold.get('min_quotes')) }} quote(s)).
+            {% else %}
+            <strong>non-compliant</strong> — {{ procurement_threshold.get('guidance', 'remedial action required') }}.
+            {% endif %}
+        </p>
+        {% endif %}
         <p style="font-size:10pt;color:#666;margin-top:8pt">
             Note: This certificate documents the methodology and data sources used.
             The final determination of price reasonability rests with the

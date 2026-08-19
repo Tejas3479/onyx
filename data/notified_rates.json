@@ -2,151 +2,401 @@
     {
         "item_category": "Stationery",
         "item_description": "A4 Paper 75gsm (per ream)",
-        "rate": 225.00,
+        "rate": 235.00,
         "unit": "per ream",
         "authority": "DGS&D",
-        "contract_number": "DGS&D/RC-2024/STN-001",
-        "valid_from": "2024-04-01",
-        "valid_until": "2027-03-31"
+        "contract_number": "DGS&D/RC-2026/STN-001",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
+    },
+    {
+        "item_category": "Stationery",
+        "item_description": "A3 Paper 75gsm (per ream)",
+        "rate": 295.00,
+        "unit": "per ream",
+        "authority": "DGS&D",
+        "contract_number": "DGS&D/RC-2026/STN-002",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
     },
     {
         "item_category": "Stationery",
         "item_description": "Toner Cartridge HP 26A (CF226A)",
-        "rate": 4200.00,
+        "rate": 4350.00,
         "unit": "per unit",
         "authority": "DGS&D",
-        "contract_number": "DGS&D/RC-2024/STN-015",
-        "valid_from": "2024-04-01",
-        "valid_until": "2027-03-31"
+        "contract_number": "DGS&D/RC-2026/STN-015",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
+    },
+    {
+        "item_category": "Stationery",
+        "item_description": "Toner Cartridge Canon 718 (for IR 2625)",
+        "rate": 5200.00,
+        "unit": "per unit",
+        "authority": "DGS&D",
+        "contract_number": "DGS&D/RC-2026/STN-019",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
+    },
+    {
+        "item_category": "Stationery",
+        "item_description": "Ball Point Pen (Blue, Gel, Pack of 10)",
+        "rate": 95.00,
+        "unit": "per pack",
+        "authority": "DGS&D",
+        "contract_number": "DGS&D/RC-2026/STN-031",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
+    },
+    {
+        "item_category": "Stationery",
+        "item_description": "Spiral Bound Notebook A5 (80 Pages)",
+        "rate": 48.00,
+        "unit": "per unit",
+        "authority": "DGS&D",
+        "contract_number": "DGS&D/RC-2026/STN-044",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
     },
     {
         "item_category": "IT Equipment",
         "item_description": "Desktop Computer i5 13th Gen 8GB/512GB SSD",
-        "rate": 42500.00,
+        "rate": 43800.00,
         "unit": "per unit",
         "authority": "DGS&D",
-        "contract_number": "DGS&D/RC-2024/IT-003",
-        "valid_from": "2024-04-01",
-        "valid_until": "2027-03-31"
+        "contract_number": "DGS&D/RC-2026/IT-003",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
+    },
+    {
+        "item_category": "IT Equipment",
+        "item_description": "Desktop Computer i7 13th Gen 16GB/1TB SSD",
+        "rate": 62500.00,
+        "unit": "per unit",
+        "authority": "DGS&D",
+        "contract_number": "DGS&D/RC-2026/IT-004",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
     },
     {
         "item_category": "IT Equipment",
         "item_description": "Laptop i5 13th Gen 16GB/512GB SSD",
-        "rate": 65000.00,
+        "rate": 66800.00,
         "unit": "per unit",
         "authority": "DGS&D",
-        "contract_number": "DGS&D/RC-2024/IT-007",
-        "valid_from": "2024-04-01",
-        "valid_until": "2027-03-31"
+        "contract_number": "DGS&D/RC-2026/IT-007",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
     },
     {
-        "item_category": "Networking",
-        "item_description": "24-Port Managed Ethernet Switch",
-        "rate": 18500.00,
+        "item_category": "IT Equipment",
+        "item_description": "Laptop i7 16GB/1TB SSD 14 Inch",
+        "rate": 89500.00,
         "unit": "per unit",
         "authority": "DGS&D",
-        "contract_number": "DGS&D/RC-2024/NET-002",
-        "valid_from": "2024-04-01",
-        "valid_until": "2027-03-31"
+        "contract_number": "DGS&D/RC-2026/IT-008",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
     },
     {
-        "item_category": "Networking",
-        "item_description": "48-Port Managed Ethernet Switch",
-        "rate": 35000.00,
+        "item_category": "IT Equipment",
+        "item_description": "Laser Printer A4 Mono (30 PPM)",
+        "rate": 15800.00,
         "unit": "per unit",
         "authority": "DGS&D",
-        "contract_number": "DGS&D/RC-2024/NET-003",
-        "valid_from": "2024-04-01",
-        "valid_until": "2027-03-31"
+        "contract_number": "DGS&D/RC-2026/IT-011",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
     },
     {
-        "item_category": "Electrical",
-        "item_description": "Split AC 1.5 Ton 5 Star Inverter",
-        "rate": 38500.00,
+        "item_category": "IT Equipment",
+        "item_description": "A3 Flatbed Scanner (600 DPI)",
+        "rate": 26500.00,
         "unit": "per unit",
         "authority": "DGS&D",
-        "contract_number": "DGS&D/RC-2024/ELC-011",
-        "valid_from": "2024-04-01",
-        "valid_until": "2027-03-31"
+        "contract_number": "DGS&D/RC-2026/IT-014",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
     },
     {
-        "item_category": "Electrical",
-        "item_description": "LED Tube Light 20W",
-        "rate": 185.00,
-        "unit": "per unit",
-        "authority": "Ministry of Power",
-        "contract_number": "MoP/EESL/2024/LED-001",
-        "valid_from": "2024-01-01",
-        "valid_until": "2027-12-31"
-    },
-    {
-        "item_category": "Furniture",
-        "item_description": "Executive Office Chair (Mesh Back)",
-        "rate": 8500.00,
+        "item_category": "IT Equipment",
+        "item_description": "LED Multimedia Projector 4000 Lumens",
+        "rate": 58500.00,
         "unit": "per unit",
         "authority": "DGS&D",
-        "contract_number": "DGS&D/RC-2024/FRN-006",
-        "valid_from": "2024-04-01",
-        "valid_until": "2027-03-31"
-    },
-    {
-        "item_category": "Furniture",
-        "item_description": "Modular Workstation (4x4 ft)",
-        "rate": 15200.00,
-        "unit": "per unit",
-        "authority": "DGS&D",
-        "contract_number": "DGS&D/RC-2024/FRN-012",
-        "valid_from": "2024-04-01",
-        "valid_until": "2027-03-31"
-    },
-    {
-        "item_category": "AMC Services",
-        "item_description": "Annual Maintenance Contract - Desktop Computer",
-        "rate": 2400.00,
-        "unit": "per unit per year",
-        "authority": "Ministry of Electronics & IT",
-        "contract_number": "MeitY/AMC/2024/IT-001",
-        "valid_from": "2024-04-01",
-        "valid_until": "2027-03-31"
-    },
-    {
-        "item_category": "AMC Services",
-        "item_description": "Annual Maintenance Contract - Printer (Laser)",
-        "rate": 3600.00,
-        "unit": "per unit per year",
-        "authority": "Ministry of Electronics & IT",
-        "contract_number": "MeitY/AMC/2024/IT-005",
-        "valid_from": "2024-04-01",
-        "valid_until": "2027-03-31"
-    },
-    {
-        "item_category": "Services",
-        "item_description": "Manpower - Skilled Labor (per month)",
-        "rate": 22000.00,
-        "unit": "per person per month",
-        "authority": "Ministry of Labour",
-        "contract_number": "MoL/MW/2024-25",
-        "valid_from": "2024-04-01",
-        "valid_until": "2027-03-31"
-    },
-    {
-        "item_category": "Services",
-        "item_description": "Manpower - Unskilled Labor (per month)",
-        "rate": 14500.00,
-        "unit": "per person per month",
-        "authority": "Ministry of Labour",
-        "contract_number": "MoL/MW/2024-25",
-        "valid_from": "2024-04-01",
-        "valid_until": "2027-03-31"
+        "contract_number": "DGS&D/RC-2026/IT-017",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
     },
     {
         "item_category": "IT Equipment",
         "item_description": "UPS 1 KVA Online",
-        "rate": 12000.00,
+        "rate": 12400.00,
         "unit": "per unit",
         "authority": "DGS&D",
-        "contract_number": "DGS&D/RC-2024/IT-022",
-        "valid_from": "2024-04-01",
-        "valid_until": "2027-03-31"
+        "contract_number": "DGS&D/RC-2026/IT-022",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
+    },
+    {
+        "item_category": "IT Equipment",
+        "item_description": "UPS 3 KVA Online Double Conversion",
+        "rate": 52800.00,
+        "unit": "per unit",
+        "authority": "DGS&D",
+        "contract_number": "DGS&D/RC-2026/IT-023",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
+    },
+    {
+        "item_category": "Networking",
+        "item_description": "24-Port Managed Ethernet Switch",
+        "rate": 19400.00,
+        "unit": "per unit",
+        "authority": "DGS&D",
+        "contract_number": "DGS&D/RC-2026/NET-002",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
+    },
+    {
+        "item_category": "Networking",
+        "item_description": "48-Port Managed Ethernet Switch",
+        "rate": 36800.00,
+        "unit": "per unit",
+        "authority": "DGS&D",
+        "contract_number": "DGS&D/RC-2026/NET-003",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
+    },
+    {
+        "item_category": "Networking",
+        "item_description": "Wi-Fi 6 Access Point (Dual Band)",
+        "rate": 14800.00,
+        "unit": "per unit",
+        "authority": "DGS&D",
+        "contract_number": "DGS&D/RC-2026/NET-006",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
+    },
+    {
+        "item_category": "Networking",
+        "item_description": "Next-Gen Firewall Appliance (1 Gbps)",
+        "rate": 265000.00,
+        "unit": "per unit",
+        "authority": "DGS&D",
+        "contract_number": "DGS&D/RC-2026/NET-009",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
+    },
+    {
+        "item_category": "Electrical",
+        "item_description": "Split AC 1.5 Ton 5 Star Inverter",
+        "rate": 39800.00,
+        "unit": "per unit",
+        "authority": "DGS&D",
+        "contract_number": "DGS&D/RC-2026/ELC-011",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
+    },
+    {
+        "item_category": "Electrical",
+        "item_description": "Split AC 2 Ton 5 Star Inverter",
+        "rate": 52400.00,
+        "unit": "per unit",
+        "authority": "DGS&D",
+        "contract_number": "DGS&D/RC-2026/ELC-012",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
+    },
+    {
+        "item_category": "Electrical",
+        "item_description": "LED Tube Light 20W",
+        "rate": 195.00,
+        "unit": "per unit",
+        "authority": "Ministry of Power",
+        "contract_number": "MoP/EESL/2026/LED-001",
+        "valid_from": "2026-01-01",
+        "valid_until": "2029-12-31"
+    },
+    {
+        "item_category": "Electrical",
+        "item_description": "LED Bulb 12W B22",
+        "rate": 75.00,
+        "unit": "per unit",
+        "authority": "Ministry of Power",
+        "contract_number": "MoP/EESL/2026/LED-012",
+        "valid_from": "2026-01-01",
+        "valid_until": "2029-12-31"
+    },
+    {
+        "item_category": "Electrical",
+        "item_description": "Ceiling Fan 1200mm (Energy Efficient)",
+        "rate": 1450.00,
+        "unit": "per unit",
+        "authority": "DGS&D",
+        "contract_number": "DGS&D/RC-2026/ELC-018",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
+    },
+    {
+        "item_category": "Furniture",
+        "item_description": "Executive Office Chair (Mesh Back)",
+        "rate": 8750.00,
+        "unit": "per unit",
+        "authority": "DGS&D",
+        "contract_number": "DGS&D/RC-2026/FRN-006",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
+    },
+    {
+        "item_category": "Furniture",
+        "item_description": "Visitor Chair (Stackable)",
+        "rate": 3850.00,
+        "unit": "per unit",
+        "authority": "DGS&D",
+        "contract_number": "DGS&D/RC-2026/FRN-008",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
+    },
+    {
+        "item_category": "Furniture",
+        "item_description": "Modular Workstation (4x4 ft)",
+        "rate": 15800.00,
+        "unit": "per unit",
+        "authority": "DGS&D",
+        "contract_number": "DGS&D/RC-2026/FRN-012",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
+    },
+    {
+        "item_category": "Furniture",
+        "item_description": "Office Table (1800x750mm, Teak Finish)",
+        "rate": 12400.00,
+        "unit": "per unit",
+        "authority": "DGS&D",
+        "contract_number": "DGS&D/RC-2026/FRN-015",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
+    },
+    {
+        "item_category": "Furniture",
+        "item_description": "Steel Almirah (3 Door, 6 ft)",
+        "rate": 11200.00,
+        "unit": "per unit",
+        "authority": "DGS&D",
+        "contract_number": "DGS&D/RC-2026/FRN-019",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
+    },
+    {
+        "item_category": "Office Equipment",
+        "item_description": "Paper Shredder (Cross-Cut, 12 Sheets)",
+        "rate": 9800.00,
+        "unit": "per unit",
+        "authority": "DGS&D",
+        "contract_number": "DGS&D/RC-2026/OEQ-004",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
+    },
+    {
+        "item_category": "Office Equipment",
+        "item_description": "Thermal Binding Machine (A4)",
+        "rate": 6400.00,
+        "unit": "per unit",
+        "authority": "DGS&D",
+        "contract_number": "DGS&D/RC-2026/OEQ-008",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
+    },
+    {
+        "item_category": "Office Equipment",
+        "item_description": "Paper Laminator A3 (Roller Type)",
+        "rate": 9200.00,
+        "unit": "per unit",
+        "authority": "DGS&D",
+        "contract_number": "DGS&D/RC-2026/OEQ-011",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
+    },
+    {
+        "item_category": "Security & Surveillance",
+        "item_description": "IP CCTV Camera 4MP (Bullet, PoE)",
+        "rate": 4850.00,
+        "unit": "per unit",
+        "authority": "DGS&D",
+        "contract_number": "DGS&D/RC-2026/SEC-005",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
+    },
+    {
+        "item_category": "Security & Surveillance",
+        "item_description": "Network Video Recorder 16-Channel (4TB)",
+        "rate": 42500.00,
+        "unit": "per unit",
+        "authority": "DGS&D",
+        "contract_number": "DGS&D/RC-2026/SEC-007",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
+    },
+    {
+        "item_category": "Security & Surveillance",
+        "item_description": "Biometric Attendance System (Fingerprint + Face)",
+        "rate": 14500.00,
+        "unit": "per unit",
+        "authority": "DGS&D",
+        "contract_number": "DGS&D/RC-2026/SEC-012",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
+    },
+    {
+        "item_category": "AMC Services",
+        "item_description": "Annual Maintenance Contract - Desktop Computer",
+        "rate": 2450.00,
+        "unit": "per unit per year",
+        "authority": "Ministry of Electronics & IT",
+        "contract_number": "MeitY/AMC/2026/IT-001",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
+    },
+    {
+        "item_category": "AMC Services",
+        "item_description": "Annual Maintenance Contract - Printer (Laser)",
+        "rate": 3750.00,
+        "unit": "per unit per year",
+        "authority": "Ministry of Electronics & IT",
+        "contract_number": "MeitY/AMC/2026/IT-005",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
+    },
+    {
+        "item_category": "AMC Services",
+        "item_description": "Annual Maintenance Contract - Split Air Conditioner",
+        "rate": 3200.00,
+        "unit": "per unit per year",
+        "authority": "Ministry of Electronics & IT",
+        "contract_number": "MeitY/AMC/2026/AC-003",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
+    },
+    {
+        "item_category": "Services",
+        "item_description": "Manpower - Skilled Labor (per month)",
+        "rate": 23500.00,
+        "unit": "per person per month",
+        "authority": "Ministry of Labour",
+        "contract_number": "MoL/MW/2026-27",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
+    },
+    {
+        "item_category": "Services",
+        "item_description": "Manpower - Unskilled Labor (per month)",
+        "rate": 15500.00,
+        "unit": "per person per month",
+        "authority": "Ministry of Labour",
+        "contract_number": "MoL/MW/2026-27",
+        "valid_from": "2026-04-01",
+        "valid_until": "2029-03-31"
     }
 ]

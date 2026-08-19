@@ -41,6 +41,15 @@ def generate_report_html(
     statistics: dict[str, Any],
     department_name: str | None = None,
     signatory_name: str | None = None,
+    any_demo_data: bool = False,
+    estimated_value: float | None = None,
+    delivery_location: str | None = None,
+    specs: dict[str, Any] | None = None,
+    procurement_threshold: dict[str, Any] | None = None,
+    base_product: dict[str, Any] | None = None,
+    freight: dict[str, Any] | None = None,
+    delegations: list[dict[str, Any]] | None = None,
+    audit_log: list[dict[str, Any]] | None = None,
 ) -> str:
     """Generate HTML report content from benchmark results."""
     template = jinja_env.get_template("report_template.html")
@@ -69,6 +78,15 @@ def generate_report_html(
         "signatory_name": signatory_name or "Authorized Officer",
         "generated_at": datetime.now(timezone.utc).strftime("%d %B %Y, %H:%M UTC"),
         "report_id": str(uuid.uuid4())[:8].upper(),
+        "any_demo_data": any_demo_data,
+        "estimated_value": estimated_value,
+        "delivery_location": delivery_location,
+        "specs": specs or {},
+        "procurement_threshold": procurement_threshold,
+        "base_product": base_product,
+        "freight": freight,
+        "delegations": delegations or [],
+        "audit_log": audit_log or [],
     }
 
     return template.render(**context)
@@ -79,6 +97,8 @@ def save_report(
     search_id: str,
     fmt: str = "html",
     query: str = "",
+    any_demo_data: bool = False,
+    pdf_context: dict[str, Any] | None = None,
 ) -> str:
     """Save report to disk. Returns the file path.
 
@@ -88,6 +108,12 @@ def save_report(
         fmt: 'html' or 'pdf'
         query: The product/service name shown on the certificate (avoids
             leaking the raw search_id into official documents).
+        any_demo_data: When True, renders a watermark on PDF output noting
+            that the benchmark relied on demo/seeded data.
+        pdf_context: Optional compliance snapshot (statistics, threshold,
+            specs, base product, freight, delegations, audit) rendered into
+            the ReportLab fallback certificate so the PDF artifact carries the
+            full reasonability story even without WeasyPrint.
     """
     # search_id may be a UUID or, from /reports/generate-from-query, a raw
     # product name — sanitize it so it can't break the on-disk path.
@@ -295,6 +321,182 @@ def save_report(
             story.append(tier_table)
             story.append(Spacer(1, 16))
 
+            # ── Compliance story (persisted at run time) ──
+            ctx = pdf_context or {}
+            stats = ctx.get("statistics") or {}
+            threshold = ctx.get("procurement_threshold") or {}
+            specs = ctx.get("specs") or {}
+            base_product = ctx.get("base_product") or {}
+            freight = ctx.get("freight") or {}
+            delegations = ctx.get("delegations") or []
+            audit_log = ctx.get("audit_log") or []
+
+            if stats.get("l1") is not None or (
+                stats.get("band_low") is not None
+                and stats.get("band_high") is not None
+            ):
+                story.append(
+                    Paragraph(
+                        "<b>L1 Competitive Bid &amp; Reasonableness Band</b>",
+                        bold_style,
+                    )
+                )
+                if stats.get("l1") is not None:
+                    l1_line = (
+                        f"L1 Competitive Bid: <b>Rs. {stats['l1']:,.2f}</b>"
+                    )
+                    if stats.get("l1_source"):
+                        l1_line += f" ({html_lib.escape(str(stats['l1_source']))})"
+                    story.append(Paragraph(l1_line, body_style))
+                if stats.get("competitive_pool") is not None:
+                    story.append(
+                        Paragraph(
+                            f"Competitive Pool: {stats['competitive_pool']} "
+                            "independent quote(s)",
+                            body_style,
+                        )
+                    )
+                if stats.get("band_low") is not None and stats.get(
+                    "band_high"
+                ) is not None:
+                    within = "WITHIN band" if stats.get("within_band") else "OUTSIDE band - review required"
+                    story.append(
+                        Paragraph(
+                            f"Reasonableness Band (±25%): Rs. {stats['band_low']:,.2f} "
+                            f"- Rs. {stats['band_high']:,.2f} - <b>{within}</b>",
+                            body_style,
+                        )
+                    )
+                story.append(Spacer(1, 8))
+
+            if threshold:
+                compliant = threshold.get("compliant")
+                story.append(
+                    Paragraph(
+                        "<b>Procurement Threshold Compliance</b>",
+                        bold_style,
+                    )
+                )
+                mode = html_lib.escape(
+                    str(threshold.get("mode_label") or threshold.get("mode", "N/A"))
+                )
+                rule = html_lib.escape(str(threshold.get("rule", "N/A")))
+                status = (
+                    "<font color='#0d6e3e'><b>COMPLIANT</b></font>"
+                    if compliant
+                    else "<font color='#842029'><b>NON-COMPLIANT</b></font>"
+                )
+                story.append(
+                    Paragraph(
+                        f"Mode: {mode} ({rule}) - {status}",
+                        body_style,
+                    )
+                )
+                if threshold.get("quotes_obtained") is not None:
+                    story.append(
+                        Paragraph(
+                            f"Quotes: {threshold.get('quotes_obtained')} / "
+                            f"{threshold.get('min_quotes_required') or threshold.get('min_quotes') or 'N/A'} required",
+                            body_style,
+                        )
+                    )
+                if threshold.get("guidance"):
+                    story.append(
+                        Paragraph(
+                            f"Guidance: {html_lib.escape(str(threshold['guidance']))}",
+                            body_style,
+                        )
+                    )
+                story.append(Spacer(1, 8))
+
+            if specs:
+                story.append(
+                    Paragraph("<b>Golden Parameters</b>", bold_style)
+                )
+                story.append(
+                    Paragraph(
+                        "Configured baseline: "
+                        + " ; ".join(
+                            f"{html_lib.escape(str(k))}: {html_lib.escape(str(v))}"
+                            for k, v in specs.items()
+                        ),
+                        body_style,
+                    )
+                )
+                story.append(Spacer(1, 8))
+
+            if base_product.get("canonical_name"):
+                story.append(
+                    Paragraph("<b>Canonical Base-Product Identity</b>", bold_style)
+                )
+                bp_line = html_lib.escape(str(base_product["canonical_name"]))
+                if base_product.get("match_score") is not None:
+                    bp_line += f" (identity match {base_product['match_score']}%)"
+                story.append(Paragraph(bp_line, body_style))
+                prior = base_product.get("prior_records", 0)
+                if prior:
+                    median = base_product.get("prior_median_price")
+                    bp_line2 = f"Recognized from {prior} prior purchase record(s)"
+                    if median is not None:
+                        bp_line2 += f"; prior median Rs. {median:,.2f}"
+                    story.append(Paragraph(bp_line2, body_style))
+                else:
+                    story.append(
+                        Paragraph(
+                            "No prior purchase records - this benchmark establishes "
+                            "the reference price.",
+                            body_style,
+                        )
+                    )
+                story.append(Spacer(1, 8))
+
+            if freight.get("landed_total") is not None:
+                story.append(
+                    Paragraph("<b>Landed Cost (Delivery Location)</b>", bold_style)
+                )
+                story.append(
+                    Paragraph(
+                        f"Goods Rs. {freight['goods_value']:,.2f} + Freight "
+                        f"Rs. {freight['freight_amount']:,.2f} "
+                        f"({freight.get('freight_pct', 0)}%) = "
+                        f"<b>Landed Rs. {freight['landed_total']:,.2f}</b> "
+                        f"({html_lib.escape(str(freight.get('delivery_location', '')))} - "
+                        f"{html_lib.escape(str(freight.get('region_label', '')))})",
+                        body_style,
+                    )
+                )
+                story.append(Spacer(1, 8))
+
+            if delegations or audit_log:
+                story.append(
+                    Paragraph("<b>Delegation &amp; Audit Trail</b>", bold_style)
+                )
+                for d in delegations:
+                    decision = (d.get("decision") or "").upper()
+                    story.append(
+                        Paragraph(
+                            f"Delegated to {html_lib.escape(str(d.get('delegate_to_name', '')))} "
+                            f"by {html_lib.escape(str(d.get('delegated_by_name') or 'the benchmarking officer'))} - "
+                            f"{html_lib.escape(str(d.get('status', ''))).upper()}"
+                            + (f" / {decision}" if decision else ""),
+                            body_style,
+                        )
+                    )
+                for e in audit_log:
+                    story.append(
+                        Paragraph(
+                            f"{html_lib.escape(str(e.get('action', '')))} - "
+                            f"{html_lib.escape(str(e.get('actor_name') or '—'))}"
+                            + (
+                                f" ({html_lib.escape(str(e.get('note', '')))})"
+                                if e.get("note")
+                                else ""
+                            ),
+                            body_style,
+                        )
+                    )
+                story.append(Spacer(1, 8))
+
             # Statutory Note
             note_text = (
                 "<b>Statutory Recommendation:</b> If no automated tier yields verified prices, refer procurement "
@@ -327,7 +529,39 @@ def save_report(
             )
             story.append(sign_table)
 
-            doc.build(story)
+            if any_demo_data:
+                from reportlab.pdfgen import canvas as pdf_canvas
+
+                class _WatermarkCanvas(pdf_canvas.Canvas):
+                    def __init__(self, *args, **kwargs):
+                        super().__init__(*args, **kwargs)
+                        self._watermarked = False
+
+                    def showPage(self):
+                        self._draw_watermark()
+                        super().showPage()
+
+                    def save(self):
+                        self._draw_watermark()
+                        super().save()
+
+                    def _draw_watermark(self):
+                        if self._watermarked:
+                            return
+                        self._watermarked = True
+                        self.saveState()
+                        self.setFont("Helvetica-Bold", 34)
+                        self.setFillColor(colors.HexColor("#dc2626"))
+                        self.setFillAlpha(0.16)
+                        self.translate(300, 420)
+                        self.rotate(45)
+                        self.drawCentredString(0, 0, "DEMO MODE")
+                        self.drawCentredString(0, 60, "NOT FOR OFFICIAL USE")
+                        self.restoreState()
+
+                doc.build(story, canvasmaker=_WatermarkCanvas)
+            else:
+                doc.build(story)
             logger.info("PDF report saved via ReportLab: %s", pdf_path)
             return str(pdf_path)
         except Exception as e:

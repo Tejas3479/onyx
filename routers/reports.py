@@ -7,10 +7,19 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse, HTMLResponse
 from sqlalchemy import select
 
-from database import PriceResult, PriceSearch, async_session_maker
+from database import (
+    BenchmarkAuditLog,
+    DelegationRecord,
+    PriceResult,
+    PriceSearch,
+    async_session_maker,
+)
 from models import ReportFromQueryRequest, ReportRequest
 from routers.auth_routes import require_current_user
+from services.base_product import resolve_base_product
+from services.freight_estimator import estimate_freight
 from services.price_extractor import compute_statistics
+from services.procurement_threshold import evaluate_procurement_threshold
 from services.report_generator import generate_report_html, save_report
 from services.tier_waterfall import get_price_benchmark
 
@@ -29,6 +38,44 @@ async def generate_report(req: ReportRequest, user=Depends(require_current_user)
 
         result_stmt = select(PriceResult).where(PriceResult.search_id == req.search_id)
         results_db = (await session.execute(result_stmt)).scalars().all()
+
+        delegations = (
+            await session.execute(
+                select(DelegationRecord)
+                .where(DelegationRecord.search_id == req.search_id)
+                .order_by(DelegationRecord.created_at.desc())
+            )
+        ).scalars().all()
+        audit_log = (
+            await session.execute(
+                select(BenchmarkAuditLog)
+                .where(BenchmarkAuditLog.search_id == req.search_id)
+                .order_by(BenchmarkAuditLog.created_at.asc())
+            )
+        ).scalars().all()
+
+    delegation_list = [
+        {
+            "delegate_to_name": d.delegate_to_name,
+            "delegate_to_email": d.delegate_to_email,
+            "delegated_by_name": d.delegated_by_name,
+            "note": d.note,
+            "status": d.status,
+            "decision": d.decision,
+            "decision_note": d.decision_note,
+            "created_at": d.created_at.isoformat(),
+        }
+        for d in delegations
+    ]
+    audit_list = [
+        {
+            "action": e.action,
+            "actor_name": e.actor_name,
+            "note": e.note,
+            "created_at": e.created_at.isoformat(),
+        }
+        for e in audit_log
+    ]
 
     # Reconstruct data structures for generate_report_html
     primary: dict[str, typing.Any] = {}
@@ -54,7 +101,11 @@ async def generate_report(req: ReportRequest, user=Depends(require_current_user)
         primary = all_results[0]
 
     priced = [r.price for r in results_db if r.price is not None]
-    statistics = compute_statistics(priced)
+    statistics = (
+        search.statistics
+        if isinstance(search.statistics, dict) and search.statistics
+        else compute_statistics(priced)
+    )
 
     html = generate_report_html(
         search_id=req.search_id,
@@ -70,10 +121,46 @@ async def generate_report(req: ReportRequest, user=Depends(require_current_user)
         statistics=statistics,
         department_name=req.department_name,
         signatory_name=req.signatory_name,
+        any_demo_data=search.any_demo_data,
+        estimated_value=search.estimated_value,
+        delivery_location=search.delivery_location,
+        specs=search.specs if isinstance(search.specs, dict) else None,
+        procurement_threshold=(
+            search.procurement_threshold
+            if isinstance(search.procurement_threshold, dict)
+            else None
+        ),
+        base_product=(
+            search.base_product if isinstance(search.base_product, dict) else None
+        ),
+        freight=search.freight if isinstance(search.freight, dict) else None,
+        delegations=delegation_list,
+        audit_log=audit_list,
     )
 
     if req.output_format == "pdf":
-        file_path = save_report(html, req.search_id, fmt="pdf", query=search.query)
+        file_path = save_report(
+            html,
+            req.search_id,
+            fmt="pdf",
+            query=search.query,
+            any_demo_data=search.any_demo_data,
+            pdf_context={
+                "statistics": statistics,
+                "procurement_threshold": (
+                    search.procurement_threshold
+                    if isinstance(search.procurement_threshold, dict)
+                    else None
+                ),
+                "specs": search.specs if isinstance(search.specs, dict) else None,
+                "base_product": (
+                    search.base_product if isinstance(search.base_product, dict) else None
+                ),
+                "freight": search.freight if isinstance(search.freight, dict) else None,
+                "delegations": delegation_list,
+                "audit_log": audit_list,
+            },
+        )
         if file_path.endswith(".pdf"):
             return FileResponse(
                 file_path,
@@ -120,16 +207,56 @@ async def generate_report_from_query(
             status_code=400, detail="product_name query parameter is required"
         )
 
+    quantity = req.quantity if req else 1
+    est_value = req.estimated_value if req else None
+    delivery_location = req.delivery_location if req else None
+    specs = req.specs if req else None
+    category = req.category if req else None
+
     try:
         result = await get_price_benchmark(
             query=p_name,
+            specs=specs,
             department=dept_name,
+            category=category,
+            query_mode="product",
+            quantity=quantity,
         )
     except Exception as e:
         logger.exception("Benchmark for report failed")
         raise HTTPException(status_code=500, detail=f"Benchmark failed: {e!s}")
 
     primary = result["primary_result"]
+    any_demo_data = bool(primary.get("is_demo_data")) or any(
+        r.get("is_demo_data") for r in result.get("all_results", [])
+    )
+
+    base_product = None
+    try:
+        base_product = await resolve_base_product(p_name, dept_name)
+    except Exception:
+        pass
+
+    freight = None
+    if delivery_location:
+        freight = estimate_freight(
+            location=delivery_location,
+            unit_price=primary.get("price"),
+            quantity=quantity,
+        )
+
+    threshold = (
+        evaluate_procurement_threshold(
+            value=est_value,
+            quotes_obtained=(result.get("statistics") or {}).get(
+                "competitive_pool", 0
+            ),
+            price_found=(primary.get("price") is not None),
+        )
+        if est_value is not None
+        else None
+    )
+
     html = generate_report_html(
         search_id=p_name,
         query=p_name,
@@ -142,10 +269,30 @@ async def generate_report_from_query(
         statistics=result["statistics"],
         department_name=dept_name,
         signatory_name=sig_name,
+        any_demo_data=any_demo_data,
+        estimated_value=est_value,
+        delivery_location=delivery_location,
+        specs=specs,
+        procurement_threshold=threshold,
+        base_product=base_product,
+        freight=freight,
     )
 
     if fmt == "pdf":
-        file_path = save_report(html, p_name, fmt="pdf", query=p_name)
+        file_path = save_report(
+            html,
+            p_name,
+            fmt="pdf",
+            query=p_name,
+            any_demo_data=any_demo_data,
+            pdf_context={
+                "statistics": result["statistics"],
+                "procurement_threshold": threshold,
+                "specs": specs,
+                "base_product": base_product,
+                "freight": freight,
+            },
+        )
         if file_path.endswith(".pdf"):
             return FileResponse(
                 file_path,

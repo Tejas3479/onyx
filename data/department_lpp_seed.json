@@ -1,0 +1,172 @@
+[
+    {
+        "department": "Ministry of Defence",
+        "item_description": "Executive Office Chair (Mesh Back)",
+        "unit_price": 9200.00,
+        "quantity_purchased": 40,
+        "purchase_date": "2026-05-12",
+        "vendor_name": "Godrej Interio",
+        "source_document": "PO-MOD-2026-0147",
+        "specs": {"material": "mesh", "armrest": true}
+    },
+    {
+        "department": "Ministry of Defence",
+        "item_description": "HP ProBook 450 G10 Notebook PC",
+        "unit_price": 74800.00,
+        "quantity_purchased": 120,
+        "purchase_date": "2026-06-03",
+        "vendor_name": "HP India Sales Pvt Ltd",
+        "source_document": "PO-MOD-2026-0218",
+        "specs": {"processor": "i5", "ram_gb": 16, "storage_gb": 512}
+    },
+    {
+        "department": "Ministry of Defence",
+        "item_description": "Software Defined Radio (SDR) 70MHz-6GHz Transceiver",
+        "unit_price": 1520000.00,
+        "quantity_purchased": 8,
+        "purchase_date": "2026-02-18",
+        "vendor_name": "Bharat Electronics Ltd",
+        "source_document": "PO-MOD-2026-0089",
+        "specs": {"band": "HF-VHF-UHF", "power_w": 50}
+    },
+    {
+        "department": "Ministry of Defence",
+        "item_description": "WR-90 Ka-Band Radar Waveguide Flange",
+        "unit_price": 51200.00,
+        "quantity_purchased": 60,
+        "purchase_date": "2025-11-27",
+        "vendor_name": "Astronics Defence Systems",
+        "source_document": "PO-MOD-2025-0912",
+        "specs": {"band": "Ka", "material": "copper"}
+    },
+    {
+        "department": "Ministry of Defence",
+        "item_description": "A4 Paper 75gsm (per ream)",
+        "unit_price": 245.00,
+        "quantity_purchased": 2000,
+        "purchase_date": "2026-07-09",
+        "vendor_name": "JK Paper Ltd",
+        "source_document": "PO-MOD-2026-0351",
+        "specs": {"gsm": 75, "sheets": 500}
+    },
+    {
+        "department": "Ministry of Finance",
+        "item_description": "Cisco Catalyst 9300-48P-A Switch",
+        "unit_price": 291000.00,
+        "quantity_purchased": 15,
+        "purchase_date": "2026-04-22",
+        "vendor_name": "Cisco Systems India Pvt Ltd",
+        "source_document": "PO-MOF-2026-0052",
+        "specs": {"ports": 48, "poe": true, "layer": 3}
+    },
+    {
+        "department": "Ministry of Finance",
+        "item_description": "1.5 Ton Split AC 5 Star Inverter",
+        "unit_price": 41000.00,
+        "quantity_purchased": 25,
+        "purchase_date": "2026-03-30",
+        "vendor_name": "Voltas Ltd",
+        "source_document": "PO-MOF-2026-0029",
+        "specs": {"tonnage": 1.5, "star": 5, "inverter": true}
+    },
+    {
+        "department": "Ministry of Electronics & IT",
+        "item_description": "Dell Latitude 5540 Business Laptop",
+        "unit_price": 102500.00,
+        "quantity_purchased": 85,
+        "purchase_date": "2026-05-28",
+        "vendor_name": "Dell Technologies India",
+        "source_document": "PO-MeitY-2026-0187",
+        "specs": {"processor": "i7", "ram_gb": 16, "storage_gb": 512}
+    },
+    {
+        "department": "Ministry of Electronics & IT",
+        "item_description": "Epson EcoTank L3250 Printer",
+        "unit_price": 15200.00,
+        "quantity_purchased": 50,
+        "purchase_date": "2026-06-15",
+        "vendor_name": "Epson India Pvt Ltd",
+        "source_document": "PO-MeitY-2026-0210",
+        "specs": {"type": "inkjet", "color": true, "wifi": true}
+    },
+    {
+        "department": "Ministry of Home Affairs",
+        "item_description": "IP CCTV Camera 4MP Bullet PoE",
+        "unit_price": 5050.00,
+        "quantity_purchased": 300,
+        "purchase_date": "2026-01-20",
+        "vendor_name": "Hikvision India Pvt Ltd",
+        "source_document": "PO-MHA-2026-0017",
+        "specs": {"resolution": "4MP", "type": "bullet", "poe": true}
+    },
+    {
+        "department": "Ministry of Home Affairs",
+        "item_description": "Network Video Recorder 16-Channel 4TB",
+        "unit_price": 43800.00,
+        "quantity_purchased": 12,
+        "purchase_date": "2026-01-20",
+        "vendor_name": "Hikvision India Pvt Ltd",
+        "source_document": "PO-MHA-2026-0018",
+        "specs": {"channels": 16, "hdd_tb": 4}
+    },
+    {
+        "department": "Ministry of Home Affairs",
+        "item_description": "Biometric Attendance System (Face + Fingerprint)",
+        "unit_price": 15800.00,
+        "quantity_purchased": 20,
+        "purchase_date": "2025-12-05",
+        "vendor_name": "Matrix Security Solutions",
+        "source_document": "PO-MHA-2025-0103",
+        "specs": {"modality": "face+fingerprint", "users": 10000}
+    },
+    {
+        "department": "NITI Aayog",
+        "item_description": "Modular Workstation (4x4 ft)",
+        "unit_price": 16300.00,
+        "quantity_purchased": 60,
+        "purchase_date": "2026-04-11",
+        "vendor_name": "Godrej Interio",
+        "source_document": "PO-NITI-2026-0031",
+        "specs": {"size": "4x4 ft"}
+    },
+    {
+        "department": "NITI Aayog",
+        "item_description": "Fortinet FortiGate 60F Firewall",
+        "unit_price": 144000.00,
+        "quantity_purchased": 4,
+        "purchase_date": "2026-05-02",
+        "vendor_name": "Fortinet India Pvt Ltd",
+        "source_document": "PO-NITI-2026-0038",
+        "specs": {"throughput_gbps": 10}
+    },
+    {
+        "department": "Department of Expenditure",
+        "item_description": "Executive Office Chair (Mesh Back)",
+        "unit_price": 8850.00,
+        "quantity_purchased": 35,
+        "purchase_date": "2026-06-19",
+        "vendor_name": "Godrej Interio",
+        "source_document": "PO-DoE-2026-0122",
+        "specs": {"material": "mesh", "armrest": true}
+    },
+    {
+        "department": "Department of Expenditure",
+        "item_description": "Steel Almirah 3 Door 6 ft",
+        "unit_price": 11400.00,
+        "quantity_purchased": 18,
+        "purchase_date": "2026-03-14",
+        "vendor_name": "Metalite Industries",
+        "source_document": "PO-DoE-2026-0067",
+        "specs": {"doors": 3, "height_ft": 6}
+    },
+    {
+        "department": "Department of Expenditure",
+        "item_description": "Canon imageRUNNER 2625i Copier",
+        "unit_price": 86100.00,
+        "quantity_purchased": 6,
+        "purchase_date": "2026-07-01",
+        "vendor_name": "Canon India Pvt Ltd",
+        "source_document": "PO-DoE-2026-0149",
+        "specs": {"speed_ppm": 25, "duplex": true}
+    }
+]

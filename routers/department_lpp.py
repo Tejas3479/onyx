@@ -5,6 +5,7 @@ import logging
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 
 from routers.auth_routes import require_current_user
+from services.base_product import count_base_products
 from services.department_lpp import (
     list_department_records,
     parse_upload,
@@ -34,7 +35,23 @@ async def upload_purchase_history(
 
     Column names are flexible — common aliases like 'price', 'item', 'qty',
     'date', 'vendor' are automatically mapped.
+
+    Row-level isolation: non-admin officers can only ingest for their own
+    department.
     """
+    # Non-admins can only upload for their own department.
+    if user is not None and getattr(user, "role", "user") != "admin":
+        if user.department and department.strip() != user.department:
+            raise HTTPException(
+                status_code=403,
+                detail=(
+                    f"Cannot upload for '{department.strip()}' — you are "
+                    f"scoped to '{user.department}'."
+                ),
+            )
+        if not user.department:
+            department = None
+
     # Validate file type
     if not file.filename:
         raise HTTPException(status_code=400, detail="No filename provided")
@@ -61,7 +78,7 @@ async def upload_purchase_history(
     result = await parse_upload(
         file_content=content,
         filename=file.filename,
-        department=department.strip(),
+        department=department.strip() if department else None,
         uploaded_by=(user.email if user else None),
     )
 
@@ -86,11 +103,12 @@ async def upload_purchase_history(
 
     return {
         "status": "success",
-        "message": f"Uploaded {saved_count} purchase records for {department}",
+        "message": f"Uploaded {saved_count} purchase records for {department or 'your department'}",
         "saved_count": saved_count,
         "total_rows": result["total_rows"],
         "errors": result["errors"][:20] if result["errors"] else [],
         "preview": result["preview"],
+        "compliance_warnings": result.get("compliance_warnings", []),
     }
 
 
@@ -105,13 +123,24 @@ async def get_department_records(
     """
     List department purchase records with optional filtering.
 
+    Row-level isolation: non-admin officers only ever see their own
+    department's records; admins may pass an explicit department filter.
+
     Query params:
-      - department: filter by department name
+      - department: filter by department name (admin only)
       - search: fuzzy search by item description
       - limit: max records to return (default 50)
       - offset: pagination offset
     """
     limit = min(limit, 200)
+
+    if user is not None and getattr(user, "role", "user") != "admin":
+        # Hard-scope non-admins to their own department.
+        if user.department:
+            department = user.department
+        else:
+            # No department on the profile — only their own uploads qualify.
+            department = None
 
     result = await list_department_records(
         department=department,
@@ -119,5 +148,14 @@ async def get_department_records(
         limit=limit,
         offset=offset,
     )
+
+    if user is not None and getattr(user, "role", "user") != "admin":
+        if not user.department:
+            result["records"] = [
+                r for r in result["records"] if r.get("department") is None
+            ]
+            result["total"] = len(result["records"])
+
+    result["base_products"] = count_base_products(result["records"])
 
     return result

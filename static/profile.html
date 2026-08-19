@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Onyx — Officer Profile</title>
+  <meta name="description" content="Signed-in procurement officer profile with department, role, and benchmark activity.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/base.css">
+  <style>
+    .hero h1 { font-size: 28px; margin-bottom: 6px; }
+    .hero p { max-width: 720px; }
+
+    .profile-grid {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 860px) {
+      .profile-grid { grid-template-columns: 1fr; }
+    }
+
+    .profile-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      padding: 26px 24px;
+      text-align: center;
+    }
+    .avatar {
+      width: 84px;
+      height: 84px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #fa5d19, #ff8a5c);
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-size: 30px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 14px;
+    }
+    .profile-name { font-size: 19px; font-weight: 700; color: var(--navy-900); }
+    .profile-role { font-size: 12.5px; color: var(--primary); font-weight: 600; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .profile-dept { font-size: 13px; color: var(--text-muted); margin-top: 6px; }
+
+    .info-list { margin: 22px 0 0; padding: 0; list-style: none; text-align: left; border-top: 1px solid var(--border-subtle); }
+    .info-list li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 2px;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 13px;
+    }
+    .info-key { color: var(--text-muted); font-weight: 500; }
+    .info-val { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--navy-900); word-break: break-all; text-align: right; }
+
+    .activity-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      padding: 22px 24px;
+    }
+    .activity-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .activity-head h2 { font-size: 16px; color: var(--navy-900); margin: 0; }
+    .activity-head a { font-size: 13px; color: var(--primary); font-weight: 600; text-decoration: none; }
+
+    .act-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 2px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .act-item:last-child { border-bottom: none; }
+    .act-query { font-weight: 600; color: var(--navy-900); font-size: 13.5px; max-width: 60%; }
+    .act-meta { text-align: right; font-size: 12px; color: var(--text-muted); }
+    .act-price { font-family: 'JetBrains Mono', monospace; font-size: 13.5px; font-weight: 700; color: var(--primary); }
+
+    .tier-badge {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 20px;
+      margin-right: 6px;
+    }
+    .tier-0 { background: #dcfce7; color: #166534; }
+    .tier-1 { background: #dbeafe; color: #1e40af; }
+    .tier-2 { background: #fef3c7; color: #92400e; }
+    .tier-3 { background: #fce7f3; color: #9d174d; }
+    .tier-4 { background: #e2e8f0; color: #334155; }
+
+    .empty { text-align: center; padding: 34px 16px; color: var(--text-muted); }
+    .empty a { color: var(--primary); font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <a class="skip-link" href="#main-content" id="skip-to-content">Skip to main content</a>
+
+  <header class="navbar">
+    <a href="/" class="nav-brand">
+      <div class="brand-logo">◆ ONYX</div>
+      <div class="brand-tag">GFR 149(vii) Intelligence</div>
+    </a>
+
+    <nav class="nav-links">
+      <a href="/benchmark.html" class="nav-link">
+        <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+        Price Benchmark
+      </a>
+      <a href="/upload_history.html" class="nav-link">
+        <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+        Dept PO Ingestion
+      </a>
+      <a href="/dashboard.html" class="nav-link">
+        <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Run History
+      </a>
+      <a href="/profile.html" class="nav-link active">
+        <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        My Profile
+      </a>
+    </nav>
+
+    <div class="system-status" style="display:flex;align-items:center;gap:6px;font-size:12px;color:#86efac;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.25);padding:4px 10px;border-radius:20px;">
+      <div class="status-dot" style="width:7px;height:7px;background:#22c55e;border-radius:50%;box-shadow:0 0 8px #22c55e;animation:pulse 2s infinite;"></div>
+      <span>Signed In</span>
+    </div>
+  </header>
+
+  <main class="max-w-md" id="main-content">
+    <section class="hero">
+      <div class="hero-pre">Officer Session</div>
+      <h1>My Profile</h1>
+      <p>Signed-in procurement officer identity and benchmark activity. Sessions are validated against the JWT access token issued at sign-in.</p>
+    </section>
+
+    <section class="profile-grid">
+      <div class="profile-card">
+        <div class="avatar" id="avatarInitials">—</div>
+        <div class="profile-name" id="profileName">—</div>
+        <div class="profile-role" id="profileRole">—</div>
+        <div class="profile-dept" id="profileDept">—</div>
+        <ul class="info-list">
+          <li><span class="info-key">Email</span><span class="info-val" id="profileEmail">—</span></li>
+          <li><span class="info-key">Organization</span><span class="info-val" id="profileOrg">—</span></li>
+          <li><span class="info-key">Session Type</span><span class="info-val" id="profileSession">JWT</span></li>
+          <li><span class="info-key">Account ID</span><span class="info-val" id="profileId" style="max-width:180px;">—</span></li>
+        </ul>
+      </div>
+
+      <div class="activity-card">
+        <div class="activity-head">
+          <h2>My Benchmark Activity</h2>
+          <a href="/dashboard.html">View all runs →</a>
+        </div>
+        <div id="activityList">
+          <div class="empty">Loading activity…</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Onyx Statutory Procurement System | GFR 2017 Rule 149(vii) Price Reasonability Engine</p>
+  </footer>
+
+  <script src="/app.js"></script>
+  <script src="/ui.js"></script>
+  <script>
+    const TIER_LABELS = ['Notified Rate', 'GeM LPP', 'Dept LPP', 'Market Survey', 'Non-Std Estimate'];
+
+    async function initProfile() {
+      const officer = await ensureAuth();
+      if (!officer) {
+        document.getElementById('profileName').textContent = 'Not signed in';
+        return;
+      }
+
+      document.getElementById('profileName').textContent = officer.name;
+      document.getElementById('profileDept').textContent = officer.dept || '—';
+      document.getElementById('profileRole').textContent = officer.role || 'Procurement Officer';
+      document.getElementById('profileEmail').textContent = officer.email || '—';
+      const initials = (officer.name || '?').trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+      document.getElementById('avatarInitials').textContent = initials;
+
+      // Fetch authoritative profile (validates token, gives id / organization / role)
+      let user = null;
+      try {
+        const res = await fetch('/auth/me', { headers: authHeaders() });
+        if (res.ok) user = await res.json();
+      } catch (e) { /* fall back to cached officer */ }
+      if (user) {
+        document.getElementById('profileId').textContent = user.id || '—';
+        document.getElementById('profileOrg').textContent = user.organization || '—';
+        if (user.role) document.getElementById('profileRole').textContent = user.role;
+        if (user.department) document.getElementById('profileDept').textContent = user.department;
+        document.getElementById('profileEmail').textContent = user.email || officer.email;
+      }
+
+      loadActivity(user ? user.id : null);
+    }
+
+    async function loadActivity(userId) {
+      const listEl = document.getElementById('activityList');
+      try {
+        const url = userId
+          ? '/api/v1/price-history?limit=8&user_id=' + encodeURIComponent(userId)
+          : '/api/v1/price-history?limit=8';
+        const res = await fetch(url, { headers: authHeaders() });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        const runs = (data.items || []).filter(r => !userId || r.user_id === userId);
+        if (!runs.length) {
+          listEl.innerHTML = '<div class="empty">No benchmarks yet for this officer.<br><a href="/benchmark.html">Run your first benchmark →</a></div>';
+          return;
+        }
+        listEl.innerHTML = runs.map(r => `
+          <div class="act-item">
+            <span class="act-query">${esc(r.query)}</span>
+            <span class="act-meta">
+              <span class="tier-badge tier-${r.resolved_tier}">T${r.resolved_tier}</span>
+              <span class="act-price">${formatINR(r.price)}</span>
+              <div style="margin-top:3px;">${esc(shortDate(r.created_at))}</div>
+            </span>
+          </div>`).join('');
+      } catch (e) {
+        listEl.innerHTML = '<div class="empty">Failed to load activity: ' + esc(e.message) + '</div>';
+      }
+    }
+
+    function shortDate(iso) {
+      if (!iso) return '—';
+      try {
+        return new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+      } catch (e) { return iso; }
+    }
+
+    window.addEventListener('DOMContentLoaded', initProfile);
+  </script>
+</body>
+</html>

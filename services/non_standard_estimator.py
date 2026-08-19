@@ -130,6 +130,7 @@ async def _find_similar_items(
                         "match_score": score / 100.0,
                         "source": f"Dept Record ({record.department})",
                         "purchase_date": record.purchase_date.isoformat(),
+                        "is_demo": record.is_demo_data,
                     }
                 )
     except Exception as e:
@@ -239,6 +240,7 @@ def _extrapolate_from_similar(
         "price_range_high": range_high,
         "currency": "INR",
         "evidence_url": None,
+        "evidence_reference": f"Spec-similarity estimate · {method}",
         "rationale": confidence_rationale,
         "is_demo_data": used_demo,
         "confidence": "MEDIUM" if avg_score >= 0.7 else "LOW",
@@ -250,7 +252,16 @@ def _extrapolate_from_similar(
 
 
 async def _check_international_sources(query: str) -> dict[str, Any] | None:
-    """Check AliExpress for international pricing as import cost basis."""
+    """Check AliExpress for international pricing as import cost basis.
+
+    Skipped in DEMO_MODE — no live network calls during demonstrations.
+    """
+    from services.search_orchestrator import DEMO_MODE
+
+    if DEMO_MODE:
+        logger.debug("DEMO_MODE: skipping international source fetch")
+        return None
+
     from services.source_registry import get_sources_for_tier
 
     sources = get_sources_for_tier(4)
@@ -330,6 +341,7 @@ def _insufficient_data_result(query: str, category: str | None) -> dict[str, Any
         "price_range_high": None,
         "currency": "INR",
         "evidence_url": None,
+        "evidence_reference": "Local Purchase Committee referral (GFR Rule 155)",
         "rationale": (
             f"Insufficient pricing data found for '{query}'{cat_note} across "
             f"all automated sources (Tiers 0\u20133 and international markets). "

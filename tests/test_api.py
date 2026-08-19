@@ -50,7 +50,8 @@ async def test_curl_cffi_basic_fetch(async_client):
         "render_js": False,
     }
 
-    response = await async_client.post("/fetch", headers=headers, json=payload)
+    with patch("routers.fetch.DEMO_MODE", False):
+        response = await async_client.post("/fetch", headers=headers, json=payload)
     assert response.status_code == 200
     data = response.json()
     assert data["success"] is True
@@ -67,7 +68,8 @@ async def test_markdown_output_clean(async_client):
         "render_js": False,
     }
 
-    response = await async_client.post("/fetch", headers=headers, json=payload)
+    with patch("routers.fetch.DEMO_MODE", False):
+        response = await async_client.post("/fetch", headers=headers, json=payload)
     assert response.status_code == 200
     data = response.json()
     assert data["success"] is True
@@ -75,6 +77,25 @@ async def test_markdown_output_clean(async_client):
     assert "<script" not in content
     assert "<style" not in content
     assert len(content.strip()) > 0
+
+
+@pytest.mark.asyncio
+async def test_fetch_gated_in_demo_mode(async_client):
+    """DEMO_MODE=true must short-circuit /fetch to a canned snapshot — no network."""
+    headers = {"x-api-key": "test-key"}
+    payload = {
+        "url": "https://www.amazon.in/s?k=Cisco+Catalyst+9300",
+        "output_format": "markdown",
+        "render_js": True,
+    }
+
+    with patch("routers.fetch.DEMO_MODE", True):
+        response = await async_client.post("/fetch", headers=headers, json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] is True
+    assert "DEMO MODE" in data["content"]
+    assert "Cisco" in data["content"]
 
 
 @pytest.mark.skip(reason="httpbin.org is currently flaky with 503 errors")

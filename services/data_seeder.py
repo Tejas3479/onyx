@@ -11,9 +11,12 @@ async def seed_database() -> dict[str, int]:
     Called during app startup. Safe to call multiple times —
     each seeder checks if data already exists before inserting.
     """
+    from services.department_lpp import seed_department_records
     from services.gem_rate_lookup import seed_all
 
     results = await seed_all()
+    dept_count = await seed_department_records()
+    results["department_lpp"] = dept_count
     total = sum(results.values())
     if total > 0:
         logger.info(f"Database seeded: {results}")

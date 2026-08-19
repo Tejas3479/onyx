@@ -63,7 +63,8 @@ async def test_structured_json_extraction_mocked(async_client):
             "llm_api_key": "sk-test",
         }
 
-        response = await async_client.post("/fetch", headers=headers, json=payload)
+        with patch("routers.fetch.DEMO_MODE", False):
+            response = await async_client.post("/fetch", headers=headers, json=payload)
         print("RESPONSE STATUS:", response.status_code)
         data = response.json()
         print("RESPONSE DATA:", data)

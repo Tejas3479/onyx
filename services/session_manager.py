@@ -10,7 +10,13 @@ from fastapi import HTTPException
 from .log_filter import logger
 
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
-redis_client = redis.from_url(REDIS_URL, decode_responses=True)
+redis_client = redis.from_url(
+    REDIS_URL,
+    decode_responses=True,
+    socket_connect_timeout=float(os.getenv("REDIS_CONNECT_TIMEOUT", "0.5")),
+    socket_timeout=float(os.getenv("REDIS_SOCKET_TIMEOUT", "0.5")),
+    retry_on_timeout=False,
+)
 
 SESSION_TTL_MINUTES = int(os.getenv("SESSION_TTL_MINUTES", "30"))
 MAX_SESSIONS = int(os.getenv("MAX_SESSIONS", "100"))

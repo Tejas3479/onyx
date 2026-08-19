@@ -1,15 +1,94 @@
 import logging
+import os
 import time
+from urllib.parse import parse_qs, urlparse
 
 from fastapi import APIRouter, Depends, HTTPException
+from rapidfuzz import fuzz
 
 from auth import verify_api_key
 from fetcher import playwright_mgr, run_fetch, session_manager
 from models import FetchRequest, FetchResponse
+from services.search_orchestrator import _load_demo_cache
 
 logger = logging.getLogger("onyx.fetch")
 
 router = APIRouter(tags=["fetch"])
+
+DEMO_MODE = os.getenv("DEMO_MODE", "false").lower() in ("1", "true", "yes")
+
+
+def _demo_snapshot_content(req: FetchRequest) -> str:
+    """Build a clean structured marketplace snapshot for DEMO_MODE (no network)."""
+    url = str(req.url)
+    query = ""
+    try:
+        parsed = urlparse(url)
+        qs = parse_qs(parsed.query)
+        query = (qs.get("q") or qs.get("k") or [""])[0]
+    except Exception:
+        pass
+    query = query.strip()
+
+    netloc = urlparse(url).netloc or "marketplace"
+    lines = [
+        f"# Demo Snapshot — {netloc}",
+        "",
+        f"> **DEMO MODE:** live crawl disabled in this build. Showing cached marketplace snapshot from the demo dataset.",
+        "",
+    ]
+
+    cache = _load_demo_cache()
+    matches = []
+    for key, results in cache.items():
+        if not results:
+            continue
+        score = fuzz.token_set_ratio(query.lower(), key.lower()) if query else 0
+        if score >= 60:
+            matches.append((score, key, results))
+    matches.sort(key=lambda m: m[0], reverse=True)
+
+    rows = []
+    for _score, key, results in matches[:5]:
+        for item in results:
+            name = item.get("product_name") or key
+            price = item.get("price")
+            price_s = f"₹{price:,.2f}" if isinstance(price, (int, float)) else str(price or "—")
+            rows.append(
+                {
+                    "product": name,
+                    "price": price_s,
+                    "source": item.get("source_name", "Marketplace"),
+                    "vendor": item.get("vendor_name", "—"),
+                    "availability": item.get("availability", "In Stock"),
+                    "confidence": item.get("confidence", "HIGH"),
+                    "evidence": item.get("source_url", url),
+                }
+            )
+        if len(rows) >= 12:
+            break
+
+    if rows:
+        lines.append("| # | Product | Price | Source | Vendor | Availability | Confidence | Evidence |")
+        lines.append("|---|---------|-------|--------|--------|--------------|------------|----------|")
+        for idx, r in enumerate(rows, start=1):
+            evidence_host = urlparse(r["evidence"]).netloc or "link"
+            lines.append(
+                f"| {idx} | {r['product']} | {r['price']} | {r['source']} "
+                f"| {r['vendor']} | {r['availability']} | {r['confidence']} "
+                f"| [{evidence_host}]({r['evidence']}) |"
+            )
+        lines.append("")
+        lines.append(f"*{len(rows)} listing(s) matched the query — all entries carry audit metadata from the demo dataset.*")
+    else:
+        lines += [
+            "No cached snapshot matched this URL.",
+            "",
+            "The demo dataset covers: Cisco switches, HP ProBooks, A4 paper,",
+            "executive chairs, SDR radios, radar waveguides, VHF transceivers,",
+            "AC units, laser printers, and AMC contracts.",
+        ]
+    return "\n".join(lines)
 
 
 # POST /fetch
@@ -20,6 +99,20 @@ router = APIRouter(tags=["fetch"])
 )
 async def fetch_endpoint(req: FetchRequest):
     start = time.monotonic()
+
+    if DEMO_MODE:
+        content = _demo_snapshot_content(req)
+        return FetchResponse(
+            success=True,
+            url=str(req.url),
+            status_code=200,
+            output_format=req.output_format,
+            content=content,
+            session_id=None,
+            latency_ms=int((time.monotonic() - start) * 1000),
+            retries_used=0,
+        )
+
     logger.info(
         f"Received fetch request: {req.method} {req.url} (format: {req.output_format})"
     )

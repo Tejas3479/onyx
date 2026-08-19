@@ -2,7 +2,7 @@ import json
 from typing import Literal
 from urllib.parse import urlparse
 
-from pydantic import BaseModel, Field, HttpUrl, field_validator
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
 
 # ALLOWED LLM MODELS ALLOWLIST
 ALLOWED_LLM_MODELS = {
@@ -17,10 +17,13 @@ ALLOWED_LLM_MODELS = {
     "claude-fable-5",
     "claude-opus-5",
     "claude-sonnet-5",
+    "claude-haiku-4-5",
     "claude-3-5-sonnet-20241022",
+    "gemini-3.7-flash",
     "gemini-3.6-flash",
     "gemini-3.5-flash-lite",
-    "gemini-3.1-pro",
+    "gemini-3.5-flash",
+    "gemini-3.1-pro-preview",
 }
 
 
@@ -162,6 +165,18 @@ class UserLogin(BaseModel):
 class DemoLoginRequest(BaseModel):
     """One-click simulated officer profile, only honored while DEMO_MODE=true."""
 
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {
+                    "name": "Shri R. K. Sharma",
+                    "email": "r.sharma@mod.gov.in",
+                    "department": "Ministry of Defence",
+                }
+            ]
+        }
+    )
+
     name: str = Field(..., min_length=2, max_length=100)
     email: str = Field(..., max_length=200)
     department: str | None = Field(None, max_length=200)
@@ -213,6 +228,20 @@ class SearchResponse(BaseModel):
 
 
 class ReportRequest(BaseModel):
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {
+                    "search_id": "a1b2c3d4-e5f6-4a5b-9c8d-1e2f3a4b5c6d",
+                    "department_name": "Ministry of Defence",
+                    "signatory_name": "Shri R. K. Sharma",
+                    "include_screenshots": True,
+                    "output_format": "html",
+                }
+            ]
+        }
+    )
+
     search_id: str
     department_name: str | None = None
     signatory_name: str | None = None
@@ -221,9 +250,30 @@ class ReportRequest(BaseModel):
 
 
 class ReportFromQueryRequest(BaseModel):
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {
+                    "product_name": "Cisco Catalyst 9300 Switch",
+                    "department_name": "Ministry of Defence",
+                    "signatory_name": "Shri R. K. Sharma",
+                    "estimated_value": 576000,
+                    "delivery_location": "New Delhi",
+                    "specs": {"Processor": "Intel Core i5-13th Gen"},
+                    "output_format": "pdf",
+                }
+            ]
+        }
+    )
+
     product_name: str
     department_name: str | None = None
     signatory_name: str | None = None
+    quantity: int = 1
+    category: str | None = None
+    estimated_value: float | None = None
+    delivery_location: str | None = None
+    specs: dict | None = None
     output_format: str = "html"
 
 
@@ -265,6 +315,28 @@ class RateResult(BaseModel):
 class TierResult(BaseModel):
     """Result from a single tier in the waterfall."""
 
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {
+                    "tier": 0,
+                    "tier_label": "Notified Rate",
+                    "source_name": "Notified Rate (DGS&D)",
+                    "price": 235.0,
+                    "price_range_low": None,
+                    "price_range_high": None,
+                    "currency": "INR",
+                    "confidence": "HIGH",
+                    "reliability": "HIGH",
+                    "evidence_url": None,
+                    "evidence_reference": "DGS&D/RC-2026/STN-001",
+                    "rationale": "DGS&D/Ministry notified rate for 'A4 Paper 75gsm'. Contract: DGS&D/RC-2026/STN-001. Match score: 92%.",
+                    "is_demo_data": True,
+                }
+            ]
+        }
+    )
+
     tier: int  # 0–4
     tier_label: str
     source_name: str
@@ -275,6 +347,7 @@ class TierResult(BaseModel):
     confidence: str  # HIGH / MEDIUM / LOW (extraction completeness)
     reliability: str  # HIGH / MEDIUM / LOW (price reliability — outlier/cross-check)
     evidence_url: str | None = None
+    evidence_reference: str | None = None  # human-readable evidence ref (contract/PO/estimate) when no URL
     rationale: str  # why this tier was used / what was found
     is_demo_data: bool = False
 
@@ -282,11 +355,55 @@ class TierResult(BaseModel):
 class BenchmarkQuery(BaseModel):
     """Main entry point query for the tier waterfall benchmark."""
 
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {
+                    "product_name": "A4 Paper 75gsm",
+                    "query_type": "make_model",
+                    "query_mode": "product",
+                    "category": "Stationery",
+                    "quantity": 10,
+                    "department": "Ministry of Defence",
+                    "service_type": None,
+                    "service_duration": None,
+                    "service_scope": None,
+                    "service_location": None,
+                    "specs": {"brand": None, "model_number": None},
+                },
+                {
+                    "product_name": "Annual Maintenance Contract - Desktop Computer",
+                    "query_mode": "service",
+                    "service_type": "AMC",
+                    "service_duration": "12 months",
+                    "service_location": "New Delhi",
+                    "quantity": 1,
+                },
+            ]
+        }
+    )
+
     product_name: str = Field(..., min_length=2, max_length=500)
     query_type: Literal["make_model", "specifications"] = "make_model"
     query_mode: Literal["product", "service"] = "product"
     category: str | None = Field(None, max_length=100)
     quantity: int = Field(1, ge=1, le=10000)
+    estimated_value: float | None = Field(
+        None,
+        ge=0,
+        description=(
+            "Estimated purchase value in INR. Enables the GFR 2017 "
+            "procurement-threshold compliance check (Rule 161/162/163)."
+        ),
+    )
+    delivery_location: str | None = Field(
+        None,
+        max_length=200,
+        description=(
+            "Delivery city / region. Triggers the demo-simulated freight and "
+            "landed-cost estimate."
+        ),
+    )
     department: str | None = Field(None, max_length=200)
     # Service-specific fields
     service_type: str | None = Field(None, max_length=100)
@@ -296,8 +413,86 @@ class BenchmarkQuery(BaseModel):
     specs: dict | None = None
 
 
+class FreightEstimate(BaseModel):
+    """Demo-simulated freight / landed-cost estimate for the delivery location."""
+
+    delivery_location: str
+    region_label: str
+    freight_pct: float
+    freight_amount: float
+    quantity: int
+    goods_value: float
+    landed_total: float
+    is_demo_simulated: bool
+    note: str
+
+
+class BaseProductInfo(BaseModel):
+    """Canonical base-product identity matched against prior purchase records."""
+
+    canonical_name: str
+    canonical_key: str
+    match_score: float | None = None
+    prior_records: int = 0
+    prior_median_price: float | None = None
+    prior_min: float | None = None
+    prior_max: float | None = None
+    prior_departments: list[str] = []
+
+
+class ProcurementThreshold(BaseModel):
+    """GFR procurement-threshold compliance verdict for the estimated value."""
+
+    value: float
+    mode: str  # direct_purchase | limited_tender | competitive_bidding
+    mode_label: str
+    rule: str  # e.g. "GFR 2017 Rule 161"
+    min_quotes_required: int
+    quotes_obtained: int
+    compliant: bool
+    evidence_required: str
+    non_compliance: str | None = None
+
+
 class BenchmarkResponse(BaseModel):
     """Full benchmark result with tier waterfall trace."""
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {
+                    "search_id": "a1b2c3d4-e5f6-4a5b-9c8d-1e2f3a4b5c6d",
+                    "query": "A4 Paper 75gsm",
+                    "query_mode": "product",
+                    "status": "completed",
+                    "resolved_tier": 0,
+                    "tier_label": "Notified Rate",
+                    "primary_result": {
+                        "tier": 0,
+                        "tier_label": "Notified Rate",
+                        "source_name": "Notified Rate (DGS&D)",
+                        "price": 235.0,
+                        "currency": "INR",
+                        "confidence": "HIGH",
+                        "reliability": "HIGH",
+                        "evidence_url": None,
+                        "evidence_reference": "DGS&D/RC-2026/STN-001",
+                        "rationale": "DGS&D notified rate for 'A4 Paper 75gsm'.",
+                        "is_demo_data": True,
+                    },
+                    "all_results": [],
+                    "tier_trace": {
+                        "tier_0": "Found: Notified Rate (DGS&D)",
+                        "tier_1": "Skipped: resolved at earlier tier",
+                    },
+                    "statistics": {"min": 235.0, "max": 235.0, "avg": 235.0, "median": 235.0, "count": 1},
+                    "sources_checked": 1,
+                    "results_found": 1,
+                    "any_demo_data": True,
+                }
+            ]
+        }
+    )
 
     search_id: str
     query: str
@@ -312,6 +507,10 @@ class BenchmarkResponse(BaseModel):
     sources_checked: int = 0
     results_found: int = 0
     any_demo_data: bool = False  # True if any result (primary or evidence) is demo data
+    procurement_threshold: ProcurementThreshold | None = None
+    specs: dict | None = None  # golden parameters the benchmark was configured against
+    base_product: BaseProductInfo | None = None
+    freight: FreightEstimate | None = None  # demo-simulated landed-cost estimate
 
 
 class DepartmentUploadRequest(BaseModel):

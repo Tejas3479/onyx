@@ -184,6 +184,7 @@ async def get_price_benchmark(
                     "Insufficient data across all tiers. Recommend referral to "
                     "Local Purchase Committee for negotiated pricing per GFR."
                 ),
+                "evidence_reference": "Local Purchase Committee referral (GFR Rule 155)",
                 "method_used": "insufficient_data",
             }
             all_results.append(
@@ -198,18 +199,45 @@ async def get_price_benchmark(
     if prices:
         prices_sorted = sorted(prices)
         n = len(prices_sorted)
+        median = (
+            prices_sorted[n // 2]
+            if n % 2
+            else (prices_sorted[n // 2 - 1] + prices_sorted[n // 2]) / 2
+        )
+
+        # L1 (Lowest-1) competitive bid + reasonableness band (±25% of median).
+        # The statutory standard (Rule 149(vii)) is the L1 of a valid
+        # competitive pool, not the highest/median quote.
+        l1_price = prices_sorted[0]
+        l1_row = next((r for r in all_results if r.get("price") == l1_price), None)
+        priced_sources = {
+            r.get("source_name")
+            for r in all_results
+            if r.get("price") is not None and r.get("source_name")
+        }
         statistics = {
             "min": prices_sorted[0],
             "max": prices_sorted[-1],
             "avg": round(sum(prices_sorted) / n, 2),
-            "median": round(
-                prices_sorted[n // 2]
-                if n % 2
-                else (prices_sorted[n // 2 - 1] + prices_sorted[n // 2]) / 2,
-                2,
-            ),
+            "median": round(median, 2),
             "count": n,
+            "l1": l1_price,
+            "l1_source": (l1_row or {}).get("source_name"),
+            "l1_vendor": (l1_row or {}).get("vendor_name"),
+            "competitive_pool": len(priced_sources),
+            "l1_valid": len(priced_sources) >= 3,
+            "band_low": round(median * 0.75, 2),
+            "band_high": round(median * 1.25, 2),
         }
+        if primary_result and primary_result.get("price") is not None:
+            primary_price = primary_result["price"]
+            statistics["primary_price"] = primary_price
+            statistics["within_band"] = (
+                statistics["band_low"] <= primary_price <= statistics["band_high"]
+            )
+            statistics["reasonableness_gap_pct"] = round(
+                (primary_price - median) / median * 100, 1
+            )
 
     return {
         "resolved_tier": resolved_tier,

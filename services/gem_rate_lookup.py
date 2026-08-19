@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from rapidfuzz import fuzz
-from sqlalchemy import select
+from sqlalchemy import delete, select
 
 from database import GemLPPCache, NotifiedRate, async_session_maker
 
@@ -36,11 +36,10 @@ async def seed_notified_rates() -> int:
 
     count = 0
     async with async_session_maker() as session:
-        # Check if already seeded
-        result = await session.execute(select(NotifiedRate).limit(1))
-        if result.scalars().first():
-            logger.debug("Notified rates already seeded")
-            return 0
+        # Replace previous demo-seeded rows so the expanded dataset always loads
+        await session.execute(
+            delete(NotifiedRate).where(NotifiedRate.is_demo_data == True)
+        )
 
         for item in data:
             record = NotifiedRate(
@@ -76,11 +75,10 @@ async def seed_gem_lpp() -> int:
 
     count = 0
     async with async_session_maker() as session:
-        # Check if already seeded
-        result = await session.execute(select(GemLPPCache).limit(1))
-        if result.scalars().first():
-            logger.debug("GeM LPP already seeded")
-            return 0
+        # Replace previous demo-seeded rows so the expanded dataset always loads
+        await session.execute(
+            delete(GemLPPCache).where(GemLPPCache.is_demo_data == True)
+        )
 
         for item in data:
             record = GemLPPCache(
@@ -152,6 +150,9 @@ async def check_notified_rate(
         "price": best_match.rate,
         "currency": best_match.currency,
         "evidence_url": None,
+        "evidence_reference": (
+            best_match.contract_number or "Notified rate contract"
+        ),
         "rationale": (
             f"DGS&D/Ministry notified rate for '{best_match.item_description}'. "
             f"Contract: {best_match.contract_number or 'N/A'}. "
