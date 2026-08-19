@@ -1373,13 +1373,9 @@
           <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="M9 15l3-3 3 3"/></svg>
           Export HTML
         </button>
-        <button type="button" class="btn-action btn-outline" id="btn-download-pdf" onclick="downloadCertPDF()">
+        <button type="button" class="btn-action btn-outline" id="btn-download-pdf">
           <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
           Export PDF
-        </button>
-        <button type="button" class="btn-action btn-outline" id="btn-download-pdf-api" onclick="downloadCertPDFAPI()">
-          <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="M9 15l3-3 3 3"/></svg>
-          Download PDF (API)
         </button>
       </div>
 
@@ -2417,12 +2413,31 @@
     }
 
     async function downloadReport(fmt) {
-      const url = `/api/v1/reports/generate-from-query?product_name=${encodeURIComponent(currentQuery)}&department_name=${encodeURIComponent(currentDept)}&output_format=${fmt}`;
-      const headers = {};
+      if (!lastBenchmarkData || !lastBenchmarkData.search_id) {
+        alert('Run a benchmark first, then export the report.');
+        return;
+      }
+      const btn = document.getElementById(fmt === 'html' ? 'btn-download-html' : 'btn-download-pdf');
+      const originalHTML = btn ? btn.innerHTML : '';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg> Generating ' + fmt.toUpperCase() + '...';
+      }
+      const payload = {
+        search_id: lastBenchmarkData.search_id,
+        department_name: currentDept,
+        signatory_name: currentOfficer.split('(')[0].trim(),
+        output_format: fmt
+      };
+      const headers = { 'Content-Type': 'application/json' };
       const token = localStorage.getItem('onyx_token');
       if (token) headers['Authorization'] = 'Bearer ' + token;
       try {
-        const res = await fetch(url, { headers: headers });
+        const res = await fetch('/api/v1/reports/generate', {
+          method: 'POST',
+          headers: headers,
+          body: JSON.stringify(payload)
+        });
         if (!res.ok) {
           const errData = await res.json().catch(() => ({}));
           throw new Error(errData.detail || `Server responded with status ${res.status}`);
@@ -2439,6 +2454,11 @@
         URL.revokeObjectURL(blobUrl);
       } catch (err) {
         alert('Report download failed: ' + err.message);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = originalHTML;
+        }
       }
     }
 
@@ -2642,65 +2662,6 @@
       }
       el.classList.add('counting');
       requestAnimationFrame(animate);
-    }
-
-    // Download certificate PDF via API
-    async function downloadCertPDFAPI() {
-      if (!lastBenchmarkData) return;
-      const btn = document.getElementById('btn-download-pdf-api');
-      if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg> Generating PDF...';
-      }
-      
-      try {
-        const payload = {
-          search_id: lastBenchmarkData.search_id,
-          department_name: currentDept,
-          signatory_name: currentOfficer.split('(')[0].trim(),
-          output_format: 'pdf'
-        };
-        
-        const headers = { 'Content-Type': 'application/json' };
-        const token = localStorage.getItem('onyx_token');
-        if (token) headers['Authorization'] = 'Bearer ' + token;
-        
-        const res = await fetch('/api/v1/reports/generate', {
-          method: 'POST',
-          headers: headers,
-          body: JSON.stringify(payload)
-        });
-        
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err.detail || 'PDF generation failed');
-        }
-        
-        const blob = await res.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `GFR_Certificate_${lastBenchmarkData.query.replace(/[^a-z0-9]/gi, '_')}.pdf`;
-        a.click();
-        window.URL.revokeObjectURL(url);
-        
-      } catch (err) {
-        console.error('PDF download failed:', err);
-        alert('Failed to download PDF: ' + err.message);
-      } finally {
-        if (btn) {
-          btn.disabled = false;
-          btn.innerHTML = '<svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="M9 15l3-3 3 3"/></svg> Download PDF (API)';
-        }
-      }
-    }
-
-    // Also add downloadCertPDF for print-to-PDF fallback
-    function downloadCertPDF() {
-      const modal = document.getElementById('cert-modal');
-      if (modal) modal.style.display = 'flex';
-      // Give modal time to render
-      setTimeout(() => window.print(), 100);
     }
 
     // Initialize session
