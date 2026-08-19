@@ -614,9 +614,11 @@ html.dark .site-footer { background: var(--card-bg); border-color: var(--border)
   justify-content: space-between;
   align-items: center;
   padding: 12px 32px;
-  background-color: var(--navy-900);
+  background: rgba(10, 10, 10, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   color: #fff;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -624,7 +626,7 @@ html.dark .site-footer { background: var(--card-bg); border-color: var(--border)
   gap: 8px;
 }
 .navbar.scrolled {
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
 .nav-brand {
@@ -708,6 +710,24 @@ html.dark .site-footer { background: var(--card-bg); border-color: var(--border)
   gap: 7px;
 }
 
+/* ── Theme toggle button (shared across all pages) ── */
+.btn-theme-toggle {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, transform 0.3s ease;
+  flex-shrink: 0;
+}
+.btn-theme-toggle:hover { background: rgba(255, 255, 255, 0.14); }
+.btn-theme-toggle svg { width: 18px; height: 18px; }
+
 /* ── Layout + hero ── */
 main {
   flex: 1;
@@ -720,30 +740,50 @@ main.max-w-md { max-width: 1200px; }
 
 .hero {
   text-align: center;
-  margin-bottom: 28px;
+  margin-bottom: 36px;
+  padding: 48px 24px 0;
+  position: relative;
 }
 .hero-pre {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 600;
   color: var(--primary);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 6px;
+  letter-spacing: 0.08em;
+  margin-bottom: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.hero-pre::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--heat-100);
+  box-shadow: 0 0 10px var(--heat-100);
+  animation: onyx-blink 1.6s steps(1) infinite;
 }
 .hero h1 {
   font-family: 'Outfit', sans-serif;
-  font-size: 34px;
-  font-weight: 700;
+  font-size: clamp(30px, 4vw, 44px);
+  font-weight: 800;
   color: var(--navy-900);
-  letter-spacing: -0.02em;
-  margin-bottom: 8px;
+  letter-spacing: -0.03em;
+  line-height: 1.12;
+  margin-bottom: 14px;
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
 }
 .hero p {
-  font-size: 15px;
+  font-size: 15.5px;
   color: var(--text-muted);
-  max-width: 720px;
+  max-width: 680px;
   margin: 0 auto;
+  line-height: 1.65;
 }
 
 /* ── Cards ── */
@@ -751,8 +791,13 @@ main.max-w-md { max-width: 1200px; }
   background: var(--card-bg);
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
   padding: 22px;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.card:hover {
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  border-color: var(--border-muted);
 }
 .card + .card { margin-top: 20px; }
 .card-title {
