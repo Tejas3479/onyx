@@ -1,5 +1,3 @@
-import asyncio
-import sys
 
 
 from services.browser_manager import PlaywrightManager, playwright_mgr
