@@ -1,6 +1,6 @@
 # Self-Hosting Guide
 
-This guide covers running Onyx on your own infrastructure — locally, with Docker, or on a cloud VPS.
+This guide covers running Onyx on your own infrastructure — locally or on a cloud VPS.
 
 ---
 
@@ -13,8 +13,8 @@ flowchart LR
         NGINX["Nginx Reverse Proxy (HTTPS 443)"]
     end
 
-    subgraph Host["Server Environment (Docker Host / VPS)"]
-        CONTAINER["Onyx App Container (:8000)"]
+    subgraph Host["Server Environment (VPS)"]
+        CONTAINER["Onyx App Process (:8000)"]
         
         subgraph Inside["Internal Components"]
             FASTAPI["FastAPI / Uvicorn"]
@@ -36,38 +36,7 @@ flowchart LR
 
 ---
 
-## Option 1: Docker (Recommended)
-
-Docker is the easiest way to run Onyx. It bundles Python 3.11+, Playwright, Chromium, and all required procurement & scraping dependencies.
-
-### Prerequisites
-- [Docker](https://docs.docker.com/get-docker/)
-- [Docker Compose](https://docs.docker.com/compose/install/)
-
-### Steps
-
-```bash
-# 1. Clone the repo
-git clone https://github.com/Tejas3479/onyx.git
-cd onyx
-
-# 2. Start the stack
-API_KEYS=your-secret-key docker-compose up -d
-
-# 3. Verify it's running
-curl http://localhost:8000/api/health
-# → {"status":"ok"}
-```
-
-Access the web interfaces:
-- **Price Benchmark Console:** `http://localhost:8000/benchmark.html`
-- **Department LPP Upload:** `http://localhost:8000/upload_history.html`
-- **Scraper / Dashboard:** `http://localhost:8000/`
-- **API Swagger Docs:** `http://localhost:8000/docs`
-
----
-
-## Option 2: Local Python
+## Option 1: Local Python
 
 ### Prerequisites
 - Python 3.11+
@@ -109,7 +78,7 @@ uvicorn app:app --host 0.0.0.0 --port 8000 --reload
 
 ---
 
-## Option 3: VPS / Cloud VM (Ubuntu 22.04 / 24.04)
+## Option 2: VPS / Cloud VM (Ubuntu 22.04 / 24.04)
 
 ### Recommended specs
 - 2 CPU, 4 GB RAM minimum for production workloads (Playwright & parallel multi-source querying)

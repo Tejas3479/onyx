@@ -35,8 +35,6 @@ onyx/
 ├── routers/            # API endpoints (/fetch, /auth, /api/v1/benchmark)
 ├── services/           # Core fetch engine logic
 ├── requirements.txt    # Python dependencies
-├── Dockerfile          # Container build
-├── docker-compose.yml  # Local stack
 ├── verify.py           # Integrity check script
 ├── static/
 │   ├── base.css         # Shared design foundation (tokens, nav, cards, tables)
@@ -76,4 +74,4 @@ Please include:
 - OS and Python version
 - Steps to reproduce
 - Expected vs actual behaviour
-- Relevant logs (from `docker logs onyx_server` or terminal output)
+- Relevant logs (from `uvicorn` terminal output)

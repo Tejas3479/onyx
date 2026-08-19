@@ -28,7 +28,7 @@ Include error log output or API response body:
 
 **Environment (please complete the following information):**
  - OS: [e.g. Ubuntu 22.04, Windows 11]
- - Execution Mode: [Docker / Local Python]
+ - Execution Mode: [Local Python / VPS]
  - Onyx Version: [e.g. 1.1.0]
  - Browser Engine: [curl-cffi / Playwright]
 

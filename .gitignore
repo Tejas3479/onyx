@@ -68,9 +68,6 @@ logs/
 playwright-report/
 test-results/
 
-# Docker
-*.tar
-
 # Node
 node_modules/
 

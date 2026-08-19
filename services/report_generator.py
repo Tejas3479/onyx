@@ -123,7 +123,7 @@ def save_report(
     )
 
     if fmt == "pdf":
-        # 1. Try WeasyPrint (Linux/Docker with GTK)
+        # 1. Try WeasyPrint (Linux with GTK/Pango system libs)
         try:
             from weasyprint import HTML
 

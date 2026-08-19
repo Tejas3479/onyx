@@ -8,7 +8,6 @@
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-60a5fa.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.111+-34d399.svg)](https://fastapi.tiangolo.com/)
 [![GFR Rules 149(vii) & 161–163](https://img.shields.io/badge/Compliance-GFR%20149(vii)%20%26%20161–163-059669.svg)](https://doe.gov.in)
-[![Docker](https://img.shields.io/badge/Docker-ready-60a5fa.svg)](docker-compose.yml)
 [![Test Suite](https://img.shields.io/badge/Tests-76%20passing-brightgreen.svg)](tests/)
 
 </div>
@@ -77,22 +76,6 @@ flowchart TD
 ---
 
 ## 🚀 Quick Start
-
-### 1. Run with Docker (Recommended)
-
-```bash
-git clone https://github.com/Tejas3479/onyx.git
-cd onyx
-
-# Launch Onyx services (Web app + Worker + Redis)
-API_KEYS=onyx-secret-key docker-compose up -d
-```
-
-Open **http://localhost:8000/benchmark.html** in your browser.
-
----
-
-### 2. Local Python Setup
 
 ```bash
 git clone https://github.com/Tejas3479/onyx.git
