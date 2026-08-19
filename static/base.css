@@ -682,6 +682,14 @@ html.dark .site-footer { background: var(--card-bg); border-color: var(--border)
   font-weight: 600;
 }
 
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
 .btn-nav-launch {
   color: #fff !important;
   background: var(--primary);
