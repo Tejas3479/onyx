@@ -109,10 +109,10 @@ async def run_benchmark(query: BenchmarkQuery, user=Depends(require_current_user
         currency=primary.get("currency", "INR"),
         confidence=primary.get("confidence", "LOW"),
         reliability=primary.get("reliability", "MEDIUM"),
-evidence_url=_evidence_url(primary),
-                evidence_reference=primary.get("evidence_reference"),
-                rationale=primary.get("rationale", ""),
-                is_demo_data=primary.get("is_demo_data", False),
+        evidence_url=_evidence_url(primary),
+        evidence_reference=primary.get("evidence_reference"),
+        rationale=primary.get("rationale", ""),
+        is_demo_data=primary.get("is_demo_data", False),
     )
 
     all_tier_results = []
