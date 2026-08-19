@@ -1,8 +1,6 @@
 import asyncio
 import sys
 
-if sys.platform == "win32":
-    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
 from services.browser_manager import PlaywrightManager, playwright_mgr
 from services.content import process_content
